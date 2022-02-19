@@ -12,6 +12,15 @@ class Proof {
     return x;
   }
 
+  Formula contrapositiveForward(FormulaContext context) {
+    var formula = context.formula;
+    if (formula is! Implies) throw MathError();
+    return _rule(
+        [context.top],
+        () => context.substitute(
+            Implies(Not(formula.rightOperand), Not(formula.leftOperand))));
+  }
+
   Formula detach(Formula x) => x is Implies
       ? _rule([x.leftOperand, x], () => x.rightOperand)
       : throw MathError();

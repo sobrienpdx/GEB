@@ -137,6 +137,23 @@ main() {
       var PandQ = Formula('<P&Q>');
       checkInvalidStep([P, PandQ], (proof) => proof.detach(PandQ));
     });
+
+    test('contrapositive forward', () {
+      // ignore: non_constant_identifier_names
+      var PimpliesQ = Formula('<P->Q>');
+      checkValidStep(
+          [PimpliesQ],
+          (proof) => proof.contrapositiveForward(FormulaContext(PimpliesQ)),
+          Formula('<~Q->~P>'));
+      checkInvalidStep([],
+          (proof) => proof.contrapositiveForward(FormulaContext(PimpliesQ)));
+      var notPimpliesQ = Formula('~<P->Q>');
+      checkValidStep(
+          [notPimpliesQ],
+          (proof) =>
+              proof.contrapositiveForward(FormulaContext(notPimpliesQ).operand),
+          Formula('~<~Q->~P>'));
+    });
   });
 }
 
