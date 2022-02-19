@@ -39,6 +39,25 @@ class Proof {
         context.substitute(Implies(rightOperand.operand, leftOperand.operand)));
   }
 
+  ProofStep deMorgan(FormulaContext context) {
+    var formula = context.formula;
+    Formula replacement;
+    if (formula is And) {
+      var leftOperand = formula.leftOperand;
+      if (leftOperand is! Not) return InvalidProofStep();
+      var rightOperand = formula.rightOperand;
+      if (rightOperand is! Not) return InvalidProofStep();
+      replacement = Not(Or(leftOperand.operand, rightOperand.operand));
+    } else if (formula is Not) {
+      var operand = formula.operand;
+      if (operand is! Or) return InvalidProofStep();
+      replacement = And(Not(operand.leftOperand), Not(operand.rightOperand));
+    } else {
+      return InvalidProofStep();
+    }
+    return _rule([context.top], context.substitute(replacement));
+  }
+
   ProofStep detach(Formula x) => x is Implies
       ? _rule([x.leftOperand, x], x.rightOperand)
       : InvalidProofStep();

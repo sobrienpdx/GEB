@@ -177,6 +177,42 @@ main() {
       checkInvalidStep([notPimpliesQ],
           (proof) => proof.contrapositiveReverse(FormulaContext(notPimpliesQ)));
     });
+
+    test('de morgan', () {
+      var notPandNotQ = Formula('<~P&~Q>');
+      // ignore: non_constant_identifier_names
+      var not_PorQ = Formula('~<P|Q>');
+      checkValidStep([notPandNotQ],
+          (proof) => proof.deMorgan(FormulaContext(notPandNotQ)), not_PorQ);
+      checkInvalidStep(
+          [], (proof) => proof.deMorgan(FormulaContext(notPandNotQ)));
+      // ignore: non_constant_identifier_names
+      var PandNotQ = Formula('<P&~Q>');
+      checkInvalidStep(
+          [PandNotQ], (proof) => proof.deMorgan(FormulaContext(PandNotQ)));
+      var notPandQ = Formula('<~P&Q>');
+      checkInvalidStep(
+          [notPandQ], (proof) => proof.deMorgan(FormulaContext(notPandQ)));
+      // ignore: non_constant_identifier_names
+      var not_notPandNotQ = Not(notPandNotQ);
+      // ignore: non_constant_identifier_names
+      var notNot_PorQ = Not(not_PorQ);
+      checkValidStep(
+          [not_notPandNotQ],
+          (proof) => proof.deMorgan(FormulaContext(not_notPandNotQ).operand),
+          notNot_PorQ);
+      checkValidStep([not_PorQ],
+          (proof) => proof.deMorgan(FormulaContext(not_PorQ)), notPandNotQ);
+      checkInvalidStep([], (proof) => proof.deMorgan(FormulaContext(not_PorQ)));
+      checkValidStep(
+          [notNot_PorQ],
+          (proof) => proof.deMorgan(FormulaContext(notNot_PorQ).operand),
+          not_notPandNotQ);
+      // ignore: non_constant_identifier_names
+      var not_PandQ = Formula('~<P&Q>');
+      checkInvalidStep(
+          [not_PandQ], (proof) => proof.deMorgan(FormulaContext(not_PandQ)));
+    });
   });
 }
 
