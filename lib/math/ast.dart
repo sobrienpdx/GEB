@@ -60,6 +60,8 @@ abstract class Formula extends Node {
 
   Formula._();
 
+  bool get isOpen => accept(IsOpen());
+
   T accept<T>(FormulaVisitor<T> visitor);
 
   bool containsFreeVariable(Variable v) => accept(ContainsFreeVariable(v));

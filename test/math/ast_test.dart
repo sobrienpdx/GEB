@@ -257,6 +257,15 @@ main() {
       expect(Formula('∀c:~∃b:(b+b)=c').toString(), '∀c:~∃b:(b+b)=c');
       expect(Formula('∃c:Sc=d').toString(), '∃c:Sc=d');
     });
+
+    test('isOpen', () {
+      expect(Formula('~c=c').isOpen, true);
+      expect(Formula('b=b').isOpen, true);
+      expect(Formula('<!b:b=b&~c=c>').isOpen, true);
+      expect(Formula('S0=0').isOpen, false);
+      expect(Formula('~!d:d=0').isOpen, false);
+      expect(Formula('?c:<!b:b=b&~c=c>').isOpen, false);
+    });
   });
 }
 
