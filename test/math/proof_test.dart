@@ -246,6 +246,34 @@ main() {
       checkInvalidStep(
           [PimpliesQ], (proof) => proof.switcheroo(FormulaContext(PimpliesQ)));
     });
+
+    test("Ganto's Ax", () {
+      var proof = Proof();
+      var step2 = proof.pushFantasy(Formula('<<P->Q>&<~P->Q>>'))();
+      var step3 = proof.separate(step2, Side.left)();
+      expect(step3, Formula('<P->Q>'));
+      var step4 = proof.contrapositiveForward(FormulaContext(step3))();
+      var step5 = proof.separate(step2, Side.right)();
+      var step6 = proof.contrapositiveForward(FormulaContext(step5))();
+      var step8 = proof.pushFantasy(Formula('~Q'))();
+      expect(step8, Formula('~Q'));
+      var step9 = proof.carryOver(step4)();
+      var step10 = proof.detach(step9)();
+      var step11 = proof.carryOver(step6)();
+      var step12 = proof.detach(step11)();
+      var step13 = proof.join(step10, step12)();
+      var step14 = proof.deMorgan(FormulaContext(step13))();
+      expect(step14, Formula('~<P|~P>'));
+      var step16 = proof.popFantasy()();
+      var step17 = proof.contrapositiveReverse(FormulaContext(step16))();
+      var step19 = proof.pushFantasy(Formula('~P'))();
+      expect(step19, Formula('~P'));
+      var step21 = proof.popFantasy()();
+      var step22 = proof.switcheroo(FormulaContext(step21))();
+      expect(step22, Formula('<P|~P>'));
+      var step23 = proof.detach(step17)();
+      expect(step23, Formula('Q'));
+    });
   });
 }
 
