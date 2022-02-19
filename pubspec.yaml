@@ -40,6 +40,18 @@ dev_dependencies:
 # The following section is specific to Flutter.
 flutter:
 
+fonts:
+  fonts:
+    - family: Chalkboard
+      fonts:
+        - asset: fonts/Chalkboard.ttf
+    - family: NotoSansMath
+      fonts:
+        - asset: assets/Noto_Sans_Math/NotoSansMath-Regular.ttf
+
+  assets:
+    - assets/
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

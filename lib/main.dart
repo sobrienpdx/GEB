@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:geb/widgets/drop_down_menu.dart';
 import 'package:geb/widgets/special_character_button.dart';
 
+import 'math/symbols.dart';
+
 void main() => runApp(const GEBParser());
 
 class GEBParser extends StatelessWidget {
