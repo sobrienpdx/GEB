@@ -39,20 +39,23 @@ class _GEBState extends State<GEB> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                for (String sc in specialCharacters)
-                SpecialCharacterButton(
-                  onPressed: () {
-                    setState(() {
-                      _textController.text = text + sc;
-                      text = text + sc;
-                    });
-                  },
-                  text: sc,
-                ),
-              ],
+            FractionallySizedBox(
+              widthFactor: .5,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  for (String sc in specialCharacters)
+                  SpecialCharacterButton(
+                    onPressed: () {
+                      setState(() {
+                        _textController.text = text + sc;
+                        text = text + sc;
+                      });
+                    },
+                    text: sc,
+                  ),
+                ],
+              ),
             ),
             SizedBox(
               width: 500,
