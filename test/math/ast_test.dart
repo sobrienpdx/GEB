@@ -76,6 +76,9 @@ main() {
       expect(Numeral(2).isDefinite, true);
       expect(Numeral(2).toString(), 'SS0');
       expect(Term('SS0').toString(), 'SS0');
+      expect(Term('SSS0').toString(), 'SSS0');
+      expect(Term('SSSS0').toString(), 'SSSS0');
+      expect(Term('SSSSS0').toString(), 'SSSSS0');
     });
 
     test('variable', () {
@@ -87,6 +90,11 @@ main() {
       expect(Term("a'").toString(), 'a′');
       expect(Term('a′′').toString(), 'a′′');
       expect(Term("a''").toString(), 'a′′');
+      expect(Term('b′').toString(), 'b′');
+      expect(Term('c′′').toString(), 'c′′');
+      expect(Term('d′′′').toString(), 'd′′′');
+      expect(Term('e′′′′').toString(), 'e′′′′');
+      expect(Term('b').toString(), 'b');
     });
 
     test('successor', () {
@@ -112,6 +120,8 @@ main() {
       expect(Successor.apply(2, a).toString(), 'SSa');
       expect(Term('Sa').toString(), 'Sa');
       expect(Term('SSa').toString(), 'SSa');
+      expect(Term('SSa′').toString(), 'SSa′');
+      expect(Term('S(Sa⋅(Sb⋅Sc))').toString(), 'S(Sa⋅(Sb⋅Sc))');
     });
 
     test('plus', () {
@@ -131,6 +141,7 @@ main() {
       expect(Times(zero, one).isDefinite, true);
       expect(Term('(a⋅b)').toString(), '(a⋅b)');
       expect(Term('(a*b)').toString(), '(a⋅b)');
+      expect(Term('(S0⋅(SS0+c))').toString(), '(S0⋅(SS0+c))');
     });
 
     test('definiteness', () {
@@ -146,6 +157,9 @@ main() {
     test('equation', () {
       expect(Equation(a, b).toString(), 'a=b');
       expect(Formula('a=b').toString(), 'a=b');
+      expect(Formula('S0=0').toString(), 'S0=0');
+      expect(Formula('(SS0+SS0)=SSSS0').toString(), '(SS0+SS0)=SSSS0');
+      expect(Formula('S(b+c)=((c⋅d)⋅e)').toString(), 'S(b+c)=((c⋅d)⋅e)');
     });
   });
 }

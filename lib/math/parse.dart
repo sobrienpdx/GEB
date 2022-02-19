@@ -148,7 +148,7 @@ class _Parser implements Parser {
       case 'e':
         return Successor.apply(successorCount, parseVariable());
       case '(':
-        return parseBinaryTerm();
+        return Successor.apply(successorCount, parseBinaryTerm());
       default:
         throw ParseError();
     }
