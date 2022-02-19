@@ -11,6 +11,8 @@ abstract class Parser {
 
   Formula parseFormula();
 
+  Term parseTerm();
+
   static T run<T>(String input, T Function(Parser) parseFunction) {
     var parser = Parser(input);
     var result = parseFunction(parser);
@@ -103,6 +105,22 @@ class _Parser implements Parser {
       }
     }
     return PropositionalAtom(name.toString());
+  }
+
+  @override
+  Term parseTerm() {
+    int successorCount = 0;
+    while (peek() == 'S') {
+      ++successorCount;
+      next();
+    }
+    switch (peek()) {
+      case '0':
+        next();
+        return Numeral(successorCount);
+      default:
+        throw ParseError();
+    }
   }
 
   String? peek({int skip = 0}) =>

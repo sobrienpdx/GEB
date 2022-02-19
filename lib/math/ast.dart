@@ -22,18 +22,10 @@ abstract class Atom extends Formula {
   Atom() : super._();
 }
 
-abstract class Formula {
+abstract class Formula extends Node {
   factory Formula(String input) => Parser.run(input, (p) => p.parseFormula());
 
   Formula._();
-
-  String toString() {
-    var buffer = StringBuffer();
-    _writeTo(buffer);
-    return buffer.toString();
-  }
-
-  void _writeTo(StringBuffer buffer);
 }
 
 class Implies extends Formula {
@@ -52,6 +44,16 @@ class Implies extends Formula {
   }
 }
 
+abstract class Node {
+  String toString() {
+    var buffer = StringBuffer();
+    _writeTo(buffer);
+    return buffer.toString();
+  }
+
+  void _writeTo(StringBuffer buffer);
+}
+
 class Not extends Formula {
   final Formula operand;
 
@@ -61,6 +63,22 @@ class Not extends Formula {
   void _writeTo(StringBuffer buffer) {
     buffer.write('~');
     operand._writeTo(buffer);
+  }
+}
+
+class Numeral extends Term {
+  final int value;
+
+  Numeral(this.value)
+      : assert(value >= 0),
+        super._();
+
+  @override
+  void _writeTo(StringBuffer buffer) {
+    for (int i = 0; i < value; i++) {
+      buffer.write('S');
+    }
+    buffer.write('0');
   }
 }
 
@@ -100,4 +118,10 @@ class PropositionalAtom extends Atom {
     }
     return true;
   }
+}
+
+abstract class Term extends Node {
+  factory Term(String input) => Parser.run(input, (p) => p.parseTerm());
+
+  Term._();
 }
