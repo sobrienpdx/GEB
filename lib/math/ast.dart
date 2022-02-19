@@ -91,6 +91,9 @@ abstract class Numeral extends Term {
 
   const Numeral._() : super._();
 
+  @override
+  bool get isDefinite => true;
+
   int get value;
 
   @override
@@ -123,6 +126,9 @@ class Plus extends Term {
   final Term rightOperand;
 
   Plus(this.leftOperand, this.rightOperand) : super._();
+
+  @override
+  bool get isDefinite => leftOperand.isDefinite && rightOperand.isDefinite;
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -164,6 +170,9 @@ class Successor extends Term {
   Successor._(this.successorCount, this.operand) : super._();
 
   @override
+  bool get isDefinite => operand.isDefinite;
+
+  @override
   void _writeTo(StringBuffer buffer) {
     for (int i = 0; i < successorCount; i++) {
       buffer.write('S');
@@ -189,6 +198,8 @@ abstract class Term extends Node {
   factory Term(String input) => Parser.run(input, (p) => p.parseTerm());
 
   const Term._();
+
+  bool get isDefinite;
 }
 
 class Times extends Term {
@@ -196,6 +207,9 @@ class Times extends Term {
   final Term rightOperand;
 
   Times(this.leftOperand, this.rightOperand) : super._();
+
+  @override
+  bool get isDefinite => leftOperand.isDefinite && rightOperand.isDefinite;
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -215,6 +229,9 @@ class Variable extends Term {
   Variable(this.name)
       : assert(_isValidName(name)),
         super._();
+
+  @override
+  bool get isDefinite => false;
 
   @override
   void _writeTo(StringBuffer buffer) {
