@@ -114,6 +114,18 @@ main() {
       }, Formula('<<P&Q>->P>'));
       checkInvalidStep([], (proof) => proof.popFantasy());
     });
+
+    test('carry-over', () {
+      checkValidStep([P], (proof) {
+        proof.pushFantasy(Q);
+        return proof.carryOver(P);
+      }, P);
+      checkInvalidStep([P], (proof) => proof.carryOver(P));
+      checkInvalidStep([P], (proof) {
+        proof.pushFantasy(Q);
+        return proof.carryOver(R);
+      });
+    });
   });
 }
 
@@ -137,8 +149,11 @@ void checkInvalidStep(
 void checkValidStep(List<Formula> premises, Formula Function(Proof) proofStep,
     Formula expectedResult) {
   var proof = Proof();
-  for (var premise in premises) {
-    proof.pushFantasy(premise);
+  for (int i = 0; i < premises.length; i++) {
+    proof.pushFantasy(premises[i]);
+    for (int j = 0; j < i; j++) {
+      proof.carryOver(premises[j]);
+    }
   }
   var result = proofStep(proof);
   expect(result, expectedResult);

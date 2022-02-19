@@ -2,7 +2,15 @@ import 'ast.dart';
 import 'context.dart';
 
 class Proof {
-  _ProofState _state = _TopLevelState();
+  _ProofState _state = _ProofState();
+
+  Formula carryOver(Formula x) {
+    var state = _state;
+    if (state is! _FantasyState) throw MathError();
+    if (!state.parent.isTheorem(x)) throw MathError();
+    _state.addTheorem(x);
+    return x;
+  }
 
   Formula introduceDoubleTilde(FormulaContext context) =>
       _rule([context.top], () => context.substitute(Not(Not(context.formula))));
@@ -52,36 +60,23 @@ class _FantasyState extends _ProofState {
 
   Formula conclusion;
 
-  final Set<Formula> localTheorems;
-
-  _FantasyState(this.parent, this.premise)
-      : conclusion = premise,
-        localTheorems = {premise};
-
-  @override
-  void addTheorem(Formula x) {
-    localTheorems.add(x);
-    conclusion = x;
+  _FantasyState(this.parent, this.premise) : conclusion = premise {
+    super.addTheorem(premise);
   }
 
   @override
-  bool isTheorem(Formula x) => localTheorems.contains(x) || parent.isTheorem(x);
+  void addTheorem(Formula x) {
+    super.addTheorem(x);
+    conclusion = x;
+  }
 }
 
-abstract class _ProofState {
-  void addTheorem(Formula x);
-
-  bool isTheorem(Formula x);
-}
-
-class _TopLevelState extends _ProofState {
+class _ProofState {
   final Set<Formula> theorems = {};
 
-  @override
   void addTheorem(Formula x) {
     theorems.add(x);
   }
 
-  @override
   bool isTheorem(Formula x) => theorems.contains(x);
 }
