@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geb/widgets/drop_down_menu.dart';
-import 'package:geb/widgets/special_character_button.dart';
+import 'package:geb/widgets/base_button.dart';
 
+import 'math/ast.dart';
 import 'math/symbols.dart';
 
 void main() => runApp(const GEBParser());
@@ -30,6 +31,8 @@ class GEB extends StatefulWidget {
 class _GEBState extends State<GEB> {
   final _textController = TextEditingController();
   String text = "";
+  String validationDeclaration ="";
+  Color validationColor = Colors.indigo;
   List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~"];
   @override
   Widget build(BuildContext context) {
@@ -39,13 +42,21 @@ class _GEBState extends State<GEB> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            validationDeclaration != "" ?
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                  validationDeclaration,
+                style: TextStyle(fontSize: 50, color: validationColor, fontWeight: FontWeight.w800),
+              ),
+            ) : Container(),
             FractionallySizedBox(
               widthFactor: .5,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   for (String sc in specialCharacters)
-                  SpecialCharacterButton(
+                  BaseButton(
                     onPressed: () {
                       setState(() {
                         _textController.text = text + sc;
@@ -57,16 +68,41 @@ class _GEBState extends State<GEB> {
                 ],
               ),
             ),
-            SizedBox(
-              width: 500,
-              child: TextFormField(
-                onChanged: (value) {
-                  setState(() {
-                    text = _textController.text;
-                  });
-                },
-                controller: _textController,
-                decoration: const InputDecoration(hintText: 'Type stuff'),
+            Padding(
+              padding: const EdgeInsets.all(18.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 500,
+                    child: TextFormField(
+                      onChanged: (value) {
+                        setState(() {
+                          text = _textController.text;
+                        });
+                      },
+                      controller: _textController,
+                      decoration: const InputDecoration(hintText: 'Type stuff'),
+                    ),
+                  ),
+                  BaseButton(
+                    height: 50,
+                    width: 100,
+                    textSize: 20,
+                    onPressed: () {
+                      setState(() {
+                        try {
+                          Formula(text);
+                          validationDeclaration = "Good work! Your feelings and formula are valid!";
+                        } catch (e) {
+                          validationColor = Colors.pink;
+                          validationDeclaration = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
+                        }
+                      });
+                    },
+                    text: "Validate",
+                  ),
+                ],
               ),
             ),
             Padding(
