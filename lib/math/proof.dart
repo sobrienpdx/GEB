@@ -5,16 +5,22 @@ class Proof {
 
   bool isTheorem(Formula x) => _context.isTheorem(x);
 
-  Formula join(Formula x, Formula y) {
-    if (!isTheorem(x)) throw MathError();
-    if (!isTheorem(y)) throw MathError();
-    var result = And(x, y);
-    _context.addTheorem(result);
-    return result;
-  }
+  Formula join(Formula x, Formula y) => _rule([x, y], () => And(x, y));
 
   void pushFantasy(Formula premise) {
     _context = _FantasyContext(_context, premise);
+  }
+
+  Formula separate(Formula x, Side side) =>
+      _rule([x], () => x is And ? x.getOperand(side) : throw MathError());
+
+  Formula _rule(List<Formula> premises, Formula createNewTheorem()) {
+    for (var premise in premises) {
+      if (!isTheorem(premise)) throw MathError();
+    }
+    var result = createNewTheorem();
+    _context.addTheorem(result);
+    return result;
   }
 }
 

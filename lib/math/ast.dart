@@ -6,11 +6,9 @@ import 'hash.dart';
 import 'symbols.dart';
 import 'visitor.dart';
 
-class And extends Formula {
-  final Formula leftOperand;
-  final Formula rightOperand;
-
-  And(this.leftOperand, this.rightOperand) : super._();
+class And extends BinaryFormula {
+  And(Formula leftOperand, Formula rightOperand)
+      : super(leftOperand, rightOperand);
 
   @override
   int get hashCode =>
@@ -28,6 +26,22 @@ class And extends Formula {
 
 abstract class Atom extends Formula {
   Atom() : super._();
+}
+
+abstract class BinaryFormula extends Formula {
+  final Formula leftOperand;
+  final Formula rightOperand;
+
+  BinaryFormula(this.leftOperand, this.rightOperand) : super._();
+
+  Formula getOperand(Side side) {
+    switch (side) {
+      case Side.left:
+        return leftOperand;
+      case Side.right:
+        return rightOperand;
+    }
+  }
 }
 
 class Equation extends TNTAtom {
@@ -104,11 +118,9 @@ abstract class Formula extends Node {
   bool containsFreeVariable(Variable v) => accept(ContainsFreeVariable(v));
 }
 
-class Implies extends Formula {
-  final Formula leftOperand;
-  final Formula rightOperand;
-
-  Implies(this.leftOperand, this.rightOperand) : super._();
+class Implies extends BinaryFormula {
+  Implies(Formula leftOperand, Formula rightOperand)
+      : super(leftOperand, rightOperand);
 
   @override
   int get hashCode => Hash.hash3(
@@ -192,11 +204,9 @@ abstract class Numeral extends Term {
   int get value;
 }
 
-class Or extends Formula {
-  final Formula leftOperand;
-  final Formula rightOperand;
-
-  Or(this.leftOperand, this.rightOperand) : super._();
+class Or extends BinaryFormula {
+  Or(Formula leftOperand, Formula rightOperand)
+      : super(leftOperand, rightOperand);
 
   @override
   int get hashCode =>
@@ -264,6 +274,8 @@ class PropositionalAtom extends Atom {
     return true;
   }
 }
+
+enum Side { left, right }
 
 class Successor extends Term {
   final int successorCount;
