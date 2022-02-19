@@ -29,6 +29,10 @@ class Equation extends TNTAtom {
   Equation(this.leftSide, this.rightSide);
 
   @override
+  bool containsFreeVariable(Variable v) =>
+      leftSide.containsVariable(v) || rightSide.containsVariable(v);
+
+  @override
   void _writeTo(StringBuffer buffer) {
     leftSide._writeTo(buffer);
     buffer.write('=');
@@ -111,6 +115,9 @@ abstract class Numeral extends Term {
   int get value;
 
   @override
+  bool containsVariable(Variable v) => false;
+
+  @override
   void _writeTo(StringBuffer buffer) {
     for (int i = 0; i < value; i++) {
       buffer.write('S');
@@ -143,6 +150,10 @@ class Plus extends Term {
 
   @override
   bool get isDefinite => leftOperand.isDefinite && rightOperand.isDefinite;
+
+  @override
+  bool containsVariable(Variable v) =>
+      leftOperand.containsVariable(v) || rightOperand.containsVariable(v);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -187,6 +198,9 @@ class Successor extends Term {
   bool get isDefinite => operand.isDefinite;
 
   @override
+  bool containsVariable(Variable v) => operand.containsVariable(v);
+
+  @override
   void _writeTo(StringBuffer buffer) {
     for (int i = 0; i < successorCount; i++) {
       buffer.write('S');
@@ -214,6 +228,8 @@ abstract class Term extends Node {
   const Term._();
 
   bool get isDefinite;
+
+  bool containsVariable(Variable v);
 }
 
 class Times extends Term {
@@ -226,6 +242,10 @@ class Times extends Term {
   bool get isDefinite => leftOperand.isDefinite && rightOperand.isDefinite;
 
   @override
+  bool containsVariable(Variable v) =>
+      leftOperand.containsVariable(v) || rightOperand.containsVariable(v);
+
+  @override
   void _writeTo(StringBuffer buffer) {
     buffer.write('(');
     leftOperand._writeTo(buffer);
@@ -235,7 +255,9 @@ class Times extends Term {
   }
 }
 
-abstract class TNTAtom extends Atom {}
+abstract class TNTAtom extends Atom {
+  bool containsFreeVariable(Variable v);
+}
 
 class Variable extends Term {
   static const _allowedFirstCharacters = ['a', 'b', 'c', 'd', 'e'];
@@ -248,6 +270,9 @@ class Variable extends Term {
 
   @override
   bool get isDefinite => false;
+
+  @override
+  bool containsVariable(Variable v) => this.name == v.name;
 
   @override
   void _writeTo(StringBuffer buffer) {

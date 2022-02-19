@@ -60,6 +60,7 @@ main() {
       expect(Numeral(0), TypeMatcher<Zero>());
       expect(Numeral(0).value, 0);
       expect(Numeral(0).isDefinite, true);
+      expect(Numeral(0).containsVariable(a), false);
       expect(Numeral(0).toString(), '0');
       expect(Term('0').toString(), '0');
       expect(Numeral(1), TypeMatcher<NonzeroNumeral>());
@@ -67,6 +68,7 @@ main() {
       expect((Numeral(1) as Successor).operand, TypeMatcher<Zero>());
       expect((Numeral(1) as Successor).successorCount, 1);
       expect(Numeral(1).isDefinite, true);
+      expect(Numeral(1).containsVariable(a), false);
       expect(Numeral(1).toString(), 'S0');
       expect(Term('S0').toString(), 'S0');
       expect(Numeral(2), TypeMatcher<NonzeroNumeral>());
@@ -74,6 +76,7 @@ main() {
       expect((Numeral(2) as Successor).operand, TypeMatcher<Zero>());
       expect((Numeral(2) as Successor).successorCount, 2);
       expect(Numeral(2).isDefinite, true);
+      expect(Numeral(2).containsVariable(a), false);
       expect(Numeral(2).toString(), 'SS0');
       expect(Term('SS0').toString(), 'SS0');
       expect(Term('SSS0').toString(), 'SSS0');
@@ -116,6 +119,8 @@ main() {
           TypeMatcher<Variable>());
       expect((Successor.apply(1, a) as Successor).successorCount, 1);
       expect(Successor.apply(1, a).isDefinite, false);
+      expect(Successor.apply(1, a).containsVariable(a), true);
+      expect(Successor.apply(1, a).containsVariable(b), false);
       expect(Successor.apply(1, a).toString(), 'Sa');
       expect(Successor.apply(2, a).toString(), 'SSa');
       expect(Term('Sa').toString(), 'Sa');
@@ -130,6 +135,10 @@ main() {
       expect(Plus(zero, b).isDefinite, false);
       expect(Plus(a, one).isDefinite, false);
       expect(Plus(zero, one).isDefinite, true);
+      expect(Plus(a, a).containsVariable(a), true);
+      expect(Plus(a, b).containsVariable(a), true);
+      expect(Plus(b, a).containsVariable(a), true);
+      expect(Plus(b, b).containsVariable(a), false);
       expect(Term('(a+b)').toString(), '(a+b)');
     });
 
@@ -139,6 +148,10 @@ main() {
       expect(Times(zero, b).isDefinite, false);
       expect(Times(a, one).isDefinite, false);
       expect(Times(zero, one).isDefinite, true);
+      expect(Times(a, a).containsVariable(a), true);
+      expect(Times(a, b).containsVariable(a), true);
+      expect(Times(b, a).containsVariable(a), true);
+      expect(Times(b, b).containsVariable(a), false);
       expect(Term('(a⋅b)').toString(), '(a⋅b)');
       expect(Term('(a*b)').toString(), '(a⋅b)');
       expect(Term('(S0⋅(SS0+c))').toString(), '(S0⋅(SS0+c))');
@@ -156,10 +169,23 @@ main() {
 
     test('equation', () {
       expect(Equation(a, b).toString(), 'a=b');
+      expect(Equation(a, a).containsFreeVariable(a), true);
+      expect(Equation(a, b).containsFreeVariable(a), true);
+      expect(Equation(b, a).containsFreeVariable(a), true);
+      expect(Equation(b, b).containsFreeVariable(a), false);
       expect(Formula('a=b').toString(), 'a=b');
       expect(Formula('S0=0').toString(), 'S0=0');
       expect(Formula('(SS0+SS0)=SSSS0').toString(), '(SS0+SS0)=SSSS0');
       expect(Formula('S(b+c)=((c⋅d)⋅e)').toString(), 'S(b+c)=((c⋅d)⋅e)');
+    });
+
+    test('free variables', () {
+      var equation = Formula('S(b+c)=((c*d)*e)') as Equation;
+      expect(equation.containsFreeVariable(a), false);
+      expect(equation.containsFreeVariable(b), true);
+      expect(equation.containsFreeVariable(c), true);
+      expect(equation.containsFreeVariable(d), true);
+      expect(equation.containsFreeVariable(e), true);
     });
   });
 }
@@ -167,6 +193,12 @@ main() {
 final a = Variable('a');
 
 final b = Variable('b');
+
+final c = Variable('c');
+
+final d = Variable('d');
+
+final e = Variable('e');
 
 final one = Numeral(1);
 
