@@ -251,6 +251,12 @@ main() {
       expect(Formula('∃a:a=b').containsFreeVariable(b), true);
       expect(Formula('∃a:a=b').containsFreeVariable(c), false);
     });
+
+    test('quantifications', () {
+      expect(Formula('∀b:<b=b∨~∃c:c=b>').toString(), '∀b:<b=b∨~∃c:c=b>');
+      expect(Formula('∀c:~∃b:(b+b)=c').toString(), '∀c:~∃b:(b+b)=c');
+      expect(Formula('∃c:Sc=d').toString(), '∃c:Sc=d');
+    });
   });
 }
 
