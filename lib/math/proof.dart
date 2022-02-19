@@ -11,6 +11,15 @@ class Proof {
 
   Formula join(Formula x, Formula y) => _rule([x, y], () => And(x, y));
 
+  Formula popFantasy() {
+    var state = _state;
+    if (state is! _FantasyState) throw MathError();
+    _state = state.parent;
+    var result = Implies(state.premise, state.conclusion);
+    _state.addTheorem(result);
+    return result;
+  }
+
   void pushFantasy(Formula premise) {
     _state = _FantasyState(_state, premise);
   }
@@ -39,13 +48,20 @@ class Proof {
 class _FantasyState extends _ProofState {
   final _ProofState parent;
 
+  final Formula premise;
+
+  Formula conclusion;
+
   final Set<Formula> localTheorems;
 
-  _FantasyState(this.parent, Formula premise) : localTheorems = {premise};
+  _FantasyState(this.parent, this.premise)
+      : conclusion = premise,
+        localTheorems = {premise};
 
   @override
   void addTheorem(Formula x) {
     localTheorems.add(x);
+    conclusion = x;
   }
 
   @override

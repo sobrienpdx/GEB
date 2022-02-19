@@ -99,6 +99,21 @@ main() {
               proof.removeDoubleTilde(FormulaContext(notNotPandQ).leftOperand),
           Formula('<P&Q>'));
     });
+
+    test('fantasy', () {
+      checkValidStep([], (proof) {
+        proof.pushFantasy(P);
+        return proof.popFantasy();
+      }, Formula('<P->P>'));
+      // ignore: non_constant_identifier_names
+      var PandQ = And(P, Q);
+      checkValidStep([], (proof) {
+        proof.pushFantasy(PandQ);
+        proof.separate(PandQ, Side.left);
+        return proof.popFantasy();
+      }, Formula('<<P&Q>->P>'));
+      checkInvalidStep([], (proof) => proof.popFantasy());
+    });
   });
 }
 
