@@ -107,10 +107,17 @@ main() {
       expect(Term('Sa').toString(), 'Sa');
       expect(Term('SSa').toString(), 'SSa');
     });
+
+    test('plus', () {
+      expect(Plus(a, b).toString(), '(a+b)');
+      expect(Term('(a+b)').toString(), '(a+b)');
+    });
   });
 }
 
 final a = Variable('a');
+
+final b = Variable('b');
 
 final P = PropositionalAtom('P');
 

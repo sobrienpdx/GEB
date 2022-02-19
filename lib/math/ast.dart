@@ -118,6 +118,22 @@ class Or extends Formula {
   }
 }
 
+class Plus extends Term {
+  final Term leftOperand;
+  final Term rightOperand;
+
+  Plus(this.leftOperand, this.rightOperand) : super._();
+
+  @override
+  void _writeTo(StringBuffer buffer) {
+    buffer.write('(');
+    leftOperand._writeTo(buffer);
+    buffer.write('+');
+    rightOperand._writeTo(buffer);
+    buffer.write(')');
+  }
+}
+
 class PropositionalAtom extends Atom {
   static const _allowedFirstCharacters = ['P', 'Q', 'R'];
 
@@ -145,6 +161,16 @@ class Successor extends Term {
 
   final Term operand;
 
+  Successor._(this.successorCount, this.operand) : super._();
+
+  @override
+  void _writeTo(StringBuffer buffer) {
+    for (int i = 0; i < successorCount; i++) {
+      buffer.write('S');
+    }
+    operand._writeTo(buffer);
+  }
+
   static Term apply(int successorCount, Term operand) {
     if (successorCount == 0) {
       return operand;
@@ -156,16 +182,6 @@ class Successor extends Term {
     } else {
       return Successor._(successorCount, operand);
     }
-  }
-
-  Successor._(this.successorCount, this.operand) : super._();
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    for (int i = 0; i < successorCount; i++) {
-      buffer.write('S');
-    }
-    operand._writeTo(buffer);
   }
 }
 

@@ -76,6 +76,25 @@ class _Parser implements Parser {
     return combiner(left, right);
   }
 
+  Term parseBinaryTerm() {
+    assert(peek() == '(');
+    next();
+    var left = parseTerm();
+    Term Function(Term, Term) combiner;
+    switch (peek()) {
+      case '+':
+        next();
+        combiner = (left, right) => Plus(left, right);
+        break;
+      default:
+        throw ParseError();
+    }
+    var right = parseTerm();
+    if (peek() != ')') throw ParseError();
+    next();
+    return combiner(left, right);
+  }
+
   @override
   Formula parseFormula() {
     switch (peek()) {
@@ -113,6 +132,8 @@ class _Parser implements Parser {
       case 'd':
       case 'e':
         return Successor.apply(successorCount, parseVariable());
+      case '(':
+        return parseBinaryTerm();
       default:
         throw ParseError();
     }
