@@ -5,6 +5,8 @@ import 'package:test/test.dart';
 main() {
   group('propositional calculus', () {
     test('atom', () {
+      expect(() => PropositionalAtom('O'), throwsA(TypeMatcher<MathError>()));
+      expect(() => PropositionalAtom('S'), throwsA(TypeMatcher<MathError>()));
       expect(P.toString(), 'P');
       expect(Formula('P').toString(), 'P');
       expect(PropositionalAtom('P′').toString(), 'P′');
@@ -57,6 +59,9 @@ main() {
 
   group('TNT', () {
     test('numeral', () {
+      expect(() => NonzeroNumeral(0), throwsA(TypeMatcher<MathError>()));
+      expect(() => NonzeroNumeral(-1), throwsA(TypeMatcher<MathError>()));
+      expect(() => Numeral(-1), throwsA(TypeMatcher<MathError>()));
       expect(Numeral(0), TypeMatcher<Zero>());
       expect(Numeral(0).value, 0);
       expect(Numeral(0).isDefinite, true);
@@ -85,6 +90,7 @@ main() {
     });
 
     test('variable', () {
+      expect(() => Variable('f'), throwsA(TypeMatcher<MathError>()));
       expect(a.toString(), 'a');
       expect(a.isDefinite, false);
       expect(Term('a').toString(), 'a');

@@ -62,6 +62,8 @@ class Implies extends Formula {
   }
 }
 
+class MathError {}
+
 abstract class Node {
   const Node();
 
@@ -77,9 +79,9 @@ abstract class Node {
 class NonzeroNumeral extends Numeral implements Successor {
   final int value;
 
-  NonzeroNumeral(this.value)
-      : assert(value > 0),
-        super._();
+  NonzeroNumeral(this.value) : super._() {
+    if (value <= 0) throw MathError();
+  }
 
   @override
   Term get operand => Numeral(0);
@@ -102,7 +104,7 @@ class Not extends Formula {
 
 abstract class Numeral extends Term {
   factory Numeral(int value) {
-    assert(value >= 0);
+    if (value < 0) throw MathError();
     if (value == 0) return Zero();
     return NonzeroNumeral(value);
   }
@@ -170,7 +172,9 @@ class PropositionalAtom extends Atom {
 
   final String name;
 
-  PropositionalAtom(this.name) : assert(_isValidName(name));
+  PropositionalAtom(this.name) {
+    if (!_isValidName(name)) throw MathError();
+  }
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -264,9 +268,9 @@ class Variable extends Term {
 
   final String name;
 
-  Variable(this.name)
-      : assert(_isValidName(name)),
-        super._();
+  Variable(this.name) : super._() {
+    if (!_isValidName(name)) throw MathError();
+  }
 
   @override
   bool get isDefinite => false;
