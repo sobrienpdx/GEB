@@ -18,3 +18,5 @@ abstract class TermVisitor<T> {
   T visitVariable(Variable node);
   T visitZero(Zero node);
 }
+
+abstract class Visitor<T> implements FormulaVisitor<T>, TermVisitor<T> {}

@@ -1,5 +1,6 @@
 import 'package:geb/math/free_variables.dart';
 import 'package:geb/math/parse.dart';
+import 'package:geb/math/pretty_print.dart';
 
 import 'symbols.dart';
 import 'visitor.dart';
@@ -12,15 +13,6 @@ class And extends Formula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitAnd(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write('<');
-    leftOperand._writeTo(buffer);
-    buffer.write(and);
-    rightOperand._writeTo(buffer);
-    buffer.write('>');
-  }
 }
 
 abstract class Atom extends Formula {
@@ -35,13 +27,6 @@ class Equation extends TNTAtom {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitEquation(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    leftSide._writeTo(buffer);
-    buffer.write('=');
-    rightSide._writeTo(buffer);
-  }
 }
 
 class Forall extends Formula {
@@ -55,14 +40,6 @@ class Forall extends Formula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitForall(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write(forall);
-    buffer.write(variable);
-    buffer.write(':');
-    buffer.write(operand);
-  }
 }
 
 abstract class Formula extends Node {
@@ -83,15 +60,6 @@ class Implies extends Formula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitImplies(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write('<');
-    leftOperand._writeTo(buffer);
-    buffer.write(implies);
-    rightOperand._writeTo(buffer);
-    buffer.write('>');
-  }
 }
 
 class MathError {}
@@ -99,13 +67,13 @@ class MathError {}
 abstract class Node {
   const Node();
 
-  String toString() {
-    var buffer = StringBuffer();
-    _writeTo(buffer);
-    return buffer.toString();
-  }
+  T accept<T>(Visitor<T> visitor);
 
-  void _writeTo(StringBuffer buffer);
+  String toString() {
+    var visitor = PrettyPrinter();
+    accept(visitor);
+    return visitor.buffer.toString();
+  }
 }
 
 class NonzeroNumeral extends Numeral implements Successor {
@@ -132,12 +100,6 @@ class Not extends Formula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitNot(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write('~');
-    operand._writeTo(buffer);
-  }
 }
 
 abstract class Numeral extends Term {
@@ -153,14 +115,6 @@ abstract class Numeral extends Term {
   bool get isDefinite => true;
 
   int get value;
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    for (int i = 0; i < value; i++) {
-      buffer.write('S');
-    }
-    buffer.write('0');
-  }
 }
 
 class Or extends Formula {
@@ -171,15 +125,6 @@ class Or extends Formula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitOr(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write('<');
-    leftOperand._writeTo(buffer);
-    buffer.write(or);
-    rightOperand._writeTo(buffer);
-    buffer.write('>');
-  }
 }
 
 class Plus extends Term {
@@ -193,15 +138,6 @@ class Plus extends Term {
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitPlus(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write('(');
-    leftOperand._writeTo(buffer);
-    buffer.write('+');
-    rightOperand._writeTo(buffer);
-    buffer.write(')');
-  }
 }
 
 class PropositionalAtom extends Atom {
@@ -216,11 +152,6 @@ class PropositionalAtom extends Atom {
   @override
   T accept<T>(FormulaVisitor<T> visitor) =>
       visitor.visitPropositionalAtom(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write(name);
-  }
 
   static bool _isValidName(String name) {
     if (name.isEmpty) return false;
@@ -244,14 +175,6 @@ class Successor extends Term {
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitSuccessor(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    for (int i = 0; i < successorCount; i++) {
-      buffer.write('S');
-    }
-    operand._writeTo(buffer);
-  }
 
   static Term apply(int successorCount, Term operand) {
     if (successorCount == 0) {
@@ -290,15 +213,6 @@ class Times extends Term {
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitTimes(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write('(');
-    leftOperand._writeTo(buffer);
-    buffer.write(times);
-    rightOperand._writeTo(buffer);
-    buffer.write(')');
-  }
 }
 
 abstract class TNTAtom extends Atom {}
@@ -317,11 +231,6 @@ class Variable extends Term {
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitVariable(this);
-
-  @override
-  void _writeTo(StringBuffer buffer) {
-    buffer.write(name);
-  }
 
   static bool _isValidName(String name) {
     if (name.isEmpty) return false;
