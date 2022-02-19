@@ -112,7 +112,7 @@ class _Parser implements Parser {
       case 'c':
       case 'd':
       case 'e':
-        return _applySuccessors(successorCount, parseVariable());
+        return Successor.apply(successorCount, parseVariable());
       default:
         throw ParseError();
     }
@@ -122,13 +122,6 @@ class _Parser implements Parser {
 
   String? peek({int skip = 0}) =>
       pos + skip >= input.length ? null : input[pos + skip];
-
-  Term _applySuccessors(int successorCount, Term term) {
-    for (int i = 0; i < successorCount; i++) {
-      term = throw UnimplementedError('TODO(paul)');
-    }
-    return term;
-  }
 
   String _gatherName() {
     var name = StringBuffer(next());

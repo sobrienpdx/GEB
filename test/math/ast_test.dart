@@ -57,14 +57,22 @@ main() {
 
   group('TNT', () {
     test('numeral', () {
+      expect(Numeral(0), TypeMatcher<Zero>());
+      expect(Numeral(0).value, 0);
       expect(Numeral(0).toString(), '0');
-      expect(Numeral(1).toString(), 'S0');
-      expect(Numeral(2).toString(), 'SS0');
-      expect(Numeral(3).toString(), 'SSS0');
       expect(Term('0').toString(), '0');
+      expect(Numeral(1), TypeMatcher<NonzeroNumeral>());
+      expect(Numeral(1).value, 1);
+      expect((Numeral(1) as Successor).operand, TypeMatcher<Zero>());
+      expect((Numeral(1) as Successor).successorCount, 1);
+      expect(Numeral(1).toString(), 'S0');
       expect(Term('S0').toString(), 'S0');
+      expect(Numeral(2), TypeMatcher<NonzeroNumeral>());
+      expect(Numeral(2).value, 2);
+      expect((Numeral(2) as Successor).operand, TypeMatcher<Zero>());
+      expect((Numeral(2) as Successor).successorCount, 2);
+      expect(Numeral(2).toString(), 'SS0');
       expect(Term('SS0').toString(), 'SS0');
-      expect(Term('SSS0').toString(), 'SSS0');
     });
 
     test('variable', () {
@@ -75,6 +83,29 @@ main() {
       expect(Term("a'").toString(), 'a′');
       expect(Term('a′′').toString(), 'a′′');
       expect(Term("a''").toString(), 'a′′');
+    });
+
+    test('successor', () {
+      expect(Successor.apply(0, Zero()), TypeMatcher<Zero>());
+      expect(Successor.apply(1, Zero()), TypeMatcher<Numeral>());
+      expect((Successor.apply(1, Zero()) as Numeral).value, 1);
+      expect(Successor.apply(1, Numeral(1)), TypeMatcher<Numeral>());
+      expect((Successor.apply(1, Numeral(1)) as Numeral).value, 2);
+      expect((Successor.apply(1, Successor.apply(1, a))),
+          TypeMatcher<Successor>());
+      expect(
+          (Successor.apply(1, Successor.apply(1, a)) as Successor)
+              .successorCount,
+          2);
+      expect((Successor.apply(1, Successor.apply(1, a)) as Successor).operand,
+          TypeMatcher<Variable>());
+      expect((Successor.apply(1, a) as Successor).operand,
+          TypeMatcher<Variable>());
+      expect((Successor.apply(1, a) as Successor).successorCount, 1);
+      expect(Successor.apply(1, a).toString(), 'Sa');
+      expect(Successor.apply(2, a).toString(), 'SSa');
+      expect(Term('Sa').toString(), 'Sa');
+      expect(Term('SSa').toString(), 'SSa');
     });
   });
 }

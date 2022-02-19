@@ -45,6 +45,8 @@ class Implies extends Formula {
 }
 
 abstract class Node {
+  const Node();
+
   String toString() {
     var buffer = StringBuffer();
     _writeTo(buffer);
@@ -52,6 +54,20 @@ abstract class Node {
   }
 
   void _writeTo(StringBuffer buffer);
+}
+
+class NonzeroNumeral extends Numeral implements Successor {
+  final int value;
+
+  NonzeroNumeral(this.value)
+      : assert(value > 0),
+        super._();
+
+  @override
+  Term get operand => Numeral(0);
+
+  @override
+  int get successorCount => value;
 }
 
 class Not extends Formula {
@@ -66,12 +82,16 @@ class Not extends Formula {
   }
 }
 
-class Numeral extends Term {
-  final int value;
+abstract class Numeral extends Term {
+  factory Numeral(int value) {
+    assert(value >= 0);
+    if (value == 0) return Zero();
+    return NonzeroNumeral(value);
+  }
 
-  Numeral(this.value)
-      : assert(value >= 0),
-        super._();
+  const Numeral._() : super._();
+
+  int get value;
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -120,10 +140,39 @@ class PropositionalAtom extends Atom {
   }
 }
 
+class Successor extends Term {
+  final int successorCount;
+
+  final Term operand;
+
+  static Term apply(int successorCount, Term operand) {
+    if (successorCount == 0) {
+      return operand;
+    } else if (operand is Numeral) {
+      return NonzeroNumeral(successorCount + operand.value);
+    } else if (operand is Successor) {
+      return Successor._(
+          successorCount + operand.successorCount, operand.operand);
+    } else {
+      return Successor._(successorCount, operand);
+    }
+  }
+
+  Successor._(this.successorCount, this.operand) : super._();
+
+  @override
+  void _writeTo(StringBuffer buffer) {
+    for (int i = 0; i < successorCount; i++) {
+      buffer.write('S');
+    }
+    operand._writeTo(buffer);
+  }
+}
+
 abstract class Term extends Node {
   factory Term(String input) => Parser.run(input, (p) => p.parseTerm());
 
-  Term._();
+  const Term._();
 }
 
 class Variable extends Term {
@@ -148,4 +197,13 @@ class Variable extends Term {
     }
     return true;
   }
+}
+
+class Zero extends Numeral {
+  factory Zero() => const Zero._();
+
+  const Zero._() : super._();
+
+  @override
+  int get value => 0;
 }
