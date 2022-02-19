@@ -154,6 +154,29 @@ main() {
               proof.contrapositiveForward(FormulaContext(notPimpliesQ).operand),
           Formula('~<~Q->~P>'));
     });
+
+    test('contrapositive reverse', () {
+      var notPimpliesNotQ = Formula('<~P->~Q>');
+      checkValidStep(
+          [notPimpliesNotQ],
+          (proof) =>
+              proof.contrapositiveReverse(FormulaContext(notPimpliesNotQ)),
+          Formula('<Q->P>'));
+      checkInvalidStep(
+          [],
+          (proof) =>
+              proof.contrapositiveReverse(FormulaContext(notPimpliesNotQ)));
+      var notPandNotQ = Formula('<~P&~Q>');
+      checkInvalidStep([notPandNotQ],
+          (proof) => proof.contrapositiveReverse(FormulaContext(notPandNotQ)));
+      // ignore: non_constant_identifier_names
+      var PimpliesNotQ = Formula('<P->~Q>');
+      checkInvalidStep([PimpliesNotQ],
+          (proof) => proof.contrapositiveReverse(FormulaContext(PimpliesNotQ)));
+      var notPimpliesQ = Formula('<~P->Q>');
+      checkInvalidStep([notPimpliesQ],
+          (proof) => proof.contrapositiveReverse(FormulaContext(notPimpliesQ)));
+    });
   });
 }
 

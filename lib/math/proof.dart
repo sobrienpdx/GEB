@@ -21,6 +21,19 @@ class Proof {
             Implies(Not(formula.rightOperand), Not(formula.leftOperand))));
   }
 
+  Formula contrapositiveReverse(FormulaContext context) {
+    var formula = context.formula;
+    if (formula is! Implies) throw MathError();
+    var leftOperand = formula.leftOperand;
+    if (leftOperand is! Not) throw MathError();
+    var rightOperand = formula.rightOperand;
+    if (rightOperand is! Not) throw MathError();
+    return _rule(
+        [context.top],
+        () => context
+            .substitute(Implies(rightOperand.operand, leftOperand.operand)));
+  }
+
   Formula detach(Formula x) => x is Implies
       ? _rule([x.leftOperand, x], () => x.rightOperand)
       : throw MathError();
