@@ -126,6 +126,17 @@ main() {
         return proof.carryOver(R);
       });
     });
+
+    test('detach', () {
+      // ignore: non_constant_identifier_names
+      var PimpliesQ = Formula('<P->Q>');
+      checkValidStep([P, PimpliesQ], (proof) => proof.detach(PimpliesQ), Q);
+      checkInvalidStep([P], (proof) => proof.detach(PimpliesQ));
+      checkInvalidStep([PimpliesQ], (proof) => proof.detach(PimpliesQ));
+      // ignore: non_constant_identifier_names
+      var PandQ = Formula('<P&Q>');
+      checkInvalidStep([P, PandQ], (proof) => proof.detach(PandQ));
+    });
   });
 }
 

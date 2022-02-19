@@ -12,6 +12,10 @@ class Proof {
     return x;
   }
 
+  Formula detach(Formula x) => x is Implies
+      ? _rule([x.leftOperand, x], () => x.rightOperand)
+      : throw MathError();
+
   Formula introduceDoubleTilde(FormulaContext context) =>
       _rule([context.top], () => context.substitute(Not(Not(context.formula))));
 
