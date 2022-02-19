@@ -27,6 +27,7 @@ class GEB extends StatefulWidget {
 class _GEBState extends State<GEB> {
   final _textController = TextEditingController();
   String text = "";
+  List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~", String.fromCharCode(0x2283), "⫕"];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,14 +39,15 @@ class _GEBState extends State<GEB> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+                for (String sc in specialCharacters)
                 SpecialCharacterButton(
                   onPressed: () {
                     setState(() {
-                      _textController.text = text + "p";
-                      text = text + "p";
+                      _textController.text = text + sc;
+                      text = text + sc;
                     });
                   },
-                  text: "p",
+                  text: sc,
                 ),
               ],
             ),
