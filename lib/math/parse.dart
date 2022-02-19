@@ -100,6 +100,16 @@ class _Parser implements Parser {
     return combiner(left, right);
   }
 
+  Equation parseEquation() {
+    var leftSide = parseTerm();
+    if (peek() != '=') {
+      throw ParseError();
+    }
+    next();
+    var rightSide = parseTerm();
+    return Equation(leftSide, rightSide);
+  }
+
   @override
   Formula parseFormula() {
     switch (peek()) {
@@ -112,23 +122,26 @@ class _Parser implements Parser {
         return Not(parseFormula());
       case '<':
         return parseBinaryFormula();
+      case forall:
+      case '!':
+        return parseQuantifier(
+            (variable, operand) => Forall(variable, operand));
       default:
         return parseEquation();
     }
   }
 
-  Equation parseEquation() {
-    var leftSide = parseTerm();
-    if (peek() != '=') {
-      throw ParseError();
-    }
-    next();
-    var rightSide = parseTerm();
-    return Equation(leftSide, rightSide);
-  }
-
   PropositionalAtom parsePropositionalAtom() =>
       PropositionalAtom(_gatherName());
+
+  Formula parseQuantifier(Formula Function(Variable, Formula) combiner) {
+    next();
+    var variable = parseVariable();
+    if (peek() != ':') throw ParseError();
+    next();
+    var operand = parseFormula();
+    return combiner(variable, operand);
+  }
 
   @override
   Term parseTerm() {

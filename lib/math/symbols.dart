@@ -1,5 +1,7 @@
 const String and = '∧';
 
+const String forall = '∀';
+
 const String implies = '⊃';
 
 const String or = '∨';

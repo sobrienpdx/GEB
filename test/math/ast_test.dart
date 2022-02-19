@@ -14,6 +14,7 @@ main() {
       expect(Formula("P'").toString(), 'P′');
       expect(Formula('P′′').toString(), 'P′′');
       expect(Formula("P''").toString(), 'P′′');
+      expect(Formula('P').containsFreeVariable(a), false);
     });
 
     test('not', () {
@@ -200,14 +201,43 @@ main() {
       expect(() => Formula('~∃b:(b+b)=S0'), throwsA(anything));
       expect(Formula('~<0=0⊃S0=0>').toString(), '~<0=0⊃S0=0>');
       expect(Formula('~b=S0').toString(), '~b=S0');
+      expect(Formula('~a=b').containsFreeVariable(a), true);
+      expect(Formula('~a=b').containsFreeVariable(b), true);
+      expect(Formula('~a=b').containsFreeVariable(c), false);
     });
 
     test('compounds', () {
+      expect(Formula('<a=b&a=c>').containsFreeVariable(a), true);
+      expect(Formula('<a=b&a=c>').containsFreeVariable(b), true);
+      expect(Formula('<a=b&a=c>').containsFreeVariable(c), true);
+      expect(Formula('<a=b&a=c>').containsFreeVariable(d), false);
+      expect(Formula('<a=b|a=c>').containsFreeVariable(a), true);
+      expect(Formula('<a=b|a=c>').containsFreeVariable(b), true);
+      expect(Formula('<a=b|a=c>').containsFreeVariable(c), true);
+      expect(Formula('<a=b|a=c>').containsFreeVariable(d), false);
+      expect(Formula('<a=b->a=c>').containsFreeVariable(a), true);
+      expect(Formula('<a=b->a=c>').containsFreeVariable(b), true);
+      expect(Formula('<a=b->a=c>').containsFreeVariable(c), true);
+      expect(Formula('<a=b->a=c>').containsFreeVariable(d), false);
       expect(Formula('<0=0∧~0=0>').toString(), '<0=0∧~0=0>');
       // TODO(paul): make this work
       expect(() => Formula('<b=b∨~∃c:c=b>'), throwsA(anything));
       // TODO(paul): make this work
       expect(() => Formula('<S0=0⊃∀c:~∃b:(b+b)=c>'), throwsA(anything));
+    });
+
+    test('forall', () {
+      expect(() => Forall(a, Equation(zero, zero)),
+          throwsA(TypeMatcher<MathError>()));
+      var formulaQuantifyingA = Forall(a, Equation(a, b));
+      expect(() => Forall(a, formulaQuantifyingA),
+          throwsA(TypeMatcher<MathError>()));
+      expect(Forall(a, Equation(a, b)).toString(), '∀a:a=b');
+      expect(Formula('∀a:a=b').toString(), '∀a:a=b');
+      expect(Formula('!a:a=b').toString(), '∀a:a=b');
+      expect(Formula('∀a:a=b').containsFreeVariable(a), false);
+      expect(Formula('∀a:a=b').containsFreeVariable(b), true);
+      expect(Formula('∀a:a=b').containsFreeVariable(c), false);
     });
   });
 }

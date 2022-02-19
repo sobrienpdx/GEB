@@ -9,6 +9,11 @@ class And extends Formula {
   And(this.leftOperand, this.rightOperand) : super._();
 
   @override
+  bool containsFreeVariable(Variable v) =>
+      leftOperand.containsFreeVariable(v) ||
+      rightOperand.containsFreeVariable(v);
+
+  @override
   void _writeTo(StringBuffer buffer) {
     buffer.write('<');
     leftOperand._writeTo(buffer);
@@ -40,10 +45,34 @@ class Equation extends TNTAtom {
   }
 }
 
+class Forall extends Formula {
+  final Variable variable;
+
+  final Formula operand;
+
+  Forall(this.variable, this.operand) : super._() {
+    if (!operand.containsFreeVariable(variable)) throw MathError();
+  }
+
+  @override
+  bool containsFreeVariable(Variable v) =>
+      variable.name == v.name ? false : operand.containsFreeVariable(v);
+
+  @override
+  void _writeTo(StringBuffer buffer) {
+    buffer.write(forall);
+    buffer.write(variable);
+    buffer.write(':');
+    buffer.write(operand);
+  }
+}
+
 abstract class Formula extends Node {
   factory Formula(String input) => Parser.run(input, (p) => p.parseFormula());
 
   Formula._();
+
+  bool containsFreeVariable(Variable v);
 }
 
 class Implies extends Formula {
@@ -51,6 +80,11 @@ class Implies extends Formula {
   final Formula rightOperand;
 
   Implies(this.leftOperand, this.rightOperand) : super._();
+
+  @override
+  bool containsFreeVariable(Variable v) =>
+      leftOperand.containsFreeVariable(v) ||
+      rightOperand.containsFreeVariable(v);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -96,6 +130,9 @@ class Not extends Formula {
   Not(this.operand) : super._();
 
   @override
+  bool containsFreeVariable(Variable v) => operand.containsFreeVariable(v);
+
+  @override
   void _writeTo(StringBuffer buffer) {
     buffer.write('~');
     operand._writeTo(buffer);
@@ -133,6 +170,11 @@ class Or extends Formula {
   final Formula rightOperand;
 
   Or(this.leftOperand, this.rightOperand) : super._();
+
+  @override
+  bool containsFreeVariable(Variable v) =>
+      leftOperand.containsFreeVariable(v) ||
+      rightOperand.containsFreeVariable(v);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -175,6 +217,9 @@ class PropositionalAtom extends Atom {
   PropositionalAtom(this.name) {
     if (!_isValidName(name)) throw MathError();
   }
+
+  @override
+  bool containsFreeVariable(Variable v) => false;
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -259,9 +304,7 @@ class Times extends Term {
   }
 }
 
-abstract class TNTAtom extends Atom {
-  bool containsFreeVariable(Variable v);
-}
+abstract class TNTAtom extends Atom {}
 
 class Variable extends Term {
   static const _allowedFirstCharacters = ['a', 'b', 'c', 'd', 'e'];
