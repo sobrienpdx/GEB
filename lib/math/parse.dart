@@ -46,6 +46,10 @@ class _Parser implements Parser {
       case '&':
         combiner = (left, right) => And(left, right);
         break;
+      case or:
+      case '|':
+        combiner = (left, right) => Or(left, right);
+        break;
       default:
         throw ParseError();
     }

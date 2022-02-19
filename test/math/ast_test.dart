@@ -27,6 +27,8 @@ main() {
 
     test('or', () {
       expect(Or(P, Q).toString(), '<P∨Q>');
+      expect(Formula('<P∨Q>').toString(), '<P∨Q>');
+      expect(Formula('<P|Q>').toString(), '<P∨Q>');
     });
 
     test('implies', () {
