@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:geb/widgets/drop_down_menu.dart';
 import 'package:geb/widgets/special_character_button.dart';
 
+import 'math/symbols.dart';
+
 void main() => runApp(const GEBParser());
 
 class GEBParser extends StatelessWidget {
@@ -10,6 +12,7 @@ class GEBParser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(fontFamily: 'NotoSansMath'),
       routes: {
         '/': (context) => const GEB(),
       },
@@ -27,6 +30,7 @@ class GEB extends StatefulWidget {
 class _GEBState extends State<GEB> {
   final _textController = TextEditingController();
   String text = "";
+  List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~"];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,14 +42,15 @@ class _GEBState extends State<GEB> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+                for (String sc in specialCharacters)
                 SpecialCharacterButton(
                   onPressed: () {
                     setState(() {
-                      _textController.text = text + "p";
-                      text = text + "p";
+                      _textController.text = text + sc;
+                      text = text + sc;
                     });
                   },
-                  text: "p",
+                  text: sc,
                 ),
               ],
             ),

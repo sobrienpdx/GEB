@@ -1,0 +1,10 @@
+[
+  {
+    "family": "NotoSansMath",
+    "fonts": [
+      {
+        "asset": "fonts/Noto_Sans_Math/NotoSansMath-Regular.ttf"
+      }
+    ]
+  }
+]
