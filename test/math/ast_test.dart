@@ -187,6 +187,14 @@ main() {
       expect(equation.containsFreeVariable(d), true);
       expect(equation.containsFreeVariable(e), true);
     });
+
+    test('not', () {
+      expect(Formula('~S0=0').toString(), '~S0=0');
+      // TODO(paul): make this work
+      expect(() => Formula('~∃b:(b+b)=S0'), throwsA(anything));
+      expect(Formula('~<0=0⊃S0=0>').toString(), '~<0=0⊃S0=0>');
+      expect(Formula('~b=S0').toString(), '~b=S0');
+    });
   });
 }
 
