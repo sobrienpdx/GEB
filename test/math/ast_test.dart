@@ -33,6 +33,8 @@ main() {
 
     test('implies', () {
       expect(Implies(P, Q).toString(), '<P⊃Q>');
+      expect(Formula('<P⊃Q>').toString(), '<P⊃Q>');
+      expect(Formula('<P->Q>').toString(), '<P⊃Q>');
     });
   });
 }

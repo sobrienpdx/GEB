@@ -44,16 +44,30 @@ class _Parser implements Parser {
     switch (peek()) {
       case and:
       case '&':
+        next();
         combiner = (left, right) => And(left, right);
         break;
       case or:
       case '|':
+        next();
         combiner = (left, right) => Or(left, right);
         break;
+      case implies:
+        next();
+        combiner = (left, right) => Implies(left, right);
+        break;
+      case '-':
+        if (peek(skip: 1) == '>') {
+          next();
+          next();
+          combiner = (left, right) => Implies(left, right);
+          break;
+        } else {
+          throw ParseError();
+        }
       default:
         throw ParseError();
     }
-    next();
     var right = parseFormula();
     if (peek() != '>') throw ParseError();
     next();
@@ -91,5 +105,6 @@ class _Parser implements Parser {
     return PropositionalAtom(name.toString());
   }
 
-  String? peek() => isAtEnd ? null : input[pos];
+  String? peek({int skip = 0}) =>
+      pos + skip >= input.length ? null : input[pos + skip];
 }
