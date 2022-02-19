@@ -21,6 +21,8 @@ main() {
 
     test('and', () {
       expect(And(P, Q).toString(), '<P∧Q>');
+      expect(Formula('<P∧Q>').toString(), '<P∧Q>');
+      expect(Formula('<P&Q>').toString(), '<P∧Q>');
     });
 
     test('or', () {

@@ -36,6 +36,26 @@ class _Parser implements Parser {
     return input[pos++];
   }
 
+  Formula parseBinaryFormula() {
+    assert(peek() == '<');
+    next();
+    var left = parseFormula();
+    Formula Function(Formula, Formula) combiner;
+    switch (peek()) {
+      case and:
+      case '&':
+        combiner = (left, right) => And(left, right);
+        break;
+      default:
+        throw ParseError();
+    }
+    next();
+    var right = parseFormula();
+    if (peek() != '>') throw ParseError();
+    next();
+    return combiner(left, right);
+  }
+
   @override
   Formula parseFormula() {
     switch (peek()) {
@@ -46,6 +66,8 @@ class _Parser implements Parser {
       case '~':
         next();
         return Not(parseFormula());
+      case '<':
+        return parseBinaryFormula();
       default:
         throw ParseError();
     }
