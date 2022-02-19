@@ -80,6 +80,25 @@ main() {
           (proof) => proof.introduceDoubleTilde(FormulaContext(exists).operand),
           Formula('?a:~~a=a'));
     });
+
+    test('remove double-tilde', () {
+      var notNotP = Formula('~~P');
+      checkValidStep([notNotP],
+          (proof) => proof.removeDoubleTilde(FormulaContext(notNotP)), P);
+      checkInvalidStep(
+          [], (proof) => proof.removeDoubleTilde(FormulaContext(notNotP)));
+      checkInvalidStep(
+          [P], (proof) => proof.removeDoubleTilde(FormulaContext(P)));
+      var notP = Formula('~P');
+      checkInvalidStep(
+          [notP], (proof) => proof.removeDoubleTilde(FormulaContext(notP)));
+      var notNotPandQ = Formula('<~~P&Q>');
+      checkValidStep(
+          [notNotPandQ],
+          (proof) =>
+              proof.removeDoubleTilde(FormulaContext(notNotPandQ).leftOperand),
+          Formula('<P&Q>'));
+    });
   });
 }
 

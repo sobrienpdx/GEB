@@ -15,6 +15,14 @@ class Proof {
     _state = _FantasyState(_state, premise);
   }
 
+  Formula removeDoubleTilde(FormulaContext context) {
+    var formula = context.formula;
+    if (formula is! Not) throw MathError();
+    var operand = formula.operand;
+    if (operand is! Not) throw MathError();
+    return _rule([context.top], () => context.substitute(operand.operand));
+  }
+
   Formula separate(Formula x, Side side) =>
       _rule([x], () => x is And ? x.getOperand(side) : throw MathError());
 
