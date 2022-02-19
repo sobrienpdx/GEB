@@ -5,3 +5,5 @@ const String implies = '⊃';
 const String or = '∨';
 
 const String prime = '′';
+
+const String times = '⋅';

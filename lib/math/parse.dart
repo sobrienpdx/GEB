@@ -86,6 +86,11 @@ class _Parser implements Parser {
         next();
         combiner = (left, right) => Plus(left, right);
         break;
+      case '⋅':
+      case '*':
+        next();
+        combiner = (left, right) => Times(left, right);
+        break;
       default:
         throw ParseError();
     }

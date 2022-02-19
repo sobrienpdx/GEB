@@ -112,6 +112,12 @@ main() {
       expect(Plus(a, b).toString(), '(a+b)');
       expect(Term('(a+b)').toString(), '(a+b)');
     });
+
+    test('times', () {
+      expect(Times(a, b).toString(), '(a⋅b)');
+      expect(Term('(a⋅b)').toString(), '(a⋅b)');
+      expect(Term('(a*b)').toString(), '(a⋅b)');
+    });
   });
 }
 

@@ -191,6 +191,22 @@ abstract class Term extends Node {
   const Term._();
 }
 
+class Times extends Term {
+  final Term leftOperand;
+  final Term rightOperand;
+
+  Times(this.leftOperand, this.rightOperand) : super._();
+
+  @override
+  void _writeTo(StringBuffer buffer) {
+    buffer.write('(');
+    leftOperand._writeTo(buffer);
+    buffer.write(times);
+    rightOperand._writeTo(buffer);
+    buffer.write(')');
+  }
+}
+
 class Variable extends Term {
   static const _allowedFirstCharacters = ['a', 'b', 'c', 'd', 'e'];
 
