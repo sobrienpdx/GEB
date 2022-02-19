@@ -42,7 +42,7 @@ class SpecialCharacterButton extends StatelessWidget {
               child: Text(
                 text!,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: buttonColor, fontSize: 30, fontFamily: "NotoSansMath"),
+                style: TextStyle(color: buttonColor, fontSize: 30),
               ),
             ),
           ),
