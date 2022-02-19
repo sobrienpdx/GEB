@@ -1,6 +1,8 @@
+import 'package:geb/math/free_variables.dart';
 import 'package:geb/math/parse.dart';
 
 import 'symbols.dart';
+import 'visitor.dart';
 
 class And extends Formula {
   final Formula leftOperand;
@@ -9,9 +11,7 @@ class And extends Formula {
   And(this.leftOperand, this.rightOperand) : super._();
 
   @override
-  bool containsFreeVariable(Variable v) =>
-      leftOperand.containsFreeVariable(v) ||
-      rightOperand.containsFreeVariable(v);
+  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitAnd(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -34,8 +34,7 @@ class Equation extends TNTAtom {
   Equation(this.leftSide, this.rightSide);
 
   @override
-  bool containsFreeVariable(Variable v) =>
-      leftSide.containsVariable(v) || rightSide.containsVariable(v);
+  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitEquation(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -55,8 +54,7 @@ class Forall extends Formula {
   }
 
   @override
-  bool containsFreeVariable(Variable v) =>
-      variable.name == v.name ? false : operand.containsFreeVariable(v);
+  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitForall(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -72,7 +70,9 @@ abstract class Formula extends Node {
 
   Formula._();
 
-  bool containsFreeVariable(Variable v);
+  T accept<T>(FormulaVisitor<T> visitor);
+
+  bool containsFreeVariable(Variable v) => accept(ContainsFreeVariable(v));
 }
 
 class Implies extends Formula {
@@ -82,9 +82,7 @@ class Implies extends Formula {
   Implies(this.leftOperand, this.rightOperand) : super._();
 
   @override
-  bool containsFreeVariable(Variable v) =>
-      leftOperand.containsFreeVariable(v) ||
-      rightOperand.containsFreeVariable(v);
+  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitImplies(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -122,6 +120,9 @@ class NonzeroNumeral extends Numeral implements Successor {
 
   @override
   int get successorCount => value;
+
+  @override
+  T accept<T>(TermVisitor<T> visitor) => visitor.visitNonzeroNumeral(this);
 }
 
 class Not extends Formula {
@@ -130,7 +131,7 @@ class Not extends Formula {
   Not(this.operand) : super._();
 
   @override
-  bool containsFreeVariable(Variable v) => operand.containsFreeVariable(v);
+  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitNot(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -154,9 +155,6 @@ abstract class Numeral extends Term {
   int get value;
 
   @override
-  bool containsVariable(Variable v) => false;
-
-  @override
   void _writeTo(StringBuffer buffer) {
     for (int i = 0; i < value; i++) {
       buffer.write('S');
@@ -172,9 +170,7 @@ class Or extends Formula {
   Or(this.leftOperand, this.rightOperand) : super._();
 
   @override
-  bool containsFreeVariable(Variable v) =>
-      leftOperand.containsFreeVariable(v) ||
-      rightOperand.containsFreeVariable(v);
+  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitOr(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -196,8 +192,7 @@ class Plus extends Term {
   bool get isDefinite => leftOperand.isDefinite && rightOperand.isDefinite;
 
   @override
-  bool containsVariable(Variable v) =>
-      leftOperand.containsVariable(v) || rightOperand.containsVariable(v);
+  T accept<T>(TermVisitor<T> visitor) => visitor.visitPlus(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -219,7 +214,8 @@ class PropositionalAtom extends Atom {
   }
 
   @override
-  bool containsFreeVariable(Variable v) => false;
+  T accept<T>(FormulaVisitor<T> visitor) =>
+      visitor.visitPropositionalAtom(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -247,7 +243,7 @@ class Successor extends Term {
   bool get isDefinite => operand.isDefinite;
 
   @override
-  bool containsVariable(Variable v) => operand.containsVariable(v);
+  T accept<T>(TermVisitor<T> visitor) => visitor.visitSuccessor(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -278,7 +274,9 @@ abstract class Term extends Node {
 
   bool get isDefinite;
 
-  bool containsVariable(Variable v);
+  T accept<T>(TermVisitor<T> visitor);
+
+  bool containsVariable(Variable v) => accept(ContainsFreeVariable(v));
 }
 
 class Times extends Term {
@@ -291,8 +289,7 @@ class Times extends Term {
   bool get isDefinite => leftOperand.isDefinite && rightOperand.isDefinite;
 
   @override
-  bool containsVariable(Variable v) =>
-      leftOperand.containsVariable(v) || rightOperand.containsVariable(v);
+  T accept<T>(TermVisitor<T> visitor) => visitor.visitTimes(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -319,7 +316,7 @@ class Variable extends Term {
   bool get isDefinite => false;
 
   @override
-  bool containsVariable(Variable v) => this.name == v.name;
+  T accept<T>(TermVisitor<T> visitor) => visitor.visitVariable(this);
 
   @override
   void _writeTo(StringBuffer buffer) {
@@ -343,4 +340,7 @@ class Zero extends Numeral {
 
   @override
   int get value => 0;
+
+  @override
+  T accept<T>(TermVisitor<T> visitor) => visitor.visitZero(this);
 }
