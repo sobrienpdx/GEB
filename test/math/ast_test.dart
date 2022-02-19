@@ -195,6 +195,14 @@ main() {
       expect(Formula('~<0=0⊃S0=0>').toString(), '~<0=0⊃S0=0>');
       expect(Formula('~b=S0').toString(), '~b=S0');
     });
+
+    test('compounds', () {
+      expect(Formula('<0=0∧~0=0>').toString(), '<0=0∧~0=0>');
+      // TODO(paul): make this work
+      expect(() => Formula('<b=b∨~∃c:c=b>'), throwsA(anything));
+      // TODO(paul): make this work
+      expect(() => Formula('<S0=0⊃∀c:~∃b:(b+b)=c>'), throwsA(anything));
+    });
   });
 }
 
