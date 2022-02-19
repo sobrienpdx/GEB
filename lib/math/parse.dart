@@ -93,19 +93,8 @@ class _Parser implements Parser {
     }
   }
 
-  PropositionalAtom parsePropositionalAtom() {
-    var name = StringBuffer(next());
-    while (true) {
-      var char = peek();
-      if (char == prime || char == "'") {
-        name.write(prime);
-        next();
-      } else {
-        break;
-      }
-    }
-    return PropositionalAtom(name.toString());
-  }
+  PropositionalAtom parsePropositionalAtom() =>
+      PropositionalAtom(_gatherName());
 
   @override
   Term parseTerm() {
@@ -118,11 +107,40 @@ class _Parser implements Parser {
       case '0':
         next();
         return Numeral(successorCount);
+      case 'a':
+      case 'b':
+      case 'c':
+      case 'd':
+      case 'e':
+        return _applySuccessors(successorCount, parseVariable());
       default:
         throw ParseError();
     }
   }
 
+  Variable parseVariable() => Variable(_gatherName());
+
   String? peek({int skip = 0}) =>
       pos + skip >= input.length ? null : input[pos + skip];
+
+  Term _applySuccessors(int successorCount, Term term) {
+    for (int i = 0; i < successorCount; i++) {
+      term = throw UnimplementedError('TODO(paul)');
+    }
+    return term;
+  }
+
+  String _gatherName() {
+    var name = StringBuffer(next());
+    while (true) {
+      var char = peek();
+      if (char == prime || char == "'") {
+        name.write(prime);
+        next();
+      } else {
+        break;
+      }
+    }
+    return name.toString();
+  }
 }

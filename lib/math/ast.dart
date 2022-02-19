@@ -125,3 +125,27 @@ abstract class Term extends Node {
 
   Term._();
 }
+
+class Variable extends Term {
+  static const _allowedFirstCharacters = ['a', 'b', 'c', 'd', 'e'];
+
+  final String name;
+
+  Variable(this.name)
+      : assert(_isValidName(name)),
+        super._();
+
+  @override
+  void _writeTo(StringBuffer buffer) {
+    buffer.write(name);
+  }
+
+  static bool _isValidName(String name) {
+    if (name.isEmpty) return false;
+    if (!_allowedFirstCharacters.contains(name[0])) return false;
+    for (int i = 1; i < name.length; i++) {
+      if (name[i] != prime) return false;
+    }
+    return true;
+  }
+}

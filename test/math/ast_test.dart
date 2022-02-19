@@ -66,8 +66,20 @@ main() {
       expect(Term('SS0').toString(), 'SS0');
       expect(Term('SSS0').toString(), 'SSS0');
     });
+
+    test('variable', () {
+      expect(a.toString(), 'a');
+      expect(Term('a').toString(), 'a');
+      expect(Variable('a′').toString(), 'a′');
+      expect(Term('a′').toString(), 'a′');
+      expect(Term("a'").toString(), 'a′');
+      expect(Term('a′′').toString(), 'a′′');
+      expect(Term("a''").toString(), 'a′′');
+    });
   });
 }
+
+final a = Variable('a');
 
 final P = PropositionalAtom('P');
 
