@@ -22,6 +22,10 @@ class And extends BinaryFormula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitAnd(this);
+
+  @override
+  Formula _rebuild(Formula leftOperand, Formula rightOperand) =>
+      And(leftOperand, rightOperand);
 }
 
 abstract class Atom extends Formula {
@@ -42,6 +46,17 @@ abstract class BinaryFormula extends Formula {
         return rightOperand;
     }
   }
+
+  Formula substitute(Side side, Formula replacement) {
+    switch (side) {
+      case Side.left:
+        return _rebuild(replacement, rightOperand);
+      case Side.right:
+        return _rebuild(leftOperand, replacement);
+    }
+  }
+
+  Formula _rebuild(Formula leftOperand, Formula rightOperand);
 }
 
 class Equation extends TNTAtom {
@@ -64,14 +79,8 @@ class Equation extends TNTAtom {
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitEquation(this);
 }
 
-class Exists extends Formula {
-  final Variable variable;
-
-  final Formula operand;
-
-  Exists(this.variable, this.operand) : super._() {
-    if (!operand.containsFreeVariable(variable)) throw MathError();
-  }
+class Exists extends Quantification {
+  Exists(Variable variable, Formula operand) : super(variable, operand);
 
   @override
   int get hashCode =>
@@ -83,16 +92,14 @@ class Exists extends Formula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitExists(this);
+
+  @override
+  Quantification _rebuild(Variable variable, Formula operand) =>
+      Exists(variable, operand);
 }
 
-class Forall extends Formula {
-  final Variable variable;
-
-  final Formula operand;
-
-  Forall(this.variable, this.operand) : super._() {
-    if (!operand.containsFreeVariable(variable)) throw MathError();
-  }
+class Forall extends Quantification {
+  Forall(Variable variable, Formula operand) : super(variable, operand);
 
   @override
   int get hashCode =>
@@ -104,6 +111,10 @@ class Forall extends Formula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitForall(this);
+
+  @override
+  Quantification _rebuild(Variable variable, Formula operand) =>
+      Forall(variable, operand);
 }
 
 abstract class Formula extends Node {
@@ -134,6 +145,10 @@ class Implies extends BinaryFormula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitImplies(this);
+
+  @override
+  BinaryFormula _rebuild(Formula leftOperand, Formula rightOperand) =>
+      Implies(leftOperand, rightOperand);
 }
 
 class MathError {}
@@ -174,10 +189,8 @@ class NonzeroNumeral extends Numeral implements Successor {
   T accept<T>(TermVisitor<T> visitor) => visitor.visitNonzeroNumeral(this);
 }
 
-class Not extends Formula {
-  final Formula operand;
-
-  Not(this.operand) : super._();
+class Not extends UnaryFormula {
+  Not(Formula operand) : super(operand);
 
   @override
   int get hashCode => Hash.hash2((Not).hashCode, operand.hashCode);
@@ -187,6 +200,9 @@ class Not extends Formula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitNot(this);
+
+  @override
+  Formula substituteOperand(Formula replacement) => Not(replacement);
 }
 
 abstract class Numeral extends Term {
@@ -220,6 +236,10 @@ class Or extends BinaryFormula {
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitOr(this);
+
+  @override
+  Formula _rebuild(Formula leftOperand, Formula rightOperand) =>
+      Or(leftOperand, rightOperand);
 }
 
 class Plus extends Term {
@@ -273,6 +293,20 @@ class PropositionalAtom extends Atom {
     }
     return true;
   }
+}
+
+abstract class Quantification extends UnaryFormula {
+  final Variable variable;
+
+  Quantification(this.variable, Formula operand) : super(operand) {
+    if (!operand.containsFreeVariable(variable)) throw MathError();
+  }
+
+  @override
+  Formula substituteOperand(Formula replacement) =>
+      _rebuild(variable, replacement);
+
+  Quantification _rebuild(Variable variable, Formula operand);
 }
 
 enum Side { left, right }
@@ -350,6 +384,14 @@ class Times extends Term {
 }
 
 abstract class TNTAtom extends Atom {}
+
+abstract class UnaryFormula extends Formula {
+  final Formula operand;
+
+  UnaryFormula(this.operand) : super._();
+
+  Formula substituteOperand(Formula replacement);
+}
 
 class Variable extends Term {
   static const _allowedFirstCharacters = ['a', 'b', 'c', 'd', 'e'];

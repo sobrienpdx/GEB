@@ -1,14 +1,18 @@
 import 'ast.dart';
+import 'context.dart';
 
 class Proof {
-  _Context _context = _TopLevelContext();
+  _ProofState _state = _TopLevelState();
 
-  bool isTheorem(Formula x) => _context.isTheorem(x);
+  Formula introduceDoubleTilde(FormulaContext context) =>
+      _rule([context.top], () => context.substitute(Not(Not(context.formula))));
+
+  bool isTheorem(Formula x) => _state.isTheorem(x);
 
   Formula join(Formula x, Formula y) => _rule([x, y], () => And(x, y));
 
   void pushFantasy(Formula premise) {
-    _context = _FantasyContext(_context, premise);
+    _state = _FantasyState(_state, premise);
   }
 
   Formula separate(Formula x, Side side) =>
@@ -19,23 +23,17 @@ class Proof {
       if (!isTheorem(premise)) throw MathError();
     }
     var result = createNewTheorem();
-    _context.addTheorem(result);
+    _state.addTheorem(result);
     return result;
   }
 }
 
-abstract class _Context {
-  void addTheorem(Formula x);
-
-  bool isTheorem(Formula x);
-}
-
-class _FantasyContext extends _Context {
-  final _Context parent;
+class _FantasyState extends _ProofState {
+  final _ProofState parent;
 
   final Set<Formula> localTheorems;
 
-  _FantasyContext(this.parent, Formula premise) : localTheorems = {premise};
+  _FantasyState(this.parent, Formula premise) : localTheorems = {premise};
 
   @override
   void addTheorem(Formula x) {
@@ -46,7 +44,13 @@ class _FantasyContext extends _Context {
   bool isTheorem(Formula x) => localTheorems.contains(x) || parent.isTheorem(x);
 }
 
-class _TopLevelContext extends _Context {
+abstract class _ProofState {
+  void addTheorem(Formula x);
+
+  bool isTheorem(Formula x);
+}
+
+class _TopLevelState extends _ProofState {
   final Set<Formula> theorems = {};
 
   @override
