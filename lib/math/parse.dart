@@ -43,6 +43,9 @@ class _Parser implements Parser {
       case 'Q':
       case 'R':
         return parsePropositionalAtom();
+      case '~':
+        next();
+        return Not(parseFormula());
       default:
         throw ParseError();
     }

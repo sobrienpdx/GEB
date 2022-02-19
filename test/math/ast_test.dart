@@ -15,6 +15,8 @@ main() {
 
     test('not', () {
       expect(Not(P).toString(), '~P');
+      expect(Formula('~P').toString(), '~P');
+      expect(Formula('~~P').toString(), '~~P');
     });
 
     test('and', () {
