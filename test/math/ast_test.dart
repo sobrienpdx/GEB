@@ -15,6 +15,10 @@ main() {
       expect(Formula('P′′').toString(), 'P′′');
       expect(Formula("P''").toString(), 'P′′');
       expect(Formula('P').containsFreeVariable(a), false);
+      expectEqual(Formula('P'), Formula('P'), true);
+      expectEqual(Formula('P'), Formula('Q'), false);
+      expectEqual(Formula('P'), Formula("P'"), false);
+      expectEqual(Formula('P'), Formula('0=0'), false);
     });
 
     test('not', () {
@@ -27,18 +31,30 @@ main() {
       expect(And(P, Q).toString(), '<P∧Q>');
       expect(Formula('<P∧Q>').toString(), '<P∧Q>');
       expect(Formula('<P&Q>').toString(), '<P∧Q>');
+      expectEqual(Formula('<P&Q>'), Formula('<P&Q>'), true);
+      expectEqual(Formula('<P&Q>'), Formula('<P|Q>'), false);
+      expectEqual(Formula('<P&Q>'), Formula('<R&Q>'), false);
+      expectEqual(Formula('<P&Q>'), Formula('<P&R>'), false);
     });
 
     test('or', () {
       expect(Or(P, Q).toString(), '<P∨Q>');
       expect(Formula('<P∨Q>').toString(), '<P∨Q>');
       expect(Formula('<P|Q>').toString(), '<P∨Q>');
+      expectEqual(Formula('<P|Q>'), Formula('<P|Q>'), true);
+      expectEqual(Formula('<P|Q>'), Formula('<P->Q>'), false);
+      expectEqual(Formula('<P|Q>'), Formula('<R|Q>'), false);
+      expectEqual(Formula('<P|Q>'), Formula('<P|R>'), false);
     });
 
     test('implies', () {
       expect(Implies(P, Q).toString(), '<P⊃Q>');
       expect(Formula('<P⊃Q>').toString(), '<P⊃Q>');
       expect(Formula('<P->Q>').toString(), '<P⊃Q>');
+      expectEqual(Formula('<P->Q>'), Formula('<P->Q>'), true);
+      expectEqual(Formula('<P->Q>'), Formula('<P|Q>'), false);
+      expectEqual(Formula('<P->Q>'), Formula('<R->Q>'), false);
+      expectEqual(Formula('<P->Q>'), Formula('<P->R>'), false);
     });
 
     test('complex parsing', () {
@@ -88,6 +104,17 @@ main() {
       expect(Term('SSS0').toString(), 'SSS0');
       expect(Term('SSSS0').toString(), 'SSSS0');
       expect(Term('SSSSS0').toString(), 'SSSSS0');
+      expectEqual(Numeral(0), Numeral(0), true);
+      expectEqual(Numeral(0), Numeral(1), false);
+      expectEqual(Numeral(0), Numeral(2), false);
+      expectEqual(Numeral(1), Numeral(0), false);
+      expectEqual(Numeral(1), Numeral(1), true);
+      expectEqual(Numeral(1), Numeral(2), false);
+      expectEqual(Numeral(2), Numeral(0), false);
+      expectEqual(Numeral(2), Numeral(1), false);
+      expectEqual(Numeral(2), Numeral(2), true);
+      expectEqual(Numeral(0), Term('a'), false);
+      expectEqual(Numeral(1), Term('a'), false);
     });
 
     test('variable', () {
@@ -105,6 +132,10 @@ main() {
       expect(Term('d′′′').toString(), 'd′′′');
       expect(Term('e′′′′').toString(), 'e′′′′');
       expect(Term('b').toString(), 'b');
+      expectEqual(Term('a'), Term('a'), true);
+      expectEqual(Term('a'), Term('b'), false);
+      expectEqual(Term('a'), Term("a'"), false);
+      expectEqual(Term('a'), Term('0'), false);
     });
 
     test('successor', () {
@@ -134,6 +165,10 @@ main() {
       expect(Term('SSa').toString(), 'SSa');
       expect(Term('SSa′').toString(), 'SSa′');
       expect(Term('S(Sa⋅(Sb⋅Sc))').toString(), 'S(Sa⋅(Sb⋅Sc))');
+      expectEqual(Term('Sa'), Term('Sa'), true);
+      expectEqual(Term('Sa'), Term('SSa'), false);
+      expectEqual(Term('Sa'), Term('Sb'), false);
+      expectEqual(Term('Sa'), Term('a'), false);
     });
 
     test('plus', () {
@@ -147,6 +182,10 @@ main() {
       expect(Plus(b, a).containsVariable(a), true);
       expect(Plus(b, b).containsVariable(a), false);
       expect(Term('(a+b)').toString(), '(a+b)');
+      expectEqual(Term('(a+b)'), Term('(a+b)'), true);
+      expectEqual(Term('(a+b)'), Term('(a*b)'), false);
+      expectEqual(Term('(a+b)'), Term('(c+b)'), false);
+      expectEqual(Term('(a+b)'), Term('(a+c)'), false);
     });
 
     test('times', () {
@@ -162,6 +201,10 @@ main() {
       expect(Term('(a⋅b)').toString(), '(a⋅b)');
       expect(Term('(a*b)').toString(), '(a⋅b)');
       expect(Term('(S0⋅(SS0+c))').toString(), '(S0⋅(SS0+c))');
+      expectEqual(Term('(a*b)'), Term('(a*b)'), true);
+      expectEqual(Term('(a*b)'), Term('(a+b)'), false);
+      expectEqual(Term('(a*b)'), Term('(c*b)'), false);
+      expectEqual(Term('(a*b)'), Term('(a*c)'), false);
     });
 
     test('definiteness', () {
@@ -184,6 +227,10 @@ main() {
       expect(Formula('S0=0').toString(), 'S0=0');
       expect(Formula('(SS0+SS0)=SSSS0').toString(), '(SS0+SS0)=SSSS0');
       expect(Formula('S(b+c)=((c⋅d)⋅e)').toString(), 'S(b+c)=((c⋅d)⋅e)');
+      expectEqual(Formula('a=b'), Formula('a=b'), true);
+      expectEqual(Formula('a=b'), Formula('c=b'), false);
+      expectEqual(Formula('a=b'), Formula('a=c'), false);
+      expectEqual(Formula('a=b'), Formula('P'), false);
     });
 
     test('free variables', () {
@@ -203,6 +250,9 @@ main() {
       expect(Formula('~a=b').containsFreeVariable(a), true);
       expect(Formula('~a=b').containsFreeVariable(b), true);
       expect(Formula('~a=b').containsFreeVariable(c), false);
+      expectEqual(Formula('~P'), Formula('~P'), true);
+      expectEqual(Formula('~P'), Formula('~Q'), false);
+      expectEqual(Formula('~P'), Formula('P'), false);
     });
 
     test('compounds', () {
@@ -236,6 +286,10 @@ main() {
       expect(Formula('∀a:a=b').containsFreeVariable(a), false);
       expect(Formula('∀a:a=b').containsFreeVariable(b), true);
       expect(Formula('∀a:a=b').containsFreeVariable(c), false);
+      expectEqual(Formula('!a:a=b'), Formula('!a:a=b'), true);
+      expectEqual(Formula('!a:a=b'), Formula('?a:a=b'), false);
+      expectEqual(Formula('!a:a=b'), Formula('!b:a=b'), false);
+      expectEqual(Formula('!a:a=b'), Formula('!a:b=a'), false);
     });
 
     test('exists', () {
@@ -250,6 +304,10 @@ main() {
       expect(Formula('∃a:a=b').containsFreeVariable(a), false);
       expect(Formula('∃a:a=b').containsFreeVariable(b), true);
       expect(Formula('∃a:a=b').containsFreeVariable(c), false);
+      expectEqual(Formula('?a:a=b'), Formula('?a:a=b'), true);
+      expectEqual(Formula('?a:a=b'), Formula('!a:a=b'), false);
+      expectEqual(Formula('?a:a=b'), Formula('?b:a=b'), false);
+      expectEqual(Formula('?a:a=b'), Formula('?a:b=a'), false);
     });
 
     test('quantifications', () {
@@ -286,3 +344,10 @@ final P = PropositionalAtom('P');
 final Q = PropositionalAtom('Q');
 
 final zero = Zero();
+
+void expectEqual(Object o1, Object o2, bool expectedResult) {
+  expect(o1 == o2, expectedResult);
+  if (expectedResult) {
+    expect(o1.hashCode, o2.hashCode);
+  }
+}

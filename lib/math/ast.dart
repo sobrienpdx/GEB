@@ -2,6 +2,7 @@ import 'package:geb/math/free_variables.dart';
 import 'package:geb/math/parse.dart';
 import 'package:geb/math/pretty_print.dart';
 
+import 'hash.dart';
 import 'symbols.dart';
 import 'visitor.dart';
 
@@ -10,6 +11,16 @@ class And extends Formula {
   final Formula rightOperand;
 
   And(this.leftOperand, this.rightOperand) : super._();
+
+  @override
+  int get hashCode =>
+      Hash.hash3((And).hashCode, leftOperand.hashCode, rightOperand.hashCode);
+
+  @override
+  bool operator ==(Object other) =>
+      other is And &&
+      leftOperand == other.leftOperand &&
+      rightOperand == other.rightOperand;
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitAnd(this);
@@ -26,6 +37,16 @@ class Equation extends TNTAtom {
   Equation(this.leftSide, this.rightSide);
 
   @override
+  int get hashCode =>
+      Hash.hash3((Equation).hashCode, leftSide.hashCode, rightSide.hashCode);
+
+  @override
+  bool operator ==(Object other) =>
+      other is Equation &&
+      leftSide == other.leftSide &&
+      rightSide == other.rightSide;
+
+  @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitEquation(this);
 }
 
@@ -39,6 +60,14 @@ class Exists extends Formula {
   }
 
   @override
+  int get hashCode =>
+      Hash.hash3((Exists).hashCode, variable.hashCode, operand.hashCode);
+
+  @override
+  bool operator ==(Object other) =>
+      other is Exists && variable == other.variable && operand == other.operand;
+
+  @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitExists(this);
 }
 
@@ -50,6 +79,14 @@ class Forall extends Formula {
   Forall(this.variable, this.operand) : super._() {
     if (!operand.containsFreeVariable(variable)) throw MathError();
   }
+
+  @override
+  int get hashCode =>
+      Hash.hash3((Forall).hashCode, variable.hashCode, operand.hashCode);
+
+  @override
+  bool operator ==(Object other) =>
+      other is Forall && variable == other.variable && operand == other.operand;
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitForall(this);
@@ -72,6 +109,16 @@ class Implies extends Formula {
   final Formula rightOperand;
 
   Implies(this.leftOperand, this.rightOperand) : super._();
+
+  @override
+  int get hashCode => Hash.hash3(
+      (Implies).hashCode, leftOperand.hashCode, rightOperand.hashCode);
+
+  @override
+  bool operator ==(Object other) =>
+      other is Implies &&
+      leftOperand == other.leftOperand &&
+      rightOperand == other.rightOperand;
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitImplies(this);
@@ -99,10 +146,17 @@ class NonzeroNumeral extends Numeral implements Successor {
   }
 
   @override
+  int get hashCode => Hash.hash2((NonzeroNumeral).hashCode, value.hashCode);
+
+  @override
   Term get operand => Numeral(0);
 
   @override
   int get successorCount => value;
+
+  @override
+  bool operator ==(Object other) =>
+      other is NonzeroNumeral && value == other.value;
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitNonzeroNumeral(this);
@@ -112,6 +166,12 @@ class Not extends Formula {
   final Formula operand;
 
   Not(this.operand) : super._();
+
+  @override
+  int get hashCode => Hash.hash2((Not).hashCode, operand.hashCode);
+
+  @override
+  bool operator ==(Object other) => other is Not && operand == other.operand;
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitNot(this);
@@ -139,6 +199,16 @@ class Or extends Formula {
   Or(this.leftOperand, this.rightOperand) : super._();
 
   @override
+  int get hashCode =>
+      Hash.hash3((Or).hashCode, leftOperand.hashCode, rightOperand.hashCode);
+
+  @override
+  bool operator ==(Object other) =>
+      other is Or &&
+      leftOperand == other.leftOperand &&
+      rightOperand == other.rightOperand;
+
+  @override
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitOr(this);
 }
 
@@ -149,7 +219,17 @@ class Plus extends Term {
   Plus(this.leftOperand, this.rightOperand) : super._();
 
   @override
+  int get hashCode =>
+      Hash.hash3((Plus).hashCode, leftOperand.hashCode, rightOperand.hashCode);
+
+  @override
   bool get isDefinite => leftOperand.isDefinite && rightOperand.isDefinite;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Plus &&
+      leftOperand == other.leftOperand &&
+      rightOperand == other.rightOperand;
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitPlus(this);
@@ -163,6 +243,13 @@ class PropositionalAtom extends Atom {
   PropositionalAtom(this.name) {
     if (!_isValidName(name)) throw MathError();
   }
+
+  @override
+  int get hashCode => Hash.hash2((PropositionalAtom).hashCode, name.hashCode);
+
+  @override
+  bool operator ==(Object other) =>
+      other is PropositionalAtom && name == other.name;
 
   @override
   T accept<T>(FormulaVisitor<T> visitor) =>
@@ -186,7 +273,17 @@ class Successor extends Term {
   Successor._(this.successorCount, this.operand) : super._();
 
   @override
+  int get hashCode => Hash.hash3(
+      (Successor).hashCode, successorCount.hashCode, operand.hashCode);
+
+  @override
   bool get isDefinite => operand.isDefinite;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Successor &&
+      successorCount == other.successorCount &&
+      operand == other.operand;
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitSuccessor(this);
@@ -224,7 +321,17 @@ class Times extends Term {
   Times(this.leftOperand, this.rightOperand) : super._();
 
   @override
+  int get hashCode =>
+      Hash.hash3((Times).hashCode, leftOperand.hashCode, rightOperand.hashCode);
+
+  @override
   bool get isDefinite => leftOperand.isDefinite && rightOperand.isDefinite;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Times &&
+      leftOperand == other.leftOperand &&
+      rightOperand == other.rightOperand;
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitTimes(this);
@@ -242,7 +349,13 @@ class Variable extends Term {
   }
 
   @override
+  int get hashCode => Hash.hash2((Variable).hashCode, name.hashCode);
+
+  @override
   bool get isDefinite => false;
+
+  @override
+  bool operator ==(Object other) => other is Variable && name == other.name;
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitVariable(this);
@@ -263,7 +376,13 @@ class Zero extends Numeral {
   const Zero._() : super._();
 
   @override
+  int get hashCode => (Zero).hashCode;
+
+  @override
   int get value => 0;
+
+  @override
+  bool operator ==(Object other) => other is Zero;
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitZero(this);
