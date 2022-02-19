@@ -3,6 +3,7 @@ import 'ast.dart';
 abstract class FormulaVisitor<T> {
   T visitAnd(And node);
   T visitEquation(Equation node);
+  T visitExists(Exists node);
   T visitForall(Forall node);
   T visitImplies(Implies node);
   T visitNot(Not node);

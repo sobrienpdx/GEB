@@ -23,6 +23,14 @@ class PrettyPrinter implements Visitor<void> {
   }
 
   @override
+  void visitExists(Exists node) {
+    buffer.write(exists);
+    node.variable.accept(this);
+    buffer.write(':');
+    node.operand.accept(this);
+  }
+
+  @override
   void visitForall(Forall node) {
     buffer.write(forall);
     node.variable.accept(this);

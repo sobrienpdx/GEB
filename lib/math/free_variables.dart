@@ -16,6 +16,10 @@ class ContainsFreeVariable implements FormulaVisitor<bool>, TermVisitor<bool> {
       node.leftSide.accept(this) || node.rightSide.accept(this);
 
   @override
+  bool visitExists(Exists node) =>
+      node.variable.name == variable.name ? false : node.operand.accept(this);
+
+  @override
   bool visitForall(Forall node) =>
       node.variable.name == variable.name ? false : node.operand.accept(this);
 

@@ -126,6 +126,10 @@ class _Parser implements Parser {
       case '!':
         return parseQuantifier(
             (variable, operand) => Forall(variable, operand));
+      case exists:
+      case '?':
+        return parseQuantifier(
+            (variable, operand) => Exists(variable, operand));
       default:
         return parseEquation();
     }

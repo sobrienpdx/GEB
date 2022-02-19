@@ -29,6 +29,19 @@ class Equation extends TNTAtom {
   T accept<T>(FormulaVisitor<T> visitor) => visitor.visitEquation(this);
 }
 
+class Exists extends Formula {
+  final Variable variable;
+
+  final Formula operand;
+
+  Exists(this.variable, this.operand) : super._() {
+    if (!operand.containsFreeVariable(variable)) throw MathError();
+  }
+
+  @override
+  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitExists(this);
+}
+
 class Forall extends Formula {
   final Variable variable;
 
