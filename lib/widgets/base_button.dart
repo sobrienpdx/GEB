@@ -1,14 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class SpecialCharacterButton extends StatelessWidget {
+class BaseButton extends StatelessWidget {
   final void Function()? onPressed;
   final String? text;
+  final double width;
+  final double height;
+  final double textSize;
 
-  const SpecialCharacterButton({
+
+  const BaseButton({
     Key? key,
     this.onPressed,
     this.text,
+    this.height = 50,
+    this.width = 50,
+    this.textSize = 30
   }) : super(key: key);
 
   @override
@@ -18,7 +25,7 @@ class SpecialCharacterButton extends StatelessWidget {
     var buttonColor = Colors.white;
 
     return SizedBox(
-      width: 50,
+      width: width,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ButtonStyle(
@@ -26,8 +33,8 @@ class SpecialCharacterButton extends StatelessWidget {
             shape: MaterialStateProperty.all(RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15.0)))),
         child: Container(
-          width: 50,
-          height: 50,
+          width: width,
+          height: height,
           child: Ink(
             decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -37,12 +44,12 @@ class SpecialCharacterButton extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(15.0)),
             child: Container(
-              constraints: BoxConstraints(maxWidth: 55.0, minHeight: 55.0),
+              constraints: BoxConstraints(maxWidth: width, minHeight: height),
               alignment: Alignment.center,
               child: Text(
                 text!,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: buttonColor, fontSize: 30),
+                style: TextStyle(color: buttonColor, fontSize: textSize),
               ),
             ),
           ),
