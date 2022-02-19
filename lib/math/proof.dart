@@ -1,82 +1,92 @@
 import 'ast.dart';
 import 'context.dart';
 
+class InvalidProofStep extends ProofStep {
+  @override
+  bool get isValid => false;
+
+  @override
+  Never call() => throw MathError();
+}
+
 class Proof {
   _ProofState _state = _ProofState();
 
-  Formula carryOver(Formula x) {
+  ProofStep carryOver(Formula x) {
     var state = _state;
-    if (state is! _FantasyState) throw MathError();
-    if (!state.parent.isTheorem(x)) throw MathError();
-    _state.addTheorem(x);
-    return x;
+    if (state is! _FantasyState) return InvalidProofStep();
+    if (!state.parent.isTheorem(x)) return InvalidProofStep();
+    return _OrdinaryProofStep(this, x);
   }
 
-  Formula contrapositiveForward(FormulaContext context) {
+  ProofStep contrapositiveForward(FormulaContext context) {
     var formula = context.formula;
-    if (formula is! Implies) throw MathError();
+    if (formula is! Implies) return InvalidProofStep();
     return _rule(
         [context.top],
-        () => context.substitute(
+        context.substitute(
             Implies(Not(formula.rightOperand), Not(formula.leftOperand))));
   }
 
-  Formula contrapositiveReverse(FormulaContext context) {
+  ProofStep contrapositiveReverse(FormulaContext context) {
     var formula = context.formula;
-    if (formula is! Implies) throw MathError();
+    if (formula is! Implies) return InvalidProofStep();
     var leftOperand = formula.leftOperand;
-    if (leftOperand is! Not) throw MathError();
+    if (leftOperand is! Not) return InvalidProofStep();
     var rightOperand = formula.rightOperand;
-    if (rightOperand is! Not) throw MathError();
-    return _rule(
-        [context.top],
-        () => context
-            .substitute(Implies(rightOperand.operand, leftOperand.operand)));
+    if (rightOperand is! Not) return InvalidProofStep();
+    return _rule([context.top],
+        context.substitute(Implies(rightOperand.operand, leftOperand.operand)));
   }
 
-  Formula detach(Formula x) => x is Implies
-      ? _rule([x.leftOperand, x], () => x.rightOperand)
-      : throw MathError();
+  ProofStep detach(Formula x) => x is Implies
+      ? _rule([x.leftOperand, x], x.rightOperand)
+      : InvalidProofStep();
 
-  Formula introduceDoubleTilde(FormulaContext context) =>
-      _rule([context.top], () => context.substitute(Not(Not(context.formula))));
+  ProofStep introduceDoubleTilde(FormulaContext context) =>
+      _rule([context.top], context.substitute(Not(Not(context.formula))));
 
   bool isTheorem(Formula x) => _state.isTheorem(x);
 
-  Formula join(Formula x, Formula y) => _rule([x, y], () => And(x, y));
+  ProofStep join(Formula x, Formula y) => _rule([x, y], And(x, y));
 
-  Formula popFantasy() {
+  ProofStep popFantasy() {
     var state = _state;
-    if (state is! _FantasyState) throw MathError();
-    _state = state.parent;
-    var result = Implies(state.premise, state.conclusion);
-    _state.addTheorem(result);
-    return result;
+    if (state is! _FantasyState) return InvalidProofStep();
+    return _PopFantasyProofStep(this, state);
   }
 
-  void pushFantasy(Formula premise) {
-    _state = _FantasyState(_state, premise);
-  }
+  ProofStep pushFantasy(Formula premise) =>
+      _PushFantasyProofStep(this, premise);
 
-  Formula removeDoubleTilde(FormulaContext context) {
+  ProofStep removeDoubleTilde(FormulaContext context) {
     var formula = context.formula;
-    if (formula is! Not) throw MathError();
+    if (formula is! Not) return InvalidProofStep();
     var operand = formula.operand;
-    if (operand is! Not) throw MathError();
-    return _rule([context.top], () => context.substitute(operand.operand));
+    if (operand is! Not) return InvalidProofStep();
+    return _rule([context.top], context.substitute(operand.operand));
   }
 
-  Formula separate(Formula x, Side side) =>
-      _rule([x], () => x is And ? x.getOperand(side) : throw MathError());
+  ProofStep separate(Formula x, Side side) =>
+      x is And ? _rule([x], x.getOperand(side)) : InvalidProofStep();
 
-  Formula _rule(List<Formula> premises, Formula createNewTheorem()) {
+  ProofStep _rule(List<Formula> premises, Formula theorem) {
     for (var premise in premises) {
-      if (!isTheorem(premise)) throw MathError();
+      if (!isTheorem(premise)) return InvalidProofStep();
     }
-    var result = createNewTheorem();
-    _state.addTheorem(result);
-    return result;
+    return _OrdinaryProofStep(this, theorem);
   }
+}
+
+abstract class ProofStep {
+  bool get isValid;
+
+  Formula call();
+}
+
+abstract class ValidProofStep extends ProofStep {
+  @override
+  bool get isValid => true;
 }
 
 class _FantasyState extends _ProofState {
@@ -97,6 +107,34 @@ class _FantasyState extends _ProofState {
   }
 }
 
+class _OrdinaryProofStep extends ValidProofStep {
+  final Proof _proof;
+
+  final Formula _theorem;
+
+  _OrdinaryProofStep(this._proof, this._theorem);
+
+  @override
+  Formula call() {
+    _proof._state.addTheorem(_theorem);
+    return _theorem;
+  }
+}
+
+class _PopFantasyProofStep extends _OrdinaryProofStep {
+  final _ProofState _outerState;
+
+  _PopFantasyProofStep(Proof proof, _FantasyState innerState)
+      : _outerState = innerState.parent,
+        super(proof, Implies(innerState.premise, innerState.conclusion));
+
+  @override
+  Formula call() {
+    _proof._state = _outerState;
+    return super.call();
+  }
+}
+
 class _ProofState {
   final Set<Formula> theorems = {};
 
@@ -105,4 +143,18 @@ class _ProofState {
   }
 
   bool isTheorem(Formula x) => theorems.contains(x);
+}
+
+class _PushFantasyProofStep extends ValidProofStep {
+  final Proof _proof;
+
+  final Formula _premise;
+
+  _PushFantasyProofStep(this._proof, this._premise);
+
+  @override
+  Formula call() {
+    _proof._state = _FantasyState(_proof._state, _premise);
+    return _premise;
+  }
 }

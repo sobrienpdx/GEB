@@ -102,14 +102,14 @@ main() {
 
     test('fantasy', () {
       checkValidStep([], (proof) {
-        proof.pushFantasy(P);
+        proof.pushFantasy(P)();
         return proof.popFantasy();
       }, Formula('<P->P>'));
       // ignore: non_constant_identifier_names
       var PandQ = And(P, Q);
       checkValidStep([], (proof) {
-        proof.pushFantasy(PandQ);
-        proof.separate(PandQ, Side.left);
+        proof.pushFantasy(PandQ)();
+        proof.separate(PandQ, Side.left)();
         return proof.popFantasy();
       }, Formula('<<P&Q>->P>'));
       checkInvalidStep([], (proof) => proof.popFantasy());
@@ -117,12 +117,12 @@ main() {
 
     test('carry-over', () {
       checkValidStep([P], (proof) {
-        proof.pushFantasy(Q);
+        proof.pushFantasy(Q)();
         return proof.carryOver(P);
       }, P);
       checkInvalidStep([P], (proof) => proof.carryOver(P));
       checkInvalidStep([P], (proof) {
-        proof.pushFantasy(Q);
+        proof.pushFantasy(Q)();
         return proof.carryOver(R);
       });
     });
@@ -189,24 +189,32 @@ final Q = PropositionalAtom('Q');
 final R = PropositionalAtom('R');
 
 void checkInvalidStep(
-    List<Formula> premises, Formula Function(Proof) proofStep) {
+    List<Formula> premises, ProofStep Function(Proof) action) {
   var proof = Proof();
-  for (var premise in premises) {
-    proof.pushFantasy(premise);
-  }
-  expect(() => proofStep(proof), throwsA(TypeMatcher<MathError>()));
+  var proofStep = _prepareStep(proof, premises, action);
+  expect(proofStep, TypeMatcher<InvalidProofStep>());
+  expect(proofStep.isValid, false);
+  expect(proofStep.call, throwsA(TypeMatcher<MathError>()));
 }
 
-void checkValidStep(List<Formula> premises, Formula Function(Proof) proofStep,
+void checkValidStep(List<Formula> premises, ProofStep Function(Proof) action,
     Formula expectedResult) {
   var proof = Proof();
-  for (int i = 0; i < premises.length; i++) {
-    proof.pushFantasy(premises[i]);
-    for (int j = 0; j < i; j++) {
-      proof.carryOver(premises[j]);
-    }
-  }
-  var result = proofStep(proof);
+  var proofStep = _prepareStep(proof, premises, action);
+  expect(proofStep, TypeMatcher<ValidProofStep>());
+  expect(proofStep.isValid, true);
+  var result = proofStep();
   expect(result, expectedResult);
   expect(proof.isTheorem(result), true);
+}
+
+ProofStep _prepareStep(
+    Proof proof, List<Formula> premises, ProofStep Function(Proof) action) {
+  for (int i = 0; i < premises.length; i++) {
+    proof.pushFantasy(premises[i])();
+    for (int j = 0; j < i; j++) {
+      proof.carryOver(premises[j])();
+    }
+  }
+  return action(proof);
 }
