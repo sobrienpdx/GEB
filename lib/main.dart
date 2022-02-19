@@ -54,7 +54,7 @@ class _GEBState extends State<GEB> {
               child: TextFormField(
                 onChanged: (value) {
                   setState(() {
-                   text = _textController.text;
+                    text = _textController.text;
                   });
                 },
                 controller: _textController,
@@ -73,4 +73,3 @@ class _GEBState extends State<GEB> {
     );
   }
 }
-

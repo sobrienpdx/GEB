@@ -27,8 +27,12 @@ class _DropDownMenuState extends State<DropDownMenu> {
           dropdownValue = newValue!;
         });
       },
-      items: <String>['b.) dropdown menu', 'a.) multiple choice question ' , 'c.) acrostic', 'h.) Strange Loop']
-          .map<DropdownMenuItem<String>>((String value) {
+      items: <String>[
+        'b.) dropdown menu',
+        'a.) multiple choice question ',
+        'c.) acrostic',
+        'h.) Strange Loop'
+      ].map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
           child: Text(value),

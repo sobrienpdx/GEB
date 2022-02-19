@@ -5,12 +5,11 @@ class SpecialCharacterButton extends StatelessWidget {
   final void Function()? onPressed;
   final String? text;
 
-  const SpecialCharacterButton(
-      {Key? key,
-        this.onPressed,
-        this.text,
-        })
-      : super(key: key);
+  const SpecialCharacterButton({
+    Key? key,
+    this.onPressed,
+    this.text,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +23,8 @@ class SpecialCharacterButton extends StatelessWidget {
         onPressed: onPressed,
         style: ButtonStyle(
             padding: MaterialStateProperty.all(EdgeInsets.all(0)),
-            shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)))),
+            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0)))),
         child: Container(
           width: 50,
           height: 50,
