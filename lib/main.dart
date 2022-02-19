@@ -29,7 +29,7 @@ class GEB extends StatefulWidget {
 class _GEBState extends State<GEB> {
   final _textController = TextEditingController();
   String text = "";
-  List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~", String.fromCharCode(0x2283), "⫕"];
+  List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~"];
   @override
   Widget build(BuildContext context) {
     return Scaffold(

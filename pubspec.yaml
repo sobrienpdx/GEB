@@ -39,15 +39,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-
-fonts:
   fonts:
-    - family: Chalkboard
-      fonts:
-        - asset: fonts/Chalkboard.ttf
     - family: NotoSansMath
       fonts:
-        - asset: assets/Noto_Sans_Math/NotoSansMath-Regular.ttf
+        - asset: fonts/Noto_Sans_Math/NotoSansMath-Regular.ttf
 
   assets:
     - assets/
