@@ -113,8 +113,18 @@ class _Parser implements Parser {
       case '<':
         return parseBinaryFormula();
       default:
-        throw ParseError();
+        return parseEquation();
     }
+  }
+
+  Equation parseEquation() {
+    var leftSide = parseTerm();
+    if (peek() != '=') {
+      throw ParseError();
+    }
+    next();
+    var rightSide = parseTerm();
+    return Equation(leftSide, rightSide);
   }
 
   PropositionalAtom parsePropositionalAtom() =>

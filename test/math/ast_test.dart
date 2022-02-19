@@ -142,6 +142,11 @@ main() {
       expect(Term('(b+S0)').isDefinite, false);
       expect(Term('(((S0+S0)+S0)+e)').isDefinite, false);
     });
+
+    test('equation', () {
+      expect(Equation(a, b).toString(), 'a=b');
+      expect(Formula('a=b').toString(), 'a=b');
+    });
   });
 }
 

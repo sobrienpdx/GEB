@@ -22,6 +22,20 @@ abstract class Atom extends Formula {
   Atom() : super._();
 }
 
+class Equation extends TNTAtom {
+  final Term leftSide;
+  final Term rightSide;
+
+  Equation(this.leftSide, this.rightSide);
+
+  @override
+  void _writeTo(StringBuffer buffer) {
+    leftSide._writeTo(buffer);
+    buffer.write('=');
+    rightSide._writeTo(buffer);
+  }
+}
+
 abstract class Formula extends Node {
   factory Formula(String input) => Parser.run(input, (p) => p.parseFormula());
 
@@ -220,6 +234,8 @@ class Times extends Term {
     buffer.write(')');
   }
 }
+
+abstract class TNTAtom extends Atom {}
 
 class Variable extends Term {
   static const _allowedFirstCharacters = ['a', 'b', 'c', 'd', 'e'];
