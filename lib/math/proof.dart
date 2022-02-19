@@ -89,6 +89,21 @@ class Proof {
   ProofStep separate(Formula x, Side side) =>
       x is And ? _rule([x], x.getOperand(side)) : InvalidProofStep();
 
+  ProofStep switcheroo(FormulaContext context) {
+    var formula = context.formula;
+    Formula replacement;
+    if (formula is Or) {
+      replacement = Implies(Not(formula.leftOperand), formula.rightOperand);
+    } else if (formula is Implies) {
+      var leftOperand = formula.leftOperand;
+      if (leftOperand is! Not) return InvalidProofStep();
+      replacement = Or(leftOperand.operand, formula.rightOperand);
+    } else {
+      return InvalidProofStep();
+    }
+    return _rule([context.top], context.substitute(replacement));
+  }
+
   ProofStep _rule(List<Formula> premises, Formula theorem) {
     for (var premise in premises) {
       if (!isTheorem(premise)) return InvalidProofStep();

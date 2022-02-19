@@ -213,6 +213,39 @@ main() {
       checkInvalidStep(
           [not_PandQ], (proof) => proof.deMorgan(FormulaContext(not_PandQ)));
     });
+
+    test('Switcheroo', () {
+      // ignore: non_constant_identifier_names
+      var PorQ = Formula('<P|Q>');
+      var notPimpliesQ = Formula('<~P->Q>');
+      checkValidStep([PorQ], (proof) => proof.switcheroo(FormulaContext(PorQ)),
+          notPimpliesQ);
+      checkInvalidStep([], (proof) => proof.switcheroo(FormulaContext(PorQ)));
+      // ignore: non_constant_identifier_names
+      var not_PorQ = Not(PorQ);
+      // ignore: non_constant_identifier_names
+      var not_notPimpliesQ = Not(notPimpliesQ);
+      checkValidStep(
+          [not_PorQ],
+          (proof) => proof.switcheroo(FormulaContext(not_PorQ).operand),
+          not_notPimpliesQ);
+      // ignore: non_constant_identifier_names
+      var PandQ = Formula('<P&Q>');
+      checkInvalidStep(
+          [PandQ], (proof) => proof.switcheroo(FormulaContext(PandQ)));
+      checkValidStep([notPimpliesQ],
+          (proof) => proof.switcheroo(FormulaContext(notPimpliesQ)), PorQ);
+      checkInvalidStep(
+          [], (proof) => proof.switcheroo(FormulaContext(notPimpliesQ)));
+      checkValidStep(
+          [not_notPimpliesQ],
+          (proof) => proof.switcheroo(FormulaContext(not_notPimpliesQ).operand),
+          not_PorQ);
+      // ignore: non_constant_identifier_names
+      var PimpliesQ = Formula('<P->Q>');
+      checkInvalidStep(
+          [PimpliesQ], (proof) => proof.switcheroo(FormulaContext(PimpliesQ)));
+    });
   });
 }
 
