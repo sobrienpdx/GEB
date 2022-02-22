@@ -30,7 +30,6 @@ class GEB extends StatefulWidget {
 
 class _GEBState extends State<GEB> {
   final _textController = TextEditingController();
-  String text = "";
   String validationDeclaration ="";
   Color validationColor = Colors.indigo;
   List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~"];
@@ -58,9 +57,15 @@ class _GEBState extends State<GEB> {
                   for (String sc in specialCharacters)
                   BaseButton(
                     onPressed: () {
+                      var start = _textController.selection.start;
+                      var end = _textController.selection.end;
                       setState(() {
-                        _textController.text = text + sc;
-                        text = text + sc;
+                        if (_textController.selection.start == -1) {
+                          start = _textController.text.length;
+                          end = _textController.text.length;
+                        }
+                        _textController.text = _textController.text.substring(0, start) + sc +_textController.text.substring(end);
+                        _textController.selection= TextSelection.fromPosition(TextPosition(offset: start +1));
                       });
                     },
                     text: sc,
@@ -76,11 +81,6 @@ class _GEBState extends State<GEB> {
                   SizedBox(
                     width: 500,
                     child: TextFormField(
-                      onChanged: (value) {
-                        setState(() {
-                          text = _textController.text;
-                        });
-                      },
                       controller: _textController,
                       decoration: const InputDecoration(hintText: 'Type stuff'),
                     ),
@@ -92,7 +92,7 @@ class _GEBState extends State<GEB> {
                     onPressed: () {
                       setState(() {
                         try {
-                          Formula(text);
+                          Formula(_textController.text);
                           validationDeclaration = "Good work! Your feelings and formula are valid!";
                         } catch (e) {
                           validationColor = Colors.pink;
@@ -107,7 +107,7 @@ class _GEBState extends State<GEB> {
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Text("You have typed $text"),
+              child: Text("You have typed ${_textController.text}"),
             ),
             Text("Please select the correct answer. What is this?"),
             DropDownMenu(),
