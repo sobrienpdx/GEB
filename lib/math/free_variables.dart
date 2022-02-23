@@ -19,6 +19,15 @@ class ContainsFreeVariable extends AnyVisitor {
   bool visitVariable(Variable node) => node.name == variable.name;
 }
 
+class ContainsVariable extends AnyVisitor {
+  factory ContainsVariable() => const ContainsVariable._();
+
+  const ContainsVariable._();
+
+  @override
+  bool visitVariable(Variable node) => true;
+}
+
 class IsOpen extends AnyVisitor {
   final Set<String> quantifiedVariables = {};
 

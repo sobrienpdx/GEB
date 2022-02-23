@@ -1,6 +1,8 @@
 import 'ast.dart';
 
 class AnyVisitor implements Visitor<bool> {
+  const AnyVisitor();
+
   @override
   bool visitAnd(And node) =>
       node.leftOperand.accept(this) || node.rightOperand.accept(this);
