@@ -76,45 +76,25 @@ main() {
 
   group('TNT', () {
     test('numeral', () {
-      expect(() => NonzeroNumeral(0), throwsA(TypeMatcher<MathError>()));
-      expect(() => NonzeroNumeral(-1), throwsA(TypeMatcher<MathError>()));
-      expect(() => Numeral(-1), throwsA(TypeMatcher<MathError>()));
-      expect(Numeral(0), TypeMatcher<Zero>());
-      expect(Numeral(0).value, 0);
-      expect(Numeral(0).isDefinite, true);
-      expect(Numeral(0).containsVariable(a), false);
-      expect(Numeral(0).toString(), '0');
+      expect(Zero().isDefinite, true);
+      expect(Zero().containsVariable(a), false);
+      expect(Zero().toString(), '0');
       expect(Term('0').toString(), '0');
-      expect(Numeral(1), TypeMatcher<NonzeroNumeral>());
-      expect(Numeral(1).value, 1);
-      expect((Numeral(1) as Successor).operand, TypeMatcher<Zero>());
-      expect((Numeral(1) as Successor).successorCount, 1);
-      expect(Numeral(1).isDefinite, true);
-      expect(Numeral(1).containsVariable(a), false);
-      expect(Numeral(1).toString(), 'S0');
+      expect(Successor(Zero()).operand, TypeMatcher<Zero>());
+      expect(Successor(Zero()).isDefinite, true);
+      expect(Successor(Zero()).containsVariable(a), false);
+      expect(Successor(Zero()).toString(), 'S0');
       expect(Term('S0').toString(), 'S0');
-      expect(Numeral(2), TypeMatcher<NonzeroNumeral>());
-      expect(Numeral(2).value, 2);
-      expect((Numeral(2) as Successor).operand, TypeMatcher<Zero>());
-      expect((Numeral(2) as Successor).successorCount, 2);
-      expect(Numeral(2).isDefinite, true);
-      expect(Numeral(2).containsVariable(a), false);
-      expect(Numeral(2).toString(), 'SS0');
       expect(Term('SS0').toString(), 'SS0');
       expect(Term('SSS0').toString(), 'SSS0');
       expect(Term('SSSS0').toString(), 'SSSS0');
       expect(Term('SSSSS0').toString(), 'SSSSS0');
-      expectEqual(Numeral(0), Numeral(0), true);
-      expectEqual(Numeral(0), Numeral(1), false);
-      expectEqual(Numeral(0), Numeral(2), false);
-      expectEqual(Numeral(1), Numeral(0), false);
-      expectEqual(Numeral(1), Numeral(1), true);
-      expectEqual(Numeral(1), Numeral(2), false);
-      expectEqual(Numeral(2), Numeral(0), false);
-      expectEqual(Numeral(2), Numeral(1), false);
-      expectEqual(Numeral(2), Numeral(2), true);
-      expectEqual(Numeral(0), Term('a'), false);
-      expectEqual(Numeral(1), Term('a'), false);
+      expectEqual(Zero(), Zero(), true);
+      expectEqual(Zero(), Successor(Zero()), false);
+      expectEqual(Successor(Zero()), Zero(), false);
+      expectEqual(Successor(Zero()), Successor(Zero()), true);
+      expectEqual(Zero(), Term('a'), false);
+      expectEqual(Successor(Zero()), Term('a'), false);
     });
 
     test('variable', () {
@@ -139,28 +119,14 @@ main() {
     });
 
     test('successor', () {
-      expect(Successor.apply(0, Zero()), TypeMatcher<Zero>());
-      expect(Successor.apply(1, Zero()), TypeMatcher<Numeral>());
-      expect((Successor.apply(1, Zero()) as Numeral).value, 1);
-      expect(Successor.apply(1, Zero()).isDefinite, true);
-      expect(Successor.apply(1, Numeral(1)), TypeMatcher<Numeral>());
-      expect((Successor.apply(1, Numeral(1)) as Numeral).value, 2);
-      expect((Successor.apply(1, Successor.apply(1, a))),
-          TypeMatcher<Successor>());
-      expect(
-          (Successor.apply(1, Successor.apply(1, a)) as Successor)
-              .successorCount,
-          2);
-      expect((Successor.apply(1, Successor.apply(1, a)) as Successor).operand,
-          TypeMatcher<Variable>());
-      expect((Successor.apply(1, a) as Successor).operand,
-          TypeMatcher<Variable>());
-      expect((Successor.apply(1, a) as Successor).successorCount, 1);
-      expect(Successor.apply(1, a).isDefinite, false);
-      expect(Successor.apply(1, a).containsVariable(a), true);
-      expect(Successor.apply(1, a).containsVariable(b), false);
-      expect(Successor.apply(1, a).toString(), 'Sa');
-      expect(Successor.apply(2, a).toString(), 'SSa');
+      expect(Successor(Zero()).isDefinite, true);
+      expect(Successor(Successor(a)).operand, Successor(a));
+      expect(Successor(a).operand, TypeMatcher<Variable>());
+      expect(Successor(a).isDefinite, false);
+      expect(Successor(a).containsVariable(a), true);
+      expect(Successor(a).containsVariable(b), false);
+      expect(Successor(a).toString(), 'Sa');
+      expect(Successor(Successor(a)).toString(), 'SSa');
       expect(Term('Sa').toString(), 'Sa');
       expect(Term('SSa').toString(), 'SSa');
       expect(Term('SSa′').toString(), 'SSa′');
@@ -337,7 +303,7 @@ final d = Variable('d');
 
 final e = Variable('e');
 
-final one = Numeral(1);
+final one = Successor(Zero());
 
 final P = PropositionalAtom('P');
 

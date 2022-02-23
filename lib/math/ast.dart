@@ -165,30 +165,6 @@ abstract class Node {
   }
 }
 
-class NonzeroNumeral extends Numeral implements Successor {
-  final int value;
-
-  NonzeroNumeral(this.value) : super._() {
-    if (value <= 0) throw MathError();
-  }
-
-  @override
-  int get hashCode => Hash.hash2((NonzeroNumeral).hashCode, value.hashCode);
-
-  @override
-  Term get operand => Numeral(0);
-
-  @override
-  int get successorCount => value;
-
-  @override
-  bool operator ==(Object other) =>
-      other is NonzeroNumeral && value == other.value;
-
-  @override
-  T accept<T>(TermVisitor<T> visitor) => visitor.visitNonzeroNumeral(this);
-}
-
 class Not extends UnaryFormula {
   Not(Formula operand) : super(operand);
 
@@ -203,21 +179,6 @@ class Not extends UnaryFormula {
 
   @override
   Formula substituteOperand(Formula replacement) => Not(replacement);
-}
-
-abstract class Numeral extends Term {
-  factory Numeral(int value) {
-    if (value < 0) throw MathError();
-    if (value == 0) return Zero();
-    return NonzeroNumeral(value);
-  }
-
-  const Numeral._() : super._();
-
-  @override
-  bool get isDefinite => true;
-
-  int get value;
 }
 
 class Or extends BinaryFormula {
@@ -312,40 +273,22 @@ abstract class Quantification extends UnaryFormula {
 enum Side { left, right }
 
 class Successor extends Term {
-  final int successorCount;
-
   final Term operand;
 
-  Successor._(this.successorCount, this.operand) : super._();
+  Successor(this.operand) : super._();
 
   @override
-  int get hashCode => Hash.hash3(
-      (Successor).hashCode, successorCount.hashCode, operand.hashCode);
+  int get hashCode => Hash.hash2((Successor).hashCode, operand.hashCode);
 
   @override
   bool get isDefinite => operand.isDefinite;
 
   @override
   bool operator ==(Object other) =>
-      other is Successor &&
-      successorCount == other.successorCount &&
-      operand == other.operand;
+      other is Successor && operand == other.operand;
 
   @override
   T accept<T>(TermVisitor<T> visitor) => visitor.visitSuccessor(this);
-
-  static Term apply(int successorCount, Term operand) {
-    if (successorCount == 0) {
-      return operand;
-    } else if (operand is Numeral) {
-      return NonzeroNumeral(successorCount + operand.value);
-    } else if (operand is Successor) {
-      return Successor._(
-          successorCount + operand.successorCount, operand.operand);
-    } else {
-      return Successor._(successorCount, operand);
-    }
-  }
 }
 
 abstract class Term extends Node {
@@ -424,7 +367,7 @@ class Variable extends Term {
   }
 }
 
-class Zero extends Numeral {
+class Zero extends Term {
   factory Zero() => const Zero._();
 
   const Zero._() : super._();
@@ -433,7 +376,7 @@ class Zero extends Numeral {
   int get hashCode => (Zero).hashCode;
 
   @override
-  int get value => 0;
+  bool get isDefinite => true;
 
   @override
   bool operator ==(Object other) => other is Zero;

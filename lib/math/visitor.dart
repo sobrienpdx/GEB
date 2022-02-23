@@ -20,9 +20,6 @@ class AnyVisitor implements Visitor<bool> {
       node.leftOperand.accept(this) || node.rightOperand.accept(this);
 
   @override
-  bool visitNonzeroNumeral(NonzeroNumeral node) => false;
-
-  @override
   bool visitNot(Not node) => node.operand.accept(this);
 
   @override
@@ -62,7 +59,6 @@ abstract class FormulaVisitor<T> {
 }
 
 abstract class TermVisitor<T> {
-  T visitNonzeroNumeral(NonzeroNumeral node);
   T visitPlus(Plus node);
   T visitSuccessor(Successor node);
   T visitTimes(Times node);
