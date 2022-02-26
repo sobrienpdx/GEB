@@ -11,6 +11,13 @@ main() {
     state = FullState();
   });
 
+  group('addDerivationLine:', () {
+    test("don't crash on empty fantasy", () {
+      state.addDerivationLine(PushFantasy());
+      state.addDerivationLine(PopFantasy());
+    });
+  });
+
   group('joining:', () {
     test('basic', () {
       state.addDerivationLine(PushFantasy());

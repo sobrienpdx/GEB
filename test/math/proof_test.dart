@@ -248,7 +248,7 @@ main() {
     });
 
     test("Ganto's Ax", () {
-      var proof = Proof();
+      var proof = DerivationState();
       var step2 = proof.pushFantasy(Formula('<<P->Q>&<~P->Q>>'))();
       var step3 = proof.separate(step2, Side.left)();
       expect(step3, Formula('<P->Q>'));
@@ -286,17 +286,17 @@ final Q = PropositionalAtom('Q');
 final R = PropositionalAtom('R');
 
 void checkInvalidStep(
-    List<Formula> premises, ProofStep Function(Proof) action) {
-  var proof = Proof();
+    List<Formula> premises, ProofStep Function(DerivationState) action) {
+  var proof = DerivationState();
   var proofStep = _prepareStep(proof, premises, action);
   expect(proofStep, TypeMatcher<InvalidProofStep>());
   expect(proofStep.isValid, false);
   expect(proofStep.call, throwsA(TypeMatcher<MathError>()));
 }
 
-void checkValidStep(List<Formula> premises, ProofStep Function(Proof) action,
+void checkValidStep(List<Formula> premises, ProofStep Function(DerivationState) action,
     Formula expectedResult) {
-  var proof = Proof();
+  var proof = DerivationState();
   var proofStep = _prepareStep(proof, premises, action);
   expect(proofStep, TypeMatcher<ValidProofStep>());
   expect(proofStep.isValid, true);
@@ -306,7 +306,7 @@ void checkValidStep(List<Formula> premises, ProofStep Function(Proof) action,
 }
 
 ProofStep _prepareStep(
-    Proof proof, List<Formula> premises, ProofStep Function(Proof) action) {
+    DerivationState proof, List<Formula> premises, ProofStep Function(DerivationState) action) {
   for (int i = 0; i < premises.length; i++) {
     proof.pushFantasy(premises[i])();
     for (int j = 0; j < i; j++) {

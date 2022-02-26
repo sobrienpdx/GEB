@@ -1,47 +1,33 @@
 import 'ast.dart';
 import 'context.dart';
 
-class InvalidProofStep extends ProofStep {
-  @override
-  bool get isValid => false;
+class DerivationState {
+  _ProofStackEntry _stack = _ProofStackEntry();
 
-  @override
-  Never call() => throw MathError();
-}
+  final List<DerivationLine> lines = [];
 
-class Proof {
-  _ProofState _state = _ProofState();
+  DerivationState();
 
-  Proof();
-
-  Proof.fromDerivation(List<DerivationLine> derivation) {
-    // TODO(paul): just use Derivation directly rather than having a silly
-    // ProofState object.
-    for (int i = 0; i < derivation.length; i++) {
-      var line = derivation[i];
-      if (line is Formula) {
-        _state.addTheorem(line);
-      } else if (line is PushFantasy) {
-        var premise = i + 1 < derivation.length ? derivation[i + 1] : null;
-        if (premise is Formula) {
-          pushFantasy(premise);
-          i++;
-        }
-      } else if (line is PopFantasy) {
-        var state = _state;
-        if (state is _FantasyState) {
-          _state = state.parent;
-        }
-      } else {
-        assert(
-            false, 'Unrecognized kind of derivation line: ${line.runtimeType}');
+  void addLine(DerivationLine line) {
+    if (line is Formula) {
+      _stack.addTheorem(line);
+    } else if (line is PushFantasy) {
+      _stack = _FantasyStackEntry(_stack);
+    } else if (line is PopFantasy) {
+      var stack = _stack;
+      if (stack is _FantasyStackEntry) {
+        _stack = stack.parent;
       }
+    } else {
+      assert(
+          false, 'Unrecognized kind of derivation line: ${line.runtimeType}');
     }
+    lines.add(line);
   }
 
   ProofStep carryOver(Formula x) {
-    var state = _state;
-    if (state is! _FantasyState) return InvalidProofStep();
+    var state = _stack;
+    if (state is! _FantasyStackEntry) return InvalidProofStep();
     if (!state.parent.isTheorem(x)) return InvalidProofStep();
     return _OrdinaryProofStep(this, x);
   }
@@ -93,13 +79,13 @@ class Proof {
       [context.top as Formula],
       context.substitute(Not(Not(context.derivationLine as Formula))));
 
-  bool isTheorem(Formula x) => _state.isTheorem(x);
+  bool isTheorem(Formula x) => _stack.isTheorem(x);
 
   ProofStep join(Formula x, Formula y) => _rule([x, y], And(x, y));
 
   ProofStep popFantasy() {
-    var state = _state;
-    if (state is! _FantasyState) return InvalidProofStep();
+    var state = _stack;
+    if (state is! _FantasyStackEntry) return InvalidProofStep();
     return _PopFantasyProofStep(this, state);
   }
 
@@ -140,6 +126,14 @@ class Proof {
   }
 }
 
+class InvalidProofStep extends ProofStep {
+  @override
+  bool get isValid => false;
+
+  @override
+  Never call() => throw MathError();
+}
+
 abstract class ProofStep {
   bool get isValid;
 
@@ -151,26 +145,29 @@ abstract class ValidProofStep extends ProofStep {
   bool get isValid => true;
 }
 
-class _FantasyState extends _ProofState {
-  final _ProofState parent;
+class _FantasyStackEntry extends _ProofStackEntry {
+  final _ProofStackEntry parent;
 
-  final Formula premise;
+  Formula? _premise;
 
-  Formula conclusion;
+  Formula? _conclusion;
 
-  _FantasyState(this.parent, this.premise) : conclusion = premise {
-    super.addTheorem(premise);
-  }
+  _FantasyStackEntry(this.parent);
+
+  Formula get conclusion => _conclusion!;
+
+  Formula get premise => _premise!;
 
   @override
   void addTheorem(Formula x) {
     super.addTheorem(x);
-    conclusion = x;
+    _premise ??= x;
+    _conclusion = x;
   }
 }
 
 class _OrdinaryProofStep extends ValidProofStep {
-  final Proof _proof;
+  final DerivationState _proof;
 
   final Formula _theorem;
 
@@ -178,26 +175,27 @@ class _OrdinaryProofStep extends ValidProofStep {
 
   @override
   Formula call() {
-    _proof._state.addTheorem(_theorem);
+    _proof._stack.addTheorem(_theorem);
+    _proof.lines.add(_theorem);
     return _theorem;
   }
 }
 
 class _PopFantasyProofStep extends _OrdinaryProofStep {
-  final _ProofState _outerState;
+  final _ProofStackEntry _outerState;
 
-  _PopFantasyProofStep(Proof proof, _FantasyState innerState)
+  _PopFantasyProofStep(DerivationState proof, _FantasyStackEntry innerState)
       : _outerState = innerState.parent,
         super(proof, Implies(innerState.premise, innerState.conclusion));
 
   @override
   Formula call() {
-    _proof._state = _outerState;
+    _proof._stack = _outerState;
     return super.call();
   }
 }
 
-class _ProofState {
+class _ProofStackEntry {
   final Set<Formula> theorems = {};
 
   void addTheorem(Formula x) {
@@ -208,7 +206,7 @@ class _ProofState {
 }
 
 class _PushFantasyProofStep extends ValidProofStep {
-  final Proof _proof;
+  final DerivationState _proof;
 
   final Formula _premise;
 
@@ -216,7 +214,7 @@ class _PushFantasyProofStep extends ValidProofStep {
 
   @override
   Formula call() {
-    _proof._state = _FantasyState(_proof._state, _premise);
+    _proof._stack = _FantasyStackEntry(_proof._stack)..addTheorem(_premise);
     return _premise;
   }
 }

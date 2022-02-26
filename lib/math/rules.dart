@@ -17,12 +17,12 @@ class DoubleTildeRule extends Rule {
                 "resulting string is itself well formed.");
 
   @override
-  SelectRegion activate(FullState state, List<DerivationLine> derivation) {
+  SelectRegion activate(FullState state, DerivationState derivation) {
     // TODO(paul): get rid of the old Proof object once it's not needed
     // anymore.
     return SelectRegion(this, [
-      for (var line in derivation)
-        DoubleTildePrinter.run(state, Proof.fromDerivation(derivation), line)
+      for (var line in derivation.lines)
+        DoubleTildePrinter.run(state, derivation, line)
     ]);
   }
 }
@@ -38,10 +38,11 @@ abstract class FullLineStepRule extends Rule {
       : super._(name, description);
 
   @override
-  SelectTwoLines activate(FullState state, List<DerivationLine> derivation) =>
-      SelectTwoLines(getRegions(derivation), this);
+  SelectTwoLines activate(FullState state, DerivationState derivation) =>
+      SelectTwoLines(getRegions(derivation.lines), this);
 
-  List<Formula> apply(FullLineStepRegionInfo x, FullLineStepRegionInfo y);
+  void apply(DerivationState derivation, FullLineStepRegionInfo x,
+      FullLineStepRegionInfo y);
 
   List<FullLineStepRegionInfo?> getRegions(List<DerivationLine> derivation) => [
         for (int i = 0; i < derivation.length; i++)
@@ -59,8 +60,10 @@ class JoiningRule extends FullLineStepRule {
       : super._('joining', 'If x and y are theorems, then <x∧y> is a theorem');
 
   @override
-  List<Formula> apply(FullLineStepRegionInfo x, FullLineStepRegionInfo y) =>
-      [And(x._formula, y._formula)];
+  void apply(DerivationState derivation, FullLineStepRegionInfo x,
+      FullLineStepRegionInfo y) {
+    derivation.join(x._formula, y._formula)();
+  }
 
   @override
   String preview(List<FullLineStepRegionInfo> regions) => [
@@ -95,7 +98,7 @@ abstract class Rule {
 
   const Rule._(this.name, this.description);
 
-  InteractiveState activate(FullState state, List<DerivationLine> derivation) {
+  InteractiveState activate(FullState state, DerivationState derivation) {
     throw UnimplementedError(
         '''activateRule doesn't know how to handle the rule "$this"''');
   }
