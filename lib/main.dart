@@ -146,9 +146,9 @@ class _GEBState extends State<GEB> {
                       padding: const EdgeInsets.all(8.0),
                       child: BaseButton(
                         text: rule.name,
-                        width: 120,
+                        width: 130,
                         height: 35,
-                        textSize: 20,
+                        textSize: 17,
                         onPressed: () {
                           setState(() {
                             if (messageToUser != rule.description) {
