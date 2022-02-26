@@ -48,9 +48,9 @@ class JoiningRule extends Rule<FullLineStepRegionInfo> {
 }
 
 class PartialLineStepRegionInfo {
-  final Formula _formula;
+  final Formula formula;
 
-  PartialLineStepRegionInfo(this._formula);
+  PartialLineStepRegionInfo(this.formula);
 }
 
 abstract class Rule<Info extends StepRegionInfo> {
@@ -74,7 +74,7 @@ class SeparationRule extends Rule<SubexpressionsStepRegionInfo> {
             'If <x∧y> is a theorum, then both x and y are theorems. ');
 
   List<DerivationStep> apply(PartialLineStepRegionInfo x) =>
-      [FormulaStep(x._formula)];
+      [FormulaStep(x.formula)];
 
   SubexpressionsStepRegionInfo? _getRegionsForLine(
       Derivation derivation, int line) {
@@ -98,6 +98,8 @@ class SubexpressionsStepRegionInfo extends StepRegionInfo {
   final List<PartialLineStepRegionInfo> _subexpressions;
 
   SubexpressionsStepRegionInfo(this._subexpressions);
+
+  Iterable<PartialLineStepRegionInfo> get subexpressions => _subexpressions;
 }
 
 class UnimplementedRule extends Rule<StepRegionInfo> {
