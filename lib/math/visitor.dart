@@ -36,6 +36,9 @@ class AnyVisitor implements Visitor<bool> {
   bool visitPropositionalAtom(PropositionalAtom node) => false;
 
   @override
+  bool visitPushFantasy(PushFantasy node) => false;
+
+  @override
   bool visitSuccessor(Successor node) => node.operand.accept(this);
 
   @override
@@ -60,6 +63,10 @@ abstract class FormulaVisitor<T> {
   T visitPropositionalAtom(PropositionalAtom node);
 }
 
+abstract class ProofLineVisitor<T> implements FormulaVisitor<T> {
+  T visitPushFantasy(PushFantasy node);
+}
+
 abstract class TermVisitor<T> {
   T visitPlus(Plus node);
   T visitSuccessor(Successor node);
@@ -68,4 +75,4 @@ abstract class TermVisitor<T> {
   T visitZero(Zero node);
 }
 
-abstract class Visitor<T> implements FormulaVisitor<T>, TermVisitor<T> {}
+abstract class Visitor<T> implements ProofLineVisitor<T>, TermVisitor<T> {}

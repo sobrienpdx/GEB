@@ -77,6 +77,11 @@ class PrettyPrinter implements Visitor<void> {
   }
 
   @override
+  void visitPushFantasy(PushFantasy node) {
+    buffer.write('[');
+  }
+
+  @override
   void visitSuccessor(Successor node) {
     buffer.write('S');
     node.operand.accept(this);

@@ -117,13 +117,14 @@ class Forall extends Quantification {
       Forall(variable, operand);
 }
 
-abstract class Formula extends Node {
+abstract class Formula extends ProofLine {
   factory Formula(String input) => Parser.run(input, (p) => p.parseFormula());
 
-  Formula._();
+  Formula._() : super._();
 
   bool get isOpen => accept(IsOpen());
 
+  @override
   T accept<T>(FormulaVisitor<T> visitor);
 
   bool containsFreeVariable(Variable v) => accept(ContainsFreeVariable(v));
@@ -223,6 +224,15 @@ class Plus extends Term {
   T accept<T>(TermVisitor<T> visitor) => visitor.visitPlus(this);
 }
 
+abstract class ProofLine extends Node {
+  factory ProofLine(String input) =>
+      Parser.run(input, (p) => p.parseProofLine());
+
+  ProofLine._();
+
+  T accept<T>(ProofLineVisitor<T> visitor);
+}
+
 class PropositionalAtom extends Atom {
   static const _allowedFirstCharacters = ['P', 'Q', 'R'];
 
@@ -251,6 +261,19 @@ class PropositionalAtom extends Atom {
     }
     return true;
   }
+}
+
+class PushFantasy extends ProofLine {
+  PushFantasy() : super._();
+
+  @override
+  int get hashCode => (PushFantasy).hashCode;
+
+  @override
+  bool operator ==(Object other) => other is PushFantasy;
+
+  @override
+  T accept<T>(ProofLineVisitor<T> visitor) => visitor.visitPushFantasy(this);
 }
 
 abstract class Quantification extends UnaryFormula {

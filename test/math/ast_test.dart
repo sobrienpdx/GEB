@@ -57,6 +57,12 @@ main() {
       expectEqual(Formula('<P->Q>'), Formula('<P->R>'), false);
     });
 
+    test('push fantasy', () {
+      expect(PushFantasy().toString(), '[');
+      expectEqual(ProofLine('['), PushFantasy(), true);
+      expectEqual(ProofLine('['), Formula('P'), false);
+    });
+
     test('complex parsing', () {
       expect(Formula('<P∧Q>').toString(), '<P∧Q>');
       expect(Formula('<P∧~P>').toString(), '<P∧~P>');
