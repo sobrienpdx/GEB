@@ -45,7 +45,8 @@ class _GEBState extends State<GEB> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Expanded(
+                Flexible(
+                  flex: 3,
                   child: Column(
                     children: [
                       messageToUser != "" ?
@@ -137,29 +138,32 @@ class _GEBState extends State<GEB> {
                     ],
                   ),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    for (Rule rule in ruleDefinitions)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: BaseButton(
-                        text: rule.name,
-                        width: 130,
-                        height: 35,
-                        textSize: 17,
-                        onPressed: () {
-                          setState(() {
-                            if (messageToUser != rule.description) {
-                              messageToUser = rule.description;
-                            } else {
-                              messageToUser = "";
-                            }
-                          });
-                        },
+                Flexible(
+                  flex: 1,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      for (Rule rule in ruleDefinitions)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: BaseButton(
+                          text: rule.name,
+                          width: 130,
+                          height: 35,
+                          textSize: 17,
+                          onPressed: () {
+                            setState(() {
+                              if (messageToUser != rule.description) {
+                                messageToUser = rule.description;
+                              } else {
+                                messageToUser = "";
+                              }
+                            });
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
