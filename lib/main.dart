@@ -98,35 +98,44 @@ class _GEBState extends State<GEB> {
                           ),
                         ],
                       ),
+                      for (int i= 0; i< state.derivationLines.length; i++ )
+                      Text("${i+1}: ${state.derivationLines[i].line.toString()}"),
                       Padding(
                         padding: const EdgeInsets.all(18.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 500,
+                            Flexible(
+                              flex: 4,
                               child: TextFormField(
                                 controller: _textController,
                                 decoration: const InputDecoration(hintText: 'Type stuff'),
                               ),
                             ),
-                            BaseButton(
-                              height: 50,
-                              width: 100,
-                              textSize: 20,
-                              onPressed: () {
-                                setState(() {
-                                  try {
-                                    Formula(_textController.text);
-                                    messageToUser = "Good work! Your feelings and formula are valid!";
-                                    validationColor = Colors.indigo;
-                                  } catch (e) {
-                                    validationColor = Colors.pink;
-                                    messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
-                                  }
-                                });
-                              },
-                              text: "Validate",
+                            Flexible(
+                              flex: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: BaseButton(
+                                  height: 50,
+                                  width: 100,
+                                  textSize: 20,
+                                  onPressed: () {
+                                    setState(() {
+                                      try {
+                                        DerivationLine line = DerivationLine(_textController.text);
+                                        messageToUser = "Good work! Your feelings and formula are valid!";
+                                        state.addDerivationLine(line);
+                                        validationColor = Colors.indigo;
+                                      } catch (e) {
+                                        validationColor = Colors.pink;
+                                        messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
+                                      }
+                                    });
+                                  },
+                                  text: "Validate",
+                                ),
+                              ),
                             ),
                           ],
                         ),
