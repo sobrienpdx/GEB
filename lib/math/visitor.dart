@@ -1,82 +1,89 @@
 import 'ast.dart';
 
-class AnyVisitor implements Visitor<bool> {
+class AnyVisitor implements Visitor<bool, void> {
   const AnyVisitor();
 
   @override
-  bool visitAnd(And node) =>
-      node.leftOperand.accept(this) || node.rightOperand.accept(this);
+  bool visitAnd(And node, void param) =>
+      node.leftOperand.accept(this, param) ||
+      node.rightOperand.accept(this, param);
 
   @override
-  bool visitEquation(Equation node) =>
-      node.leftSide.accept(this) || node.rightSide.accept(this);
+  bool visitEquation(Equation node, void param) =>
+      node.leftSide.accept(this, param) || node.rightSide.accept(this, param);
 
   @override
-  bool visitExists(Exists node) => node.operand.accept(this);
+  bool visitExists(Exists node, void param) => node.operand.accept(this, param);
 
   @override
-  bool visitForall(Forall node) => node.operand.accept(this);
+  bool visitForall(Forall node, void param) => node.operand.accept(this, param);
 
   @override
-  bool visitImplies(Implies node) =>
-      node.leftOperand.accept(this) || node.rightOperand.accept(this);
+  bool visitImplies(Implies node, void param) =>
+      node.leftOperand.accept(this, param) ||
+      node.rightOperand.accept(this, param);
 
   @override
-  bool visitNot(Not node) => node.operand.accept(this);
+  bool visitNot(Not node, void param) => node.operand.accept(this, param);
 
   @override
-  bool visitOr(Or node) =>
-      node.leftOperand.accept(this) || node.rightOperand.accept(this);
+  bool visitOr(Or node, void param) =>
+      node.leftOperand.accept(this, param) ||
+      node.rightOperand.accept(this, param);
 
   @override
-  bool visitPlus(Plus node) =>
-      node.leftOperand.accept(this) || node.rightOperand.accept(this);
+  bool visitPlus(Plus node, void param) =>
+      node.leftOperand.accept(this, param) ||
+      node.rightOperand.accept(this, param);
 
   @override
-  bool visitPopFantasy(PopFantasy node) => false;
+  bool visitPopFantasy(PopFantasy node, void param) => false;
 
   @override
-  bool visitPropositionalAtom(PropositionalAtom node) => false;
+  bool visitPropositionalAtom(PropositionalAtom node, void param) => false;
 
   @override
-  bool visitPushFantasy(PushFantasy node) => false;
+  bool visitPushFantasy(PushFantasy node, void param) => false;
 
   @override
-  bool visitSuccessor(Successor node) => node.operand.accept(this);
+  bool visitSuccessor(Successor node, void param) =>
+      node.operand.accept(this, param);
 
   @override
-  bool visitTimes(Times node) =>
-      node.leftOperand.accept(this) || node.rightOperand.accept(this);
+  bool visitTimes(Times node, void param) =>
+      node.leftOperand.accept(this, param) ||
+      node.rightOperand.accept(this, param);
 
   @override
-  bool visitVariable(Variable node) => false;
+  bool visitVariable(Variable node, void param) => false;
 
   @override
-  bool visitZero(Zero node) => false;
+  bool visitZero(Zero node, void param) => false;
 }
 
-abstract class FormulaVisitor<T> {
-  T visitAnd(And node);
-  T visitEquation(Equation node);
-  T visitExists(Exists node);
-  T visitForall(Forall node);
-  T visitImplies(Implies node);
-  T visitNot(Not node);
-  T visitOr(Or node);
-  T visitPropositionalAtom(PropositionalAtom node);
+abstract class FormulaVisitor<R, P> {
+  R visitAnd(And node, P param);
+  R visitEquation(Equation node, P param);
+  R visitExists(Exists node, P param);
+  R visitForall(Forall node, P param);
+  R visitImplies(Implies node, P param);
+  R visitNot(Not node, P param);
+  R visitOr(Or node, P param);
+  R visitPropositionalAtom(PropositionalAtom node, P param);
 }
 
-abstract class ProofLineVisitor<T> implements FormulaVisitor<T> {
-  T visitPopFantasy(PopFantasy node);
-  T visitPushFantasy(PushFantasy node);
+abstract class ProofLineVisitor<R, P> implements FormulaVisitor<R, P> {
+  R visitPopFantasy(PopFantasy node, P param);
+  R visitPushFantasy(PushFantasy node, P param);
 }
 
-abstract class TermVisitor<T> {
-  T visitPlus(Plus node);
-  T visitSuccessor(Successor node);
-  T visitTimes(Times node);
-  T visitVariable(Variable node);
-  T visitZero(Zero node);
+abstract class TermVisitor<R, P> {
+  R visitPlus(Plus node, P param);
+  R visitSuccessor(Successor node, P param);
+  R visitTimes(Times node, P param);
+  R visitVariable(Variable node, P param);
+  R visitZero(Zero node, P param);
 }
 
-abstract class Visitor<T> implements ProofLineVisitor<T>, TermVisitor<T> {}
+abstract class Visitor<R, P>
+    implements ProofLineVisitor<R, P>, TermVisitor<R, P> {}

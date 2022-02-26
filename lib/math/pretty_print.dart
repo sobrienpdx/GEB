@@ -1,113 +1,132 @@
 import 'package:geb/math/ast.dart';
 
+import 'context.dart';
 import 'symbols.dart';
 import 'visitor.dart';
 
-class PrettyPrinter implements Visitor<void> {
+class PrettyPrinter extends PrettyPrinterBase {
   final buffer = StringBuffer();
 
   @override
-  void visitAnd(And node) {
-    buffer.write('<');
-    node.leftOperand.accept(this);
-    buffer.write(and);
-    node.rightOperand.accept(this);
-    buffer.write('>');
+  void write(String text) {
+    buffer.write(text);
+  }
+}
+
+abstract class PrettyPrinterBase
+    implements ProofLineVisitor<void, DerivationLineContext>, TermVisitor<void, void> {
+  void dispatchFormula(Formula node, DerivationLineContext context) {
+    node.accept(this, context);
+  }
+
+  void dispatchTerm(Term node) {
+    node.accept(this, null);
   }
 
   @override
-  void visitEquation(Equation node) {
-    node.leftSide.accept(this);
-    buffer.write('=');
-    node.rightSide.accept(this);
+  void visitAnd(And node, DerivationLineContext context) {
+    write('<');
+    dispatchFormula(node.leftOperand, context.leftOperand);
+    write(and);
+    dispatchFormula(node.rightOperand, context.rightOperand);
+    write('>');
   }
 
   @override
-  void visitExists(Exists node) {
-    buffer.write(exists);
-    node.variable.accept(this);
-    buffer.write(':');
-    node.operand.accept(this);
+  void visitEquation(Equation node, DerivationLineContext context) {
+    dispatchTerm(node.leftSide);
+    write('=');
+    dispatchTerm(node.rightSide);
   }
 
   @override
-  void visitForall(Forall node) {
-    buffer.write(forall);
-    node.variable.accept(this);
-    buffer.write(':');
-    node.operand.accept(this);
+  void visitExists(Exists node, DerivationLineContext context) {
+    write(exists);
+    visitVariable(node.variable, null);
+    write(':');
+    dispatchFormula(node.operand, context.operand);
   }
 
   @override
-  void visitImplies(Implies node) {
-    buffer.write('<');
-    node.leftOperand.accept(this);
-    buffer.write(implies);
-    node.rightOperand.accept(this);
-    buffer.write('>');
+  void visitForall(Forall node, DerivationLineContext context) {
+    write(forall);
+    visitVariable(node.variable, null);
+    write(':');
+    dispatchFormula(node.operand, context.operand);
   }
 
   @override
-  void visitNot(Not node) {
-    buffer.write('~');
-    node.operand.accept(this);
+  void visitImplies(Implies node, DerivationLineContext context) {
+    write('<');
+    dispatchFormula(node.leftOperand, context.leftOperand);
+    write(implies);
+    dispatchFormula(node.rightOperand, context.rightOperand);
+    write('>');
   }
 
   @override
-  void visitOr(Or node) {
-    buffer.write('<');
-    node.leftOperand.accept(this);
-    buffer.write(or);
-    node.rightOperand.accept(this);
-    buffer.write('>');
+  void visitNot(Not node, DerivationLineContext context) {
+    write('~');
+    dispatchFormula(node.operand, context.operand);
   }
 
   @override
-  void visitPlus(Plus node) {
-    buffer.write('(');
-    node.leftOperand.accept(this);
-    buffer.write('+');
-    node.rightOperand.accept(this);
-    buffer.write(')');
+  void visitOr(Or node, DerivationLineContext context) {
+    write('<');
+    dispatchFormula(node.leftOperand, context.leftOperand);
+    write(or);
+    dispatchFormula(node.rightOperand, context.rightOperand);
+    write('>');
   }
 
   @override
-  void visitPopFantasy(PopFantasy node) {
-    buffer.write(']');
+  void visitPlus(Plus node, void param) {
+    write('(');
+    dispatchTerm(node.leftOperand);
+    write('+');
+    dispatchTerm(node.rightOperand);
+    write(')');
   }
 
   @override
-  void visitPropositionalAtom(PropositionalAtom node) {
-    buffer.write(node.name);
+  void visitPopFantasy(PopFantasy node, DerivationLineContext context) {
+    write(']');
   }
 
   @override
-  void visitPushFantasy(PushFantasy node) {
-    buffer.write('[');
+  void visitPropositionalAtom(PropositionalAtom node, DerivationLineContext context) {
+    write(node.name);
   }
 
   @override
-  void visitSuccessor(Successor node) {
-    buffer.write('S');
-    node.operand.accept(this);
+  void visitPushFantasy(PushFantasy node, DerivationLineContext context) {
+    write('[');
   }
 
   @override
-  void visitTimes(Times node) {
-    buffer.write('(');
-    node.leftOperand.accept(this);
-    buffer.write(times);
-    node.rightOperand.accept(this);
-    buffer.write(')');
+  void visitSuccessor(Successor node, void param) {
+    write('S');
+    dispatchTerm(node.operand);
   }
 
   @override
-  void visitVariable(Variable node) {
-    buffer.write(node.name);
+  void visitTimes(Times node, void param) {
+    write('(');
+    dispatchTerm(node.leftOperand);
+    write(times);
+    dispatchTerm(node.rightOperand);
+    write(')');
   }
 
   @override
-  void visitZero(Zero node) {
-    buffer.write('0');
+  void visitVariable(Variable node, void param) {
+    write(node.name);
   }
+
+  @override
+  void visitZero(Zero node, void param) {
+    write('0');
+  }
+
+  void write(String text);
 }

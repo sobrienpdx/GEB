@@ -2,6 +2,7 @@ import 'package:geb/math/free_variables.dart';
 import 'package:geb/math/parse.dart';
 import 'package:geb/math/pretty_print.dart';
 
+import 'context.dart';
 import 'hash.dart';
 import 'symbols.dart';
 import 'visitor.dart';
@@ -21,7 +22,8 @@ class And extends BinaryFormula {
       rightOperand == other.rightOperand;
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitAnd(this);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param) =>
+      visitor.visitAnd(this, param);
 
   @override
   Formula _rebuild(Formula leftOperand, Formula rightOperand) =>
@@ -65,7 +67,13 @@ abstract class DerivationLine extends Node {
 
   DerivationLine._();
 
-  T accept<T>(ProofLineVisitor<T> visitor);
+  R accept<R, P>(ProofLineVisitor<R, P> visitor, P param);
+
+  String toString() {
+    var visitor = PrettyPrinter();
+    accept(visitor, DerivationLineContext(this));
+    return visitor.buffer.toString();
+  }
 }
 
 class Equation extends TNTAtom {
@@ -85,7 +93,8 @@ class Equation extends TNTAtom {
       rightSide == other.rightSide;
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitEquation(this);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param) =>
+      visitor.visitEquation(this, param);
 }
 
 class Exists extends Quantification {
@@ -100,7 +109,8 @@ class Exists extends Quantification {
       other is Exists && variable == other.variable && operand == other.operand;
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitExists(this);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param) =>
+      visitor.visitExists(this, param);
 
   @override
   Quantification _rebuild(Variable variable, Formula operand) =>
@@ -119,7 +129,8 @@ class Forall extends Quantification {
       other is Forall && variable == other.variable && operand == other.operand;
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitForall(this);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param) =>
+      visitor.visitForall(this, param);
 
   @override
   Quantification _rebuild(Variable variable, Formula operand) =>
@@ -131,12 +142,13 @@ abstract class Formula extends DerivationLine {
 
   Formula._() : super._();
 
-  bool get isOpen => accept(IsOpen());
+  bool get isOpen => accept(IsOpen(), null);
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param);
 
-  bool containsFreeVariable(Variable v) => accept(ContainsFreeVariable(v));
+  bool containsFreeVariable(Variable v) =>
+      accept(ContainsFreeVariable(v), null);
 }
 
 class Implies extends BinaryFormula {
@@ -154,7 +166,8 @@ class Implies extends BinaryFormula {
       rightOperand == other.rightOperand;
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitImplies(this);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param) =>
+      visitor.visitImplies(this, param);
 
   @override
   BinaryFormula _rebuild(Formula leftOperand, Formula rightOperand) =>
@@ -166,13 +179,7 @@ class MathError {}
 abstract class Node {
   const Node();
 
-  T accept<T>(Visitor<T> visitor);
-
-  String toString() {
-    var visitor = PrettyPrinter();
-    accept(visitor);
-    return visitor.buffer.toString();
-  }
+  R accept<R, P>(Visitor<R, P> visitor, P param);
 }
 
 class Not extends UnaryFormula {
@@ -185,7 +192,8 @@ class Not extends UnaryFormula {
   bool operator ==(Object other) => other is Not && operand == other.operand;
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitNot(this);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param) =>
+      visitor.visitNot(this, param);
 
   @override
   Formula substituteOperand(Formula replacement) => Not(replacement);
@@ -206,7 +214,8 @@ class Or extends BinaryFormula {
       rightOperand == other.rightOperand;
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor) => visitor.visitOr(this);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param) =>
+      visitor.visitOr(this, param);
 
   @override
   Formula _rebuild(Formula leftOperand, Formula rightOperand) =>
@@ -230,7 +239,8 @@ class Plus extends Term {
       rightOperand == other.rightOperand;
 
   @override
-  T accept<T>(TermVisitor<T> visitor) => visitor.visitPlus(this);
+  R accept<R, P>(TermVisitor<R, P> visitor, P param) =>
+      visitor.visitPlus(this, param);
 }
 
 class PopFantasy extends DerivationLine {
@@ -243,7 +253,8 @@ class PopFantasy extends DerivationLine {
   bool operator ==(Object other) => other is PopFantasy;
 
   @override
-  T accept<T>(ProofLineVisitor<T> visitor) => visitor.visitPopFantasy(this);
+  R accept<R, P>(ProofLineVisitor<R, P> visitor, P param) =>
+      visitor.visitPopFantasy(this, param);
 }
 
 class PropositionalAtom extends Atom {
@@ -263,8 +274,8 @@ class PropositionalAtom extends Atom {
       other is PropositionalAtom && name == other.name;
 
   @override
-  T accept<T>(FormulaVisitor<T> visitor) =>
-      visitor.visitPropositionalAtom(this);
+  R accept<R, P>(FormulaVisitor<R, P> visitor, P param) =>
+      visitor.visitPropositionalAtom(this, param);
 
   static bool _isValidName(String name) {
     if (name.isEmpty) return false;
@@ -286,7 +297,8 @@ class PushFantasy extends DerivationLine {
   bool operator ==(Object other) => other is PushFantasy;
 
   @override
-  T accept<T>(ProofLineVisitor<T> visitor) => visitor.visitPushFantasy(this);
+  R accept<R, P>(ProofLineVisitor<R, P> visitor, P param) =>
+      visitor.visitPushFantasy(this, param);
 }
 
 abstract class Quantification extends UnaryFormula {
@@ -318,7 +330,8 @@ class Successor extends Term {
       other is Successor && operand == other.operand;
 
   @override
-  T accept<T>(TermVisitor<T> visitor) => visitor.visitSuccessor(this);
+  R accept<R, P>(TermVisitor<R, P> visitor, P param) =>
+      visitor.visitSuccessor(this, param);
 }
 
 abstract class Term extends Node {
@@ -326,11 +339,17 @@ abstract class Term extends Node {
 
   const Term._();
 
-  bool get isDefinite => !accept(ContainsVariable());
+  bool get isDefinite => !accept(ContainsVariable(), null);
 
-  T accept<T>(TermVisitor<T> visitor);
+  R accept<R, P>(TermVisitor<R, P> visitor, P param);
 
-  bool containsVariable(Variable v) => accept(ContainsFreeVariable(v));
+  bool containsVariable(Variable v) => accept(ContainsFreeVariable(v), null);
+
+  String toString() {
+    var visitor = PrettyPrinter();
+    accept(visitor, null);
+    return visitor.buffer.toString();
+  }
 }
 
 class Times extends Term {
@@ -350,7 +369,8 @@ class Times extends Term {
       rightOperand == other.rightOperand;
 
   @override
-  T accept<T>(TermVisitor<T> visitor) => visitor.visitTimes(this);
+  R accept<R, P>(TermVisitor<R, P> visitor, P param) =>
+      visitor.visitTimes(this, param);
 }
 
 abstract class TNTAtom extends Atom {}
@@ -379,7 +399,8 @@ class Variable extends Term {
   bool operator ==(Object other) => other is Variable && name == other.name;
 
   @override
-  T accept<T>(TermVisitor<T> visitor) => visitor.visitVariable(this);
+  R accept<R, P>(TermVisitor<R, P> visitor, P param) =>
+      visitor.visitVariable(this, param);
 
   static bool _isValidName(String name) {
     if (name.isEmpty) return false;
@@ -403,5 +424,6 @@ class Zero extends Term {
   bool operator ==(Object other) => other is Zero;
 
   @override
-  T accept<T>(TermVisitor<T> visitor) => visitor.visitZero(this);
+  R accept<R, P>(TermVisitor<R, P> visitor, P param) =>
+      visitor.visitZero(this, param);
 }

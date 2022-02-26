@@ -1,49 +1,51 @@
 import 'ast.dart';
 
-abstract class FormulaContext {
-  factory FormulaContext(Formula formula) =>
-      _FormulaContext(formula, formula, (replacement) => replacement);
+abstract class DerivationLineContext {
+  factory DerivationLineContext(DerivationLine derivationLine) =>
+      _DerivationLineContext(
+          derivationLine, derivationLine, (replacement) => replacement);
 
-  FormulaContext._();
+  DerivationLineContext._();
 
-  Formula get formula;
+  DerivationLine get derivationLine;
 
-  FormulaContext get leftOperand => getOperand(Side.left);
+  DerivationLineContext get leftOperand => getOperand(Side.left);
 
-  FormulaContext get operand;
+  DerivationLineContext get operand;
 
-  FormulaContext get rightOperand => getOperand(Side.right);
+  DerivationLineContext get rightOperand => getOperand(Side.right);
 
-  Formula get top;
+  DerivationLine get top;
 
-  FormulaContext getOperand(Side side);
+  DerivationLineContext getOperand(Side side);
 
   Formula substitute(Formula replacement);
 }
 
-class _FormulaContext extends FormulaContext {
+class _DerivationLineContext extends DerivationLineContext {
   @override
-  final Formula top;
+  final DerivationLine top;
 
   @override
-  final Formula formula;
+  final DerivationLine derivationLine;
 
   final Formula Function(Formula) _substitute;
 
-  _FormulaContext(this.top, this.formula, this._substitute) : super._();
+  _DerivationLineContext(this.top, this.derivationLine, this._substitute)
+      : super._();
 
-  FormulaContext get operand {
-    var formula = this.formula;
+  DerivationLineContext get operand {
+    var formula = this.derivationLine;
     if (formula is! UnaryFormula) throw MathError();
-    return _FormulaContext(top, formula.operand,
+    return _DerivationLineContext(top, formula.operand,
         (replacement) => _substitute(formula.substituteOperand(replacement)));
   }
 
   @override
-  FormulaContext getOperand(Side side) {
-    var formula = this.formula;
+  DerivationLineContext getOperand(Side side) {
+    var formula = this.derivationLine;
     if (formula is! BinaryFormula) throw MathError();
-    return _FormulaContext(top, formula.getOperand(side),
+    return _DerivationLineContext(top, formula.getOperand(side),
         (replacement) => _substitute(formula.substitute(side, replacement)));
   }
 
