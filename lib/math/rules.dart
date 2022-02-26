@@ -1,9 +1,30 @@
 import 'package:geb/math/symbols.dart';
 
 import 'ast.dart';
+import 'proof.dart';
+import 'state.dart';
 
 abstract class DerivationRegionInfo {
   StepRegionInfo? operator [](int index);
+}
+
+class DoubleTildeRule extends Rule {
+  const DoubleTildeRule()
+      : super._(
+            'double tilde',
+            "The string '~~' can be deleted from any theorem. "
+                "It can also be inserted into any theorem, provided that the "
+                "resulting string is itself well formed.");
+
+  @override
+  SelectRegion activate(FullState state, List<DerivationLine> derivation) {
+    // TODO(paul): get rid of the old Proof object once it's not needed
+    // anymore.
+    return SelectRegion(this, [
+      for (var line in derivation)
+        DoubleTildePrinter.run(state, Proof.fromDerivation(derivation), line)
+    ]);
+  }
 }
 
 class FullLineStepRegionInfo extends StepRegionInfo {
@@ -12,13 +33,25 @@ class FullLineStepRegionInfo extends StepRegionInfo {
   FullLineStepRegionInfo._(this._formula);
 }
 
-abstract class FullLineStepRule extends Rule<FullLineStepRegionInfo> {
+abstract class FullLineStepRule extends Rule {
   const FullLineStepRule._(String name, String description)
       : super._(name, description);
 
+  @override
+  SelectTwoLines activate(FullState state, List<DerivationLine> derivation) =>
+      SelectTwoLines(getRegions(derivation), this);
+
   List<Formula> apply(FullLineStepRegionInfo x, FullLineStepRegionInfo y);
 
+  List<FullLineStepRegionInfo?> getRegions(List<DerivationLine> derivation) => [
+        for (int i = 0; i < derivation.length; i++)
+          _getRegionsForLine(derivation, i)
+      ];
+
   String preview(List<FullLineStepRegionInfo> regions);
+
+  FullLineStepRegionInfo? _getRegionsForLine(
+      List<DerivationLine> derivation, int index);
 }
 
 class JoiningRule extends FullLineStepRule {
@@ -55,30 +88,35 @@ class PartialLineStepRegionInfo {
   PartialLineStepRegionInfo(this.formula);
 }
 
-abstract class Rule<Info extends StepRegionInfo> {
+abstract class Rule {
   final String name;
 
   final String description;
 
   const Rule._(this.name, this.description);
 
-  List<Info?> getRegions(List<DerivationLine> derivation) => [
-        for (int i = 0; i < derivation.length; i++)
-          _getRegionsForLine(derivation, i)
-      ];
+  InteractiveState activate(FullState state, List<DerivationLine> derivation) {
+    throw UnimplementedError(
+        '''activateRule doesn't know how to handle the rule "$this"''');
+  }
 
   @override
   String toString() => name;
-
-  Info? _getRegionsForLine(List<DerivationLine> derivation, int index);
 }
 
-class SeparationRule extends Rule<SubexpressionsStepRegionInfo> {
+class SeparationRule extends Rule {
   const SeparationRule()
       : super._('separation',
             'If <x∧y> is a theorem, then both x and y are theorems. ');
 
   List<Formula> apply(PartialLineStepRegionInfo x) => [x.formula];
+
+  List<SubexpressionsStepRegionInfo?> getRegions(
+          List<DerivationLine> derivation) =>
+      [
+        for (int i = 0; i < derivation.length; i++)
+          _getRegionsForLine(derivation, i)
+      ];
 
   SubexpressionsStepRegionInfo? _getRegionsForLine(
       List<DerivationLine> derivation, int index) {
@@ -103,11 +141,7 @@ class SubexpressionsStepRegionInfo extends StepRegionInfo {
   Iterable<PartialLineStepRegionInfo> get subexpressions => _subexpressions;
 }
 
-class UnimplementedRule extends Rule<StepRegionInfo> {
+class UnimplementedRule extends Rule {
   const UnimplementedRule(String name, String description)
       : super._(name, description);
-
-  @override
-  Never _getRegionsForLine(List<DerivationLine> derivation, int index) =>
-      throw UnimplementedError();
 }

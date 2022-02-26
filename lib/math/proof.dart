@@ -12,6 +12,33 @@ class InvalidProofStep extends ProofStep {
 class Proof {
   _ProofState _state = _ProofState();
 
+  Proof();
+
+  Proof.fromDerivation(List<DerivationLine> derivation) {
+    // TODO(paul): just use Derivation directly rather than having a silly
+    // ProofState object.
+    for (int i = 0; i < derivation.length; i++) {
+      var line = derivation[i];
+      if (line is Formula) {
+        _state.addTheorem(line);
+      } else if (line is PushFantasy) {
+        var premise = i + 1 < derivation.length ? derivation[i + 1] : null;
+        if (premise is Formula) {
+          pushFantasy(premise);
+          i++;
+        }
+      } else if (line is PopFantasy) {
+        var state = _state;
+        if (state is _FantasyState) {
+          _state = state.parent;
+        }
+      } else {
+        assert(
+            false, 'Unrecognized kind of derivation line: ${line.runtimeType}');
+      }
+    }
+  }
+
   ProofStep carryOver(Formula x) {
     var state = _state;
     if (state is! _FantasyState) return InvalidProofStep();
