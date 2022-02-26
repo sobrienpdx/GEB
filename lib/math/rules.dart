@@ -26,8 +26,14 @@ class JoiningRule extends FullLineStepRule {
       [And(x._formula, y._formula)];
 
   FullLineStepRegionInfo? _getRegionsForLine(
-          List<Formula> derivation, int line) =>
-      FullLineStepRegionInfo._(derivation[line]);
+      List<DerivationLine> derivation, int index) {
+    var derivationLine = derivation[index];
+    if (derivationLine is Formula) {
+      return FullLineStepRegionInfo._(derivationLine);
+    } else {
+      return null;
+    }
+  }
 }
 
 class PartialLineStepRegionInfo {
@@ -43,7 +49,7 @@ abstract class Rule<Info extends StepRegionInfo> {
 
   const Rule._(this.name, this.description);
 
-  List<Info?> getRegions(List<Formula> derivation) => [
+  List<Info?> getRegions(List<DerivationLine> derivation) => [
         for (int i = 0; i < derivation.length; i++)
           _getRegionsForLine(derivation, i)
       ];
@@ -51,7 +57,7 @@ abstract class Rule<Info extends StepRegionInfo> {
   @override
   String toString() => name;
 
-  Info? _getRegionsForLine(List<Formula> derivation, int line);
+  Info? _getRegionsForLine(List<DerivationLine> derivation, int index);
 }
 
 class SeparationRule extends Rule<SubexpressionsStepRegionInfo> {
@@ -62,12 +68,12 @@ class SeparationRule extends Rule<SubexpressionsStepRegionInfo> {
   List<Formula> apply(PartialLineStepRegionInfo x) => [x.formula];
 
   SubexpressionsStepRegionInfo? _getRegionsForLine(
-      List<Formula> derivation, int line) {
-    var formula = derivation[line];
-    if (formula is And) {
+      List<DerivationLine> derivation, int index) {
+    var line = derivation[index];
+    if (line is And) {
       return SubexpressionsStepRegionInfo([
-        PartialLineStepRegionInfo(formula.leftOperand),
-        PartialLineStepRegionInfo(formula.rightOperand)
+        PartialLineStepRegionInfo(line.leftOperand),
+        PartialLineStepRegionInfo(line.rightOperand)
       ]);
     }
     return null;
@@ -89,6 +95,6 @@ class UnimplementedRule extends Rule<StepRegionInfo> {
       : super._(name, description);
 
   @override
-  Never _getRegionsForLine(List<Formula> derivation, int line) =>
+  Never _getRegionsForLine(List<DerivationLine> derivation, int index) =>
       throw UnimplementedError();
 }

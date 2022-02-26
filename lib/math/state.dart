@@ -1,10 +1,42 @@
 import 'ast.dart';
 import 'rules.dart';
 
+class DerivationLineInfo {
+  final FullState _state;
+
+  final int _index;
+
+  DerivationLineInfo._(this._state, this._index);
+
+  bool get isSelectable => _state._interactiveState.isLineSelectable(_index);
+
+  bool get isSelected => _state._interactiveState.isLineSelected(_index);
+
+  DerivationLine get line => _state._derivation[_index];
+
+  void toggleSelection() {
+    if (isSelectable) {
+      _state._interactiveState.toggleLineSelection(_state, _index);
+    } else {
+      assert(false, "Tried to select a line that wasn't selectable");
+    }
+  }
+
+  @override
+  String toString() {
+    var parts = [
+      line,
+      if (isSelectable) 'selectable',
+      if (isSelected) 'selected'
+    ];
+    return 'ProofLine(${parts.join(', ')})';
+  }
+}
+
 class FullState {
   _InteractiveState _interactiveState = _Quiescent();
 
-  final List<Formula> _derivation = [];
+  final List<DerivationLine> _derivation = [];
 
   FullState() {
     _interactiveState = _Quiescent();
@@ -12,8 +44,10 @@ class FullState {
 
   String get message => _interactiveState.message;
 
-  List<ProofLine> get proofLines =>
-      [for (int i = 0; i < _derivation.length; i++) ProofLine._(this, i)];
+  List<DerivationLineInfo> get proofLines => [
+        for (int i = 0; i < _derivation.length; i++)
+          DerivationLineInfo._(this, i)
+      ];
 
   void activateRule(Rule<StepRegionInfo> rule) {
     try {
@@ -29,41 +63,9 @@ class FullState {
     }
   }
 
-  void addFormula(Formula formula) {
-    _derivation.add(formula);
+  void addDerivationLine(DerivationLine line) {
+    _derivation.add(line);
     _interactiveState = _Quiescent();
-  }
-}
-
-class ProofLine {
-  final FullState _state;
-
-  final int _index;
-
-  ProofLine._(this._state, this._index);
-
-  Formula get formula => _state._derivation[_index];
-
-  bool get isSelectable => _state._interactiveState.isLineSelectable(_index);
-
-  bool get isSelected => _state._interactiveState.isLineSelected(_index);
-
-  void toggleSelection() {
-    if (isSelectable) {
-      _state._interactiveState.toggleLineSelection(_state, _index);
-    } else {
-      assert(false, "Tried to select a line that wasn't selectable");
-    }
-  }
-
-  @override
-  String toString() {
-    var parts = [
-      formula,
-      if (isSelectable) 'selectable',
-      if (isSelected) 'selected'
-    ];
-    return 'ProofLine(${parts.join(', ')})';
   }
 }
 
