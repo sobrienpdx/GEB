@@ -29,22 +29,7 @@ class FullLineStepRegionInfo extends StepRegionInfo {
   FullLineStepRegionInfo._(this._formula);
 }
 
-class JoiningRegionInfo extends RegionInfo<FullLineStepRegionInfo> {
-  final Derivation _derivation;
-
-  JoiningRegionInfo(this._derivation);
-
-  FullLineStepRegionInfo? operator [](int index) {
-    var step = _derivation[index];
-    if (step is FormulaStep) {
-      return FullLineStepRegionInfo._(step.formula);
-    } else {
-      return null;
-    }
-  }
-}
-
-class JoiningRule extends Rule {
+class JoiningRule extends Rule<FullLineStepRegionInfo> {
   factory JoiningRule() => const JoiningRule._();
 
   const JoiningRule._() : super('joining');
@@ -53,18 +38,63 @@ class JoiningRule extends Rule {
           FullLineStepRegionInfo x, FullLineStepRegionInfo y) =>
       [FormulaStep(And(x._formula, y._formula))];
 
-  JoiningRegionInfo getRegions(Derivation derivation) =>
-      JoiningRegionInfo(derivation);
+  FullLineStepRegionInfo? _getRegionsForLine(Derivation derivation, int line) {
+    var step = derivation[line];
+    if (step is FormulaStep) {
+      return FullLineStepRegionInfo._(step.formula);
+    } else {
+      return null;
+    }
+  }
 }
 
-abstract class RegionInfo<StepInfo extends StepRegionInfo> {
-  StepInfo? operator [](int index);
+class PartialLineStepRegionInfo {
+  final Formula _formula;
+
+  PartialLineStepRegionInfo(this._formula);
 }
 
-abstract class Rule {
+abstract class Rule<Info> {
   final String name;
 
   const Rule(this.name);
+
+  List<Info?> getRegions(Derivation derivation) => [
+        for (int i = 0; i < derivation._steps.length; i++)
+          _getRegionsForLine(derivation, i)
+      ];
+
+  Info? _getRegionsForLine(Derivation derivation, int line);
+}
+
+class SeparationRule extends Rule<SubexpressionsStepRegionInfo> {
+  factory SeparationRule() => const SeparationRule._();
+
+  const SeparationRule._() : super('separation');
+
+  List<DerivationStep> apply(PartialLineStepRegionInfo x) =>
+      [FormulaStep(x._formula)];
+
+  SubexpressionsStepRegionInfo? _getRegionsForLine(
+      Derivation derivation, int line) {
+    var step = derivation[line];
+    if (step is FormulaStep) {
+      var formula = step.formula;
+      if (formula is And) {
+        return SubexpressionsStepRegionInfo([
+          PartialLineStepRegionInfo(formula.leftOperand),
+          PartialLineStepRegionInfo(formula.rightOperand)
+        ]);
+      }
+    }
+    return null;
+  }
 }
 
 abstract class StepRegionInfo {}
+
+class SubexpressionsStepRegionInfo {
+  final List<PartialLineStepRegionInfo> _subexpressions;
+
+  SubexpressionsStepRegionInfo(this._subexpressions);
+}
