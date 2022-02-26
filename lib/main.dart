@@ -49,8 +49,8 @@ class _GEBState extends State<GEB> {
                 style: TextStyle(fontSize: 50, color: validationColor, fontWeight: FontWeight.w800),
               ),
             ) : Container(),
-            FractionallySizedBox(
-              widthFactor: .5,
+            SizedBox(
+              width: 800,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
