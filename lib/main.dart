@@ -70,6 +70,21 @@ class _GEBState extends State<GEB> {
                     },
                     text: sc,
                   ),
+                  BaseButton(
+                    onPressed: () {
+                      var start = _textController.selection.start;
+                      var end = _textController.selection.end;
+                      setState(() {
+                        if (_textController.selection.start == -1) {
+                          start = _textController.text.length;
+                          end = _textController.text.length;
+                        }
+                        _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
+                        _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
+                      });
+                    },
+                    icon: Icons.backspace,
+                  ),
                 ],
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class BaseButton extends StatelessWidget {
   final void Function()? onPressed;
   final String? text;
+  final IconData? icon;
   final double width;
   final double height;
   final double textSize;
@@ -13,6 +14,7 @@ class BaseButton extends StatelessWidget {
     Key? key,
     this.onPressed,
     this.text,
+    this.icon,
     this.height = 50,
     this.width = 50,
     this.textSize = 30
@@ -46,11 +48,11 @@ class BaseButton extends StatelessWidget {
             child: Container(
               constraints: BoxConstraints(maxWidth: width, minHeight: height),
               alignment: Alignment.center,
-              child: Text(
+              child: text !=null ? Text(
                 text!,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: buttonColor, fontSize: textSize),
-              ),
+                style: TextStyle(color: buttonColor, fontSize: textSize)
+              ) : Icon(icon),
             ),
           ),
         ),
