@@ -42,12 +42,14 @@ class FullState {
     _interactiveState = _Quiescent();
   }
 
-  String get message => _interactiveState.message;
-
-  List<DerivationLineInfo> get proofLines => [
+  List<DerivationLineInfo> get derivationLines => [
         for (int i = 0; i < _derivation.length; i++)
           DerivationLineInfo._(this, i)
       ];
+
+  String get message => _interactiveState.message;
+
+  String? get previewLine => _interactiveState.previewLine;
 
   void activateRule(Rule<StepRegionInfo> rule) {
     try {
@@ -71,6 +73,8 @@ class FullState {
 
 abstract class _InteractiveState {
   String get message;
+
+  String? get previewLine => null;
 
   bool isLineSelectable(int index) => false;
 
@@ -97,6 +101,10 @@ class _SelectMultipleLines extends _InteractiveState {
 
   @override
   String get message => 'Select 2 lines for $rule';
+
+  @override
+  String get previewLine =>
+      rule.preview([for (var index in selectedLines) regions[index]!]);
 
   @override
   bool isLineSelectable(int index) => regions[index] != null;

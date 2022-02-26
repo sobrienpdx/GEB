@@ -1,3 +1,5 @@
+import 'package:geb/math/symbols.dart';
+
 import 'ast.dart';
 
 abstract class DerivationRegionInfo {
@@ -15,6 +17,8 @@ abstract class FullLineStepRule extends Rule<FullLineStepRegionInfo> {
       : super._(name, description);
 
   List<Formula> apply(FullLineStepRegionInfo x, FullLineStepRegionInfo y);
+
+  String preview(List<FullLineStepRegionInfo> regions);
 }
 
 class JoiningRule extends FullLineStepRule {
@@ -24,6 +28,15 @@ class JoiningRule extends FullLineStepRule {
   @override
   List<Formula> apply(FullLineStepRegionInfo x, FullLineStepRegionInfo y) =>
       [And(x._formula, y._formula)];
+
+  @override
+  String preview(List<FullLineStepRegionInfo> regions) => [
+        '<',
+        regions.length > 0 ? regions[0]._formula : 'x',
+        and,
+        regions.length > 1 ? regions[1]._formula : 'y',
+        '>'
+      ].join();
 
   FullLineStepRegionInfo? _getRegionsForLine(
       List<DerivationLine> derivation, int index) {
