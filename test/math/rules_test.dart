@@ -29,10 +29,9 @@ main() {
   });
 }
 
-void checkResult(List<DerivationStep> result, List<String> newLines) {
-  expect([for (var line in result) (line as FormulaStep).formula],
-      [for (var line in newLines) Formula(line)]);
+void checkResult(List<Formula> result, List<String> newLines) {
+  expect(result, [for (var line in newLines) Formula(line)]);
 }
 
-Derivation makeDerivation(Iterable<String> lines) =>
-    Derivation([for (var line in lines) FormulaStep(Formula(line))]);
+List<Formula> makeDerivation(Iterable<String> lines) =>
+    [for (var line in lines) Formula(line)];
