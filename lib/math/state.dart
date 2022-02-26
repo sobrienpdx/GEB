@@ -14,9 +14,9 @@ class DerivationLineInfo {
 
   DerivationLine get line => _state._derivation[_index];
 
-  void toggleSelection() {
+  void select() {
     if (isSelectable) {
-      _state._interactiveState.toggleLineSelection(_state, _index);
+      _state._interactiveState.select(_state, _index);
     } else {
       assert(false, "Tried to select a line that wasn't selectable");
     }
@@ -54,8 +54,7 @@ class FullState {
   void activateRule(Rule<StepRegionInfo> rule) {
     try {
       if (rule is FullLineStepRule) {
-        _interactiveState =
-            _SelectMultipleLines(rule.getRegions(_derivation), rule);
+        _interactiveState = _SelectTwoLines(rule.getRegions(_derivation), rule);
       } else {
         throw UnimplementedError(
             '''activateRule doesn't know how to handle the rule "$rule"''');
@@ -80,7 +79,7 @@ abstract class _InteractiveState {
 
   bool isLineSelected(int index) => false;
 
-  void toggleLineSelection(FullState state, int index) {}
+  void select(FullState state, int index) {}
 }
 
 class _Quiescent extends _InteractiveState {
@@ -90,14 +89,14 @@ class _Quiescent extends _InteractiveState {
   _Quiescent({this.message = ''});
 }
 
-class _SelectMultipleLines extends _InteractiveState {
+class _SelectTwoLines extends _InteractiveState {
   final FullLineStepRule rule;
 
   final List<FullLineStepRegionInfo?> regions;
 
-  final Set<int> selectedLines = {};
+  final List<int> selectedLines = [];
 
-  _SelectMultipleLines(this.regions, this.rule);
+  _SelectTwoLines(this.regions, this.rule);
 
   @override
   String get message => 'Select 2 lines for $rule';
@@ -113,17 +112,13 @@ class _SelectMultipleLines extends _InteractiveState {
   bool isLineSelected(int index) => selectedLines.contains(index);
 
   @override
-  void toggleLineSelection(FullState state, int index) {
-    if (selectedLines.contains(index)) {
-      selectedLines.remove(index);
-    } else {
-      selectedLines.add(index);
-      if (selectedLines.length == 2) {
-        var selectedLinesList = selectedLines.toList();
-        state._derivation.addAll(rule.apply(
-            regions[selectedLinesList[0]]!, regions[selectedLinesList[1]]!));
-        state._interactiveState = _Quiescent(message: 'Applied rule "$rule"');
-      }
+  void select(FullState state, int index) {
+    selectedLines.add(index);
+    if (selectedLines.length == 2) {
+      var selectedLinesList = selectedLines.toList();
+      state._derivation.addAll(rule.apply(
+          regions[selectedLinesList[0]]!, regions[selectedLinesList[1]]!));
+      state._interactiveState = _Quiescent(message: 'Applied rule "$rule"');
     }
   }
 }

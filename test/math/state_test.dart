@@ -11,21 +11,34 @@ main() {
     state = FullState();
   });
 
-  test('joining', () {
-    state.addDerivationLine(PushFantasy());
-    state.addDerivationLine(Formula('P'));
-    state.addDerivationLine(Formula('Q'));
-    state.activateRule(joiningRule);
-    expect(state.message, 'Select 2 lines for joining');
-    expect(state.derivationLines[0].isSelectable, false);
-    expect(state.derivationLines[1].isSelectable, true);
-    expect(state.derivationLines[2].isSelectable, true);
-    expect(state.previewLine, '<x${and}y>');
-    state.derivationLines[1].toggleSelection();
-    expect(state.previewLine, '<P${and}y>');
-    expect(state.derivationLines, hasLength(3));
-    state.derivationLines[2].toggleSelection();
-    expect(state.derivationLines, hasLength(4));
-    expect(state.derivationLines[3].line, Formula('<P&Q>'));
+  group('joining:', () {
+    test('basic', () {
+      state.addDerivationLine(PushFantasy());
+      state.addDerivationLine(Formula('P'));
+      state.addDerivationLine(Formula('Q'));
+      state.activateRule(joiningRule);
+      expect(state.message, 'Select 2 lines for joining');
+      expect(state.derivationLines[0].isSelectable, false);
+      expect(state.derivationLines[1].isSelectable, true);
+      expect(state.derivationLines[2].isSelectable, true);
+      expect(state.previewLine, '<x${and}y>');
+      state.derivationLines[1].select();
+      expect(state.previewLine, '<P${and}y>');
+      expect(state.derivationLines, hasLength(3));
+      state.derivationLines[2].select();
+      expect(state.derivationLines, hasLength(4));
+      expect(state.derivationLines[3].line, Formula('<P&Q>'));
+      expect(state.message, 'Applied rule "joining"');
+    });
+
+    test('same line twice', () {
+      state.addDerivationLine(Formula('P'));
+      state.activateRule(joiningRule);
+      state.derivationLines[0].select();
+      expect(state.derivationLines, hasLength(1));
+      state.derivationLines[0].select();
+      expect(state.derivationLines, hasLength(2));
+      expect(state.derivationLines[1].line, Formula('<P&P>'));
+    });
   });
 }
