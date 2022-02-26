@@ -154,27 +154,39 @@ class _Parser implements Parser {
       ++successorCount;
       next();
     }
+    Term term;
     switch (peek()) {
       case '0':
         next();
-        return Numeral(successorCount);
+        term = Zero();
+        break;
       case 'a':
       case 'b':
       case 'c':
       case 'd':
       case 'e':
-        return Successor.apply(successorCount, parseVariable());
+        term = parseVariable();
+        break;
       case '(':
-        return Successor.apply(successorCount, parseBinaryTerm());
+        term = parseBinaryTerm();
+        break;
       default:
         throw ParseError();
     }
+    return _applySuccessors(successorCount, term);
   }
 
   Variable parseVariable() => Variable(_gatherName());
 
   String? peek({int skip = 0}) =>
       pos + skip >= input.length ? null : input[pos + skip];
+
+  Term _applySuccessors(int successorCount, Term term) {
+    for (int i = 0; i < successorCount; i++) {
+      term = Successor(term);
+    }
+    return term;
+  }
 
   String _gatherName() {
     var name = StringBuffer(next());

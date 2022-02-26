@@ -1,6 +1,8 @@
 import 'ast.dart';
 
 class AnyVisitor implements Visitor<bool> {
+  const AnyVisitor();
+
   @override
   bool visitAnd(And node) =>
       node.leftOperand.accept(this) || node.rightOperand.accept(this);
@@ -18,9 +20,6 @@ class AnyVisitor implements Visitor<bool> {
   @override
   bool visitImplies(Implies node) =>
       node.leftOperand.accept(this) || node.rightOperand.accept(this);
-
-  @override
-  bool visitNonzeroNumeral(NonzeroNumeral node) => false;
 
   @override
   bool visitNot(Not node) => node.operand.accept(this);
@@ -62,7 +61,6 @@ abstract class FormulaVisitor<T> {
 }
 
 abstract class TermVisitor<T> {
-  T visitNonzeroNumeral(NonzeroNumeral node);
   T visitPlus(Plus node);
   T visitSuccessor(Successor node);
   T visitTimes(Times node);

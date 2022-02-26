@@ -48,11 +48,6 @@ class PrettyPrinter implements Visitor<void> {
   }
 
   @override
-  void visitNonzeroNumeral(NonzeroNumeral node) {
-    visitSuccessor(node);
-  }
-
-  @override
   void visitNot(Not node) {
     buffer.write('~');
     node.operand.accept(this);
@@ -83,10 +78,7 @@ class PrettyPrinter implements Visitor<void> {
 
   @override
   void visitSuccessor(Successor node) {
-    var successorCount = node.successorCount;
-    for (int i = 0; i < successorCount; i++) {
-      buffer.write('S');
-    }
+    buffer.write('S');
     node.operand.accept(this);
   }
 
