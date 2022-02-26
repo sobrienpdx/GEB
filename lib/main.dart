@@ -42,95 +42,100 @@ class _GEBState extends State<GEB> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            messageToUser != "" ?
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                  messageToUser,
-                style: TextStyle(fontSize: 25, color: validationColor, fontWeight: FontWeight.w800),
-              ),
-            ) : Container(),
-            SizedBox(
-              width: 850,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  for (String sc in specialCharacters)
-                  BaseButton(
-                    onPressed: () {
-                      var start = _textController.selection.start;
-                      var end = _textController.selection.end;
-                      setState(() {
-                        if (_textController.selection.start == -1) {
-                          start = _textController.text.length;
-                          end = _textController.text.length;
-                        }
-                        _textController.text = _textController.text.substring(0, start) + sc +_textController.text.substring(end);
-                        _textController.selection= TextSelection.fromPosition(TextPosition(offset: start +1));
-                      });
-                    },
-                    text: sc,
-                  ),
-                  BaseButton(
-                    onPressed: () {
-                      var start = _textController.selection.start;
-                      var end = _textController.selection.end;
-                      setState(() {
-                        if (_textController.selection.start == -1) {
-                          start = _textController.text.length;
-                          end = _textController.text.length;
-                        }
-                        _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
-                        _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
-                      });
-                    },
-                    icon: Icons.backspace,
-                  ),
-                ],
-              ),
-            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(18.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                Expanded(
+                  child: Column(
+                    children: [
+                      messageToUser != "" ?
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
+                        child: Text(
+                          messageToUser,
+                          style: TextStyle(fontSize: 25, color: validationColor, fontWeight: FontWeight.w800),
+                        ),
+                      ) : Container(),
+                      Wrap(
                         children: [
-                          SizedBox(
-                            width: 500,
-                            child: TextFormField(
-                              controller: _textController,
-                              decoration: const InputDecoration(hintText: 'Type stuff'),
+                          for (String sc in specialCharacters)
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: BaseButton(
+                                onPressed: () {
+                                  var start = _textController.selection.start;
+                                  var end = _textController.selection.end;
+                                  setState(() {
+                                    if (_textController.selection.start == -1) {
+                                      start = _textController.text.length;
+                                      end = _textController.text.length;
+                                    }
+                                    _textController.text = _textController.text.substring(0, start) + sc +_textController.text.substring(end);
+                                    _textController.selection= TextSelection.fromPosition(TextPosition(offset: start +1));
+                                  });
+                                },
+                                text: sc,
+                              ),
                             ),
-                          ),
-                          BaseButton(
-                            height: 50,
-                            width: 100,
-                            textSize: 20,
-                            onPressed: () {
-                              setState(() {
-                                try {
-                                  Formula(_textController.text);
-                                  messageToUser = "Good work! Your feelings and formula are valid!";
-                                } catch (e) {
-                                  validationColor = Colors.pink;
-                                  messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
-                                }
-                              });
-                            },
-                            text: "Validate",
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: BaseButton(
+                              onPressed: () {
+                                var start = _textController.selection.start;
+                                var end = _textController.selection.end;
+                                setState(() {
+                                  if (_textController.selection.start == -1) {
+                                    start = _textController.text.length;
+                                    end = _textController.text.length;
+                                  }
+                                  _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
+                                  _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
+                                });
+                              },
+                              icon: Icons.backspace,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text("You have typed: ${_textController.text}"),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(18.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 500,
+                              child: TextFormField(
+                                controller: _textController,
+                                decoration: const InputDecoration(hintText: 'Type stuff'),
+                              ),
+                            ),
+                            BaseButton(
+                              height: 50,
+                              width: 100,
+                              textSize: 20,
+                              onPressed: () {
+                                setState(() {
+                                  try {
+                                    Formula(_textController.text);
+                                    messageToUser = "Good work! Your feelings and formula are valid!";
+                                    validationColor = Colors.indigo;
+                                  } catch (e) {
+                                    validationColor = Colors.pink;
+                                    messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
+                                  }
+                                });
+                              },
+                              text: "Validate",
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Text("You have typed: ${_textController.text}"),
+                      ),
+                    ],
+                  ),
                 ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -158,9 +163,6 @@ class _GEBState extends State<GEB> {
                 ),
               ],
             ),
-
-
-
           ],
         ),
       ),
