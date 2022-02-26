@@ -4,6 +4,7 @@ import 'package:geb/widgets/base_button.dart';
 import 'math/ast.dart';
 import 'math/rule_definitions.dart';
 import 'math/rules.dart';
+import 'math/state.dart';
 import 'math/symbols.dart';
 
 void main() => runApp(const GEBParser());
@@ -30,6 +31,7 @@ class GEB extends StatefulWidget {
 }
 
 class _GEBState extends State<GEB> {
+  FullState state = FullState();
   final _textController = TextEditingController();
   String messageToUser ="";
   Color validationColor = Colors.indigo;
@@ -45,7 +47,8 @@ class _GEBState extends State<GEB> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Expanded(
+                Flexible(
+                  flex: 3,
                   child: Column(
                     children: [
                       messageToUser != "" ?
@@ -97,35 +100,44 @@ class _GEBState extends State<GEB> {
                           ),
                         ],
                       ),
+                      for (int i= 0; i< state.derivationLines.length; i++ )
+                      Text("${i+1}: ${state.derivationLines[i].line.toString()}"),
                       Padding(
                         padding: const EdgeInsets.all(18.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 500,
+                            Flexible(
+                              flex: 4,
                               child: TextFormField(
                                 controller: _textController,
                                 decoration: const InputDecoration(hintText: 'Type stuff'),
                               ),
                             ),
-                            BaseButton(
-                              height: 50,
-                              width: 100,
-                              textSize: 20,
-                              onPressed: () {
-                                setState(() {
-                                  try {
-                                    Formula(_textController.text);
-                                    messageToUser = "Good work! Your feelings and formula are valid!";
-                                    validationColor = Colors.indigo;
-                                  } catch (e) {
-                                    validationColor = Colors.pink;
-                                    messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
-                                  }
-                                });
-                              },
-                              text: "Validate",
+                            Flexible(
+                              flex: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: BaseButton(
+                                  height: 50,
+                                  width: 100,
+                                  textSize: 20,
+                                  onPressed: () {
+                                    setState(() {
+                                      try {
+                                        DerivationLine line = DerivationLine(_textController.text);
+                                        messageToUser = "Good work! Your feelings and formula are valid!";
+                                        state.addDerivationLine(line);
+                                        validationColor = Colors.indigo;
+                                      } catch (e) {
+                                        validationColor = Colors.pink;
+                                        messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
+                                      }
+                                    });
+                                  },
+                                  text: "Validate",
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -137,29 +149,32 @@ class _GEBState extends State<GEB> {
                     ],
                   ),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    for (Rule rule in ruleDefinitions)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: BaseButton(
-                        text: rule.name,
-                        width: 120,
-                        height: 35,
-                        textSize: 20,
-                        onPressed: () {
-                          setState(() {
-                            if (messageToUser != rule.description) {
-                              messageToUser = rule.description;
-                            } else {
-                              messageToUser = "";
-                            }
-                          });
-                        },
+                Flexible(
+                  flex: 1,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      for (Rule rule in ruleDefinitions)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: BaseButton(
+                          text: rule.name,
+                          width: 130,
+                          height: 35,
+                          textSize: 17,
+                          onPressed: () {
+                            setState(() {
+                              if (messageToUser != rule.description) {
+                                messageToUser = rule.description;
+                              } else {
+                                messageToUser = "";
+                              }
+                            });
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
