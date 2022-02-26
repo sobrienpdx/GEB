@@ -224,6 +224,19 @@ class Plus extends Term {
   T accept<T>(TermVisitor<T> visitor) => visitor.visitPlus(this);
 }
 
+class PopFantasy extends ProofLine {
+  PopFantasy() : super._();
+
+  @override
+  int get hashCode => (PopFantasy).hashCode;
+
+  @override
+  bool operator ==(Object other) => other is PopFantasy;
+
+  @override
+  T accept<T>(ProofLineVisitor<T> visitor) => visitor.visitPopFantasy(this);
+}
+
 abstract class ProofLine extends Node {
   factory ProofLine(String input) =>
       Parser.run(input, (p) => p.parseProofLine());

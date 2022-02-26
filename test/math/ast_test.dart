@@ -63,6 +63,12 @@ main() {
       expectEqual(ProofLine('['), Formula('P'), false);
     });
 
+    test('pop fantasy', () {
+      expect(PopFantasy().toString(), ']');
+      expectEqual(ProofLine(']'), PopFantasy(), true);
+      expectEqual(ProofLine(']'), Formula('P'), false);
+    });
+
     test('complex parsing', () {
       expect(Formula('<P∧Q>').toString(), '<P∧Q>');
       expect(Formula('<P∧~P>').toString(), '<P∧~P>');

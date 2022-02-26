@@ -143,6 +143,9 @@ class _Parser implements Parser {
       case '[':
         next();
         return PushFantasy();
+      case ']':
+        next();
+        return PopFantasy();
       default:
         return parseFormula();
     }

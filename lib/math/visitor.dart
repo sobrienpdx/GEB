@@ -33,6 +33,9 @@ class AnyVisitor implements Visitor<bool> {
       node.leftOperand.accept(this) || node.rightOperand.accept(this);
 
   @override
+  bool visitPopFantasy(PopFantasy node) => false;
+
+  @override
   bool visitPropositionalAtom(PropositionalAtom node) => false;
 
   @override
@@ -64,6 +67,7 @@ abstract class FormulaVisitor<T> {
 }
 
 abstract class ProofLineVisitor<T> implements FormulaVisitor<T> {
+  T visitPopFantasy(PopFantasy node);
   T visitPushFantasy(PushFantasy node);
 }
 

@@ -72,6 +72,11 @@ class PrettyPrinter implements Visitor<void> {
   }
 
   @override
+  void visitPopFantasy(PopFantasy node) {
+    buffer.write(']');
+  }
+
+  @override
   void visitPropositionalAtom(PropositionalAtom node) {
     buffer.write(node.name);
   }
