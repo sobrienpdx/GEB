@@ -34,7 +34,6 @@ class _GEBState extends State<GEB> {
   String messageToUser ="";
   Color validationColor = Colors.indigo;
   List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~", forall, exists];
-  List<Rule> ruleDefinitions = [joiningRule, separationRule, doubleTildeRule, fantasyRule, carryOverRule, detachmentRule, contrapositiveRule, deMorgansRule, switcherooRule];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
