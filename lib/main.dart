@@ -4,6 +4,7 @@ import 'package:geb/widgets/base_button.dart';
 import 'math/ast.dart';
 import 'math/rule_definitions.dart';
 import 'math/rules.dart';
+import 'math/state.dart';
 import 'math/symbols.dart';
 
 void main() => runApp(const GEBParser());
@@ -30,6 +31,7 @@ class GEB extends StatefulWidget {
 }
 
 class _GEBState extends State<GEB> {
+  FullState state = FullState();
   final _textController = TextEditingController();
   String messageToUser ="";
   Color validationColor = Colors.indigo;
