@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:geb/widgets/base_button.dart';
@@ -110,13 +109,16 @@ class _GEBState extends State<GEB> {
                         ],
                       ),
                       for (int i= 0; i< state.derivationLines.length; i++ )
-                      Text("${i+1}: ${state.derivationLines[i].line.toString()}",
-                          style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.primaries[colorDecider(i)]
-
-                      ),
+                      RichText(
+                        text: TextSpan(children: [
+                          for (var chunk in state.derivationLines[i].decorated)
+                            TextSpan(text: "${i+1}: ${chunk.text}",
+                                style: TextStyle(
+                                  color: chunk.isSelectable || !state.isSelectionNeeded ? Colors.primaries[colorDecider(i)] : Colors.primaries[colorDecider(i)].withOpacity(.3),
+                                    fontWeight: chunk.isSelectable || !state.isSelectionNeeded  ? FontWeight.bold: FontWeight.w100,
+                                    fontFamily: "NotoSansMath")),
+                        ],
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(18.0),
@@ -180,11 +182,8 @@ class _GEBState extends State<GEB> {
                           textSize: 17,
                           onPressed: () {
                             setState(() {
-                              if (messageToUser != rule.description) {
-                                messageToUser = rule.description;
-                              } else {
-                                messageToUser = "";
-                              }
+                              state.activateRule(rule);
+                              messageToUser = state.message;
                             });
                           },
                         ),
