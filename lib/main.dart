@@ -1,4 +1,5 @@
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:geb/widgets/base_button.dart';
 
@@ -112,8 +113,16 @@ class _GEBState extends State<GEB> {
                       RichText(
                         text: TextSpan(children: [
                           for (var chunk in state.derivationLines[i].decorated)
+                            // TODO(paul): "fix" by changing the string to "${i+1}: ${chunk.text} (selectable = ${chunk.isSelectable})"
                             TextSpan(text: "${i+1}: ${chunk.text}",
+                                recognizer: TapGestureRecognizer()..onTap = () {
+                              setState(() {
+                                print('About to select $chunk (selectable = ${chunk.isSelectable})');
+                                chunk.select();
+                              });
+                              },
                                 style: TextStyle(
+                                  backgroundColor: chunk.isSelected ? Colors.black.withOpacity(.9) : Colors.black.withOpacity(0),
                                   color: chunk.isSelectable || !state.isSelectionNeeded ? Colors.primaries[colorDecider(i)] : Colors.primaries[colorDecider(i)].withOpacity(.3),
                                     fontWeight: chunk.isSelectable || !state.isSelectionNeeded  ? FontWeight.bold: FontWeight.w100,
                                     fontFamily: "NotoSansMath")),
