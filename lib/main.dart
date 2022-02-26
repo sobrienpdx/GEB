@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:geb/widgets/base_button.dart';
 
@@ -36,6 +38,13 @@ class _GEBState extends State<GEB> {
   String messageToUser ="";
   Color validationColor = Colors.indigo;
   List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~", forall, exists];
+
+  int colorDecider(int i) {
+    List<int> acceptableColors = [0,1,2,3,4,5,6,7,8,9,10,13,14,15];
+    return acceptableColors[i%acceptableColors.length];
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,7 +110,14 @@ class _GEBState extends State<GEB> {
                         ],
                       ),
                       for (int i= 0; i< state.derivationLines.length; i++ )
-                      Text("${i+1}: ${state.derivationLines[i].line.toString()}"),
+                      Text("${i+1}: ${state.derivationLines[i].line.toString()}",
+                          style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.primaries[colorDecider(i)]
+
+                      ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.all(18.0),
                         child: Row(
