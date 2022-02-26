@@ -26,77 +26,77 @@ main() {
       var PandQ = And(P, Q);
       checkValidStep(
           [PandQ],
-          (proof) => proof.introduceDoubleTilde(FormulaContext(PandQ)),
+          (proof) => proof.introduceDoubleTilde(DerivationLineContext(PandQ)),
           Formula('~~<P&Q>'));
       checkInvalidStep(
-          [], (proof) => proof.introduceDoubleTilde(FormulaContext(PandQ)));
+          [], (proof) => proof.introduceDoubleTilde(DerivationLineContext(PandQ)));
       checkValidStep(
           [PandQ],
           (proof) =>
-              proof.introduceDoubleTilde(FormulaContext(PandQ).leftOperand),
+              proof.introduceDoubleTilde(DerivationLineContext(PandQ).leftOperand),
           Formula('<~~P&Q>'));
       checkValidStep(
           [PandQ],
           (proof) =>
-              proof.introduceDoubleTilde(FormulaContext(PandQ).rightOperand),
+              proof.introduceDoubleTilde(DerivationLineContext(PandQ).rightOperand),
           Formula('<P&~~Q>'));
       // ignore: non_constant_identifier_names
       var PorQ = Or(P, Q);
       checkValidStep(
           [PorQ],
           (proof) =>
-              proof.introduceDoubleTilde(FormulaContext(PorQ).leftOperand),
+              proof.introduceDoubleTilde(DerivationLineContext(PorQ).leftOperand),
           Formula('<~~P|Q>'));
       checkValidStep(
           [PorQ],
           (proof) =>
-              proof.introduceDoubleTilde(FormulaContext(PorQ).rightOperand),
+              proof.introduceDoubleTilde(DerivationLineContext(PorQ).rightOperand),
           Formula('<P|~~Q>'));
       // ignore: non_constant_identifier_names
       var PimpliesQ = Implies(P, Q);
       checkValidStep(
           [PimpliesQ],
           (proof) =>
-              proof.introduceDoubleTilde(FormulaContext(PimpliesQ).leftOperand),
+              proof.introduceDoubleTilde(DerivationLineContext(PimpliesQ).leftOperand),
           Formula('<~~P->Q>'));
       checkValidStep(
           [PimpliesQ],
           (proof) => proof
-              .introduceDoubleTilde(FormulaContext(PimpliesQ).rightOperand),
+              .introduceDoubleTilde(DerivationLineContext(PimpliesQ).rightOperand),
           Formula('<P->~~Q>'));
       var notP = Not(P);
       checkValidStep(
           [notP],
-          (proof) => proof.introduceDoubleTilde(FormulaContext(notP).operand),
+          (proof) => proof.introduceDoubleTilde(DerivationLineContext(notP).operand),
           Formula('~~~P'));
       var forall = Forall(a, Equation(a, a));
       checkValidStep(
           [forall],
-          (proof) => proof.introduceDoubleTilde(FormulaContext(forall).operand),
+          (proof) => proof.introduceDoubleTilde(DerivationLineContext(forall).operand),
           Formula('!a:~~a=a'));
       var exists = Exists(a, Equation(a, a));
       checkValidStep(
           [exists],
-          (proof) => proof.introduceDoubleTilde(FormulaContext(exists).operand),
+          (proof) => proof.introduceDoubleTilde(DerivationLineContext(exists).operand),
           Formula('?a:~~a=a'));
     });
 
     test('remove double-tilde', () {
       var notNotP = Formula('~~P');
       checkValidStep([notNotP],
-          (proof) => proof.removeDoubleTilde(FormulaContext(notNotP)), P);
+          (proof) => proof.removeDoubleTilde(DerivationLineContext(notNotP)), P);
       checkInvalidStep(
-          [], (proof) => proof.removeDoubleTilde(FormulaContext(notNotP)));
+          [], (proof) => proof.removeDoubleTilde(DerivationLineContext(notNotP)));
       checkInvalidStep(
-          [P], (proof) => proof.removeDoubleTilde(FormulaContext(P)));
+          [P], (proof) => proof.removeDoubleTilde(DerivationLineContext(P)));
       var notP = Formula('~P');
       checkInvalidStep(
-          [notP], (proof) => proof.removeDoubleTilde(FormulaContext(notP)));
+          [notP], (proof) => proof.removeDoubleTilde(DerivationLineContext(notP)));
       var notNotPandQ = Formula('<~~P&Q>');
       checkValidStep(
           [notNotPandQ],
           (proof) =>
-              proof.removeDoubleTilde(FormulaContext(notNotPandQ).leftOperand),
+              proof.removeDoubleTilde(DerivationLineContext(notNotPandQ).leftOperand),
           Formula('<P&Q>'));
     });
 
@@ -143,15 +143,15 @@ main() {
       var PimpliesQ = Formula('<P->Q>');
       checkValidStep(
           [PimpliesQ],
-          (proof) => proof.contrapositiveForward(FormulaContext(PimpliesQ)),
+          (proof) => proof.contrapositiveForward(DerivationLineContext(PimpliesQ)),
           Formula('<~Q->~P>'));
       checkInvalidStep([],
-          (proof) => proof.contrapositiveForward(FormulaContext(PimpliesQ)));
+          (proof) => proof.contrapositiveForward(DerivationLineContext(PimpliesQ)));
       var notPimpliesQ = Formula('~<P->Q>');
       checkValidStep(
           [notPimpliesQ],
           (proof) =>
-              proof.contrapositiveForward(FormulaContext(notPimpliesQ).operand),
+              proof.contrapositiveForward(DerivationLineContext(notPimpliesQ).operand),
           Formula('~<~Q->~P>'));
     });
 
@@ -160,22 +160,22 @@ main() {
       checkValidStep(
           [notPimpliesNotQ],
           (proof) =>
-              proof.contrapositiveReverse(FormulaContext(notPimpliesNotQ)),
+              proof.contrapositiveReverse(DerivationLineContext(notPimpliesNotQ)),
           Formula('<Q->P>'));
       checkInvalidStep(
           [],
           (proof) =>
-              proof.contrapositiveReverse(FormulaContext(notPimpliesNotQ)));
+              proof.contrapositiveReverse(DerivationLineContext(notPimpliesNotQ)));
       var notPandNotQ = Formula('<~P&~Q>');
       checkInvalidStep([notPandNotQ],
-          (proof) => proof.contrapositiveReverse(FormulaContext(notPandNotQ)));
+          (proof) => proof.contrapositiveReverse(DerivationLineContext(notPandNotQ)));
       // ignore: non_constant_identifier_names
       var PimpliesNotQ = Formula('<P->~Q>');
       checkInvalidStep([PimpliesNotQ],
-          (proof) => proof.contrapositiveReverse(FormulaContext(PimpliesNotQ)));
+          (proof) => proof.contrapositiveReverse(DerivationLineContext(PimpliesNotQ)));
       var notPimpliesQ = Formula('<~P->Q>');
       checkInvalidStep([notPimpliesQ],
-          (proof) => proof.contrapositiveReverse(FormulaContext(notPimpliesQ)));
+          (proof) => proof.contrapositiveReverse(DerivationLineContext(notPimpliesQ)));
     });
 
     test('de morgan', () {
@@ -183,68 +183,68 @@ main() {
       // ignore: non_constant_identifier_names
       var not_PorQ = Formula('~<P|Q>');
       checkValidStep([notPandNotQ],
-          (proof) => proof.deMorgan(FormulaContext(notPandNotQ)), not_PorQ);
+          (proof) => proof.deMorgan(DerivationLineContext(notPandNotQ)), not_PorQ);
       checkInvalidStep(
-          [], (proof) => proof.deMorgan(FormulaContext(notPandNotQ)));
+          [], (proof) => proof.deMorgan(DerivationLineContext(notPandNotQ)));
       // ignore: non_constant_identifier_names
       var PandNotQ = Formula('<P&~Q>');
       checkInvalidStep(
-          [PandNotQ], (proof) => proof.deMorgan(FormulaContext(PandNotQ)));
+          [PandNotQ], (proof) => proof.deMorgan(DerivationLineContext(PandNotQ)));
       var notPandQ = Formula('<~P&Q>');
       checkInvalidStep(
-          [notPandQ], (proof) => proof.deMorgan(FormulaContext(notPandQ)));
+          [notPandQ], (proof) => proof.deMorgan(DerivationLineContext(notPandQ)));
       // ignore: non_constant_identifier_names
       var not_notPandNotQ = Not(notPandNotQ);
       // ignore: non_constant_identifier_names
       var notNot_PorQ = Not(not_PorQ);
       checkValidStep(
           [not_notPandNotQ],
-          (proof) => proof.deMorgan(FormulaContext(not_notPandNotQ).operand),
+          (proof) => proof.deMorgan(DerivationLineContext(not_notPandNotQ).operand),
           notNot_PorQ);
       checkValidStep([not_PorQ],
-          (proof) => proof.deMorgan(FormulaContext(not_PorQ)), notPandNotQ);
-      checkInvalidStep([], (proof) => proof.deMorgan(FormulaContext(not_PorQ)));
+          (proof) => proof.deMorgan(DerivationLineContext(not_PorQ)), notPandNotQ);
+      checkInvalidStep([], (proof) => proof.deMorgan(DerivationLineContext(not_PorQ)));
       checkValidStep(
           [notNot_PorQ],
-          (proof) => proof.deMorgan(FormulaContext(notNot_PorQ).operand),
+          (proof) => proof.deMorgan(DerivationLineContext(notNot_PorQ).operand),
           not_notPandNotQ);
       // ignore: non_constant_identifier_names
       var not_PandQ = Formula('~<P&Q>');
       checkInvalidStep(
-          [not_PandQ], (proof) => proof.deMorgan(FormulaContext(not_PandQ)));
+          [not_PandQ], (proof) => proof.deMorgan(DerivationLineContext(not_PandQ)));
     });
 
     test('Switcheroo', () {
       // ignore: non_constant_identifier_names
       var PorQ = Formula('<P|Q>');
       var notPimpliesQ = Formula('<~P->Q>');
-      checkValidStep([PorQ], (proof) => proof.switcheroo(FormulaContext(PorQ)),
+      checkValidStep([PorQ], (proof) => proof.switcheroo(DerivationLineContext(PorQ)),
           notPimpliesQ);
-      checkInvalidStep([], (proof) => proof.switcheroo(FormulaContext(PorQ)));
+      checkInvalidStep([], (proof) => proof.switcheroo(DerivationLineContext(PorQ)));
       // ignore: non_constant_identifier_names
       var not_PorQ = Not(PorQ);
       // ignore: non_constant_identifier_names
       var not_notPimpliesQ = Not(notPimpliesQ);
       checkValidStep(
           [not_PorQ],
-          (proof) => proof.switcheroo(FormulaContext(not_PorQ).operand),
+          (proof) => proof.switcheroo(DerivationLineContext(not_PorQ).operand),
           not_notPimpliesQ);
       // ignore: non_constant_identifier_names
       var PandQ = Formula('<P&Q>');
       checkInvalidStep(
-          [PandQ], (proof) => proof.switcheroo(FormulaContext(PandQ)));
+          [PandQ], (proof) => proof.switcheroo(DerivationLineContext(PandQ)));
       checkValidStep([notPimpliesQ],
-          (proof) => proof.switcheroo(FormulaContext(notPimpliesQ)), PorQ);
+          (proof) => proof.switcheroo(DerivationLineContext(notPimpliesQ)), PorQ);
       checkInvalidStep(
-          [], (proof) => proof.switcheroo(FormulaContext(notPimpliesQ)));
+          [], (proof) => proof.switcheroo(DerivationLineContext(notPimpliesQ)));
       checkValidStep(
           [not_notPimpliesQ],
-          (proof) => proof.switcheroo(FormulaContext(not_notPimpliesQ).operand),
+          (proof) => proof.switcheroo(DerivationLineContext(not_notPimpliesQ).operand),
           not_PorQ);
       // ignore: non_constant_identifier_names
       var PimpliesQ = Formula('<P->Q>');
       checkInvalidStep(
-          [PimpliesQ], (proof) => proof.switcheroo(FormulaContext(PimpliesQ)));
+          [PimpliesQ], (proof) => proof.switcheroo(DerivationLineContext(PimpliesQ)));
     });
 
     test("Ganto's Ax", () {
@@ -252,9 +252,9 @@ main() {
       var step2 = proof.pushFantasy(Formula('<<P->Q>&<~P->Q>>'))();
       var step3 = proof.separate(step2, Side.left)();
       expect(step3, Formula('<P->Q>'));
-      var step4 = proof.contrapositiveForward(FormulaContext(step3))();
+      var step4 = proof.contrapositiveForward(DerivationLineContext(step3))();
       var step5 = proof.separate(step2, Side.right)();
-      var step6 = proof.contrapositiveForward(FormulaContext(step5))();
+      var step6 = proof.contrapositiveForward(DerivationLineContext(step5))();
       var step8 = proof.pushFantasy(Formula('~Q'))();
       expect(step8, Formula('~Q'));
       var step9 = proof.carryOver(step4)();
@@ -262,14 +262,14 @@ main() {
       var step11 = proof.carryOver(step6)();
       var step12 = proof.detach(step11)();
       var step13 = proof.join(step10, step12)();
-      var step14 = proof.deMorgan(FormulaContext(step13))();
+      var step14 = proof.deMorgan(DerivationLineContext(step13))();
       expect(step14, Formula('~<P|~P>'));
       var step16 = proof.popFantasy()();
-      var step17 = proof.contrapositiveReverse(FormulaContext(step16))();
+      var step17 = proof.contrapositiveReverse(DerivationLineContext(step16))();
       var step19 = proof.pushFantasy(Formula('~P'))();
       expect(step19, Formula('~P'));
       var step21 = proof.popFantasy()();
-      var step22 = proof.switcheroo(FormulaContext(step21))();
+      var step22 = proof.switcheroo(DerivationLineContext(step21))();
       expect(step22, Formula('<P|~P>'));
       var step23 = proof.detach(step17)();
       expect(step23, Formula('Q'));

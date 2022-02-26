@@ -1,26 +1,9 @@
+import 'package:geb/math/symbols.dart';
+
 import 'ast.dart';
 
-class Derivation {
-  final List<DerivationStep> _steps;
-
-  Derivation(Iterable<DerivationStep> steps)
-      : this._(steps.toList(growable: false));
-
-  Derivation._(this._steps);
-
-  DerivationStep operator [](int index) => _steps[index];
-}
-
-abstract class DerivationReginInfo {
+abstract class DerivationRegionInfo {
   StepRegionInfo? operator [](int index);
-}
-
-abstract class DerivationStep {}
-
-class FormulaStep extends DerivationStep {
-  final Formula formula;
-
-  FormulaStep(this.formula);
 }
 
 class FullLineStepRegionInfo extends StepRegionInfo {
@@ -29,18 +12,37 @@ class FullLineStepRegionInfo extends StepRegionInfo {
   FullLineStepRegionInfo._(this._formula);
 }
 
-class JoiningRule extends Rule<FullLineStepRegionInfo> {
+abstract class FullLineStepRule extends Rule<FullLineStepRegionInfo> {
+  const FullLineStepRule._(String name, String description)
+      : super._(name, description);
+
+  List<Formula> apply(FullLineStepRegionInfo x, FullLineStepRegionInfo y);
+
+  String preview(List<FullLineStepRegionInfo> regions);
+}
+
+class JoiningRule extends FullLineStepRule {
   const JoiningRule()
       : super._('joining', 'If x and y are theorems, then <x∧y> is a theorem');
 
-  List<DerivationStep> apply(
-          FullLineStepRegionInfo x, FullLineStepRegionInfo y) =>
-      [FormulaStep(And(x._formula, y._formula))];
+  @override
+  List<Formula> apply(FullLineStepRegionInfo x, FullLineStepRegionInfo y) =>
+      [And(x._formula, y._formula)];
 
-  FullLineStepRegionInfo? _getRegionsForLine(Derivation derivation, int line) {
-    var step = derivation[line];
-    if (step is FormulaStep) {
-      return FullLineStepRegionInfo._(step.formula);
+  @override
+  String preview(List<FullLineStepRegionInfo> regions) => [
+        '<',
+        regions.length > 0 ? regions[0]._formula : 'x',
+        and,
+        regions.length > 1 ? regions[1]._formula : 'y',
+        '>'
+      ].join();
+
+  FullLineStepRegionInfo? _getRegionsForLine(
+      List<DerivationLine> derivation, int index) {
+    var derivationLine = derivation[index];
+    if (derivationLine is Formula) {
+      return FullLineStepRegionInfo._(derivationLine);
     } else {
       return null;
     }
@@ -60,33 +62,32 @@ abstract class Rule<Info extends StepRegionInfo> {
 
   const Rule._(this.name, this.description);
 
-  List<Info?> getRegions(Derivation derivation) => [
-        for (int i = 0; i < derivation._steps.length; i++)
+  List<Info?> getRegions(List<DerivationLine> derivation) => [
+        for (int i = 0; i < derivation.length; i++)
           _getRegionsForLine(derivation, i)
       ];
 
-  Info? _getRegionsForLine(Derivation derivation, int line);
+  @override
+  String toString() => name;
+
+  Info? _getRegionsForLine(List<DerivationLine> derivation, int index);
 }
 
 class SeparationRule extends Rule<SubexpressionsStepRegionInfo> {
   const SeparationRule()
       : super._('separation',
-            'If <x∧y> is a theorum, then both x and y are theorems. ');
+            'If <x∧y> is a theorem, then both x and y are theorems. ');
 
-  List<DerivationStep> apply(PartialLineStepRegionInfo x) =>
-      [FormulaStep(x.formula)];
+  List<Formula> apply(PartialLineStepRegionInfo x) => [x.formula];
 
   SubexpressionsStepRegionInfo? _getRegionsForLine(
-      Derivation derivation, int line) {
-    var step = derivation[line];
-    if (step is FormulaStep) {
-      var formula = step.formula;
-      if (formula is And) {
-        return SubexpressionsStepRegionInfo([
-          PartialLineStepRegionInfo(formula.leftOperand),
-          PartialLineStepRegionInfo(formula.rightOperand)
-        ]);
-      }
+      List<DerivationLine> derivation, int index) {
+    var line = derivation[index];
+    if (line is And) {
+      return SubexpressionsStepRegionInfo([
+        PartialLineStepRegionInfo(line.leftOperand),
+        PartialLineStepRegionInfo(line.rightOperand)
+      ]);
     }
     return null;
   }
@@ -107,6 +108,6 @@ class UnimplementedRule extends Rule<StepRegionInfo> {
       : super._(name, description);
 
   @override
-  Never _getRegionsForLine(Derivation derivation, int line) =>
+  Never _getRegionsForLine(List<DerivationLine> derivation, int index) =>
       throw UnimplementedError();
 }

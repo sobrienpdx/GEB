@@ -57,6 +57,18 @@ main() {
       expectEqual(Formula('<P->Q>'), Formula('<P->R>'), false);
     });
 
+    test('push fantasy', () {
+      expect(PushFantasy().toString(), '[');
+      expectEqual(DerivationLine('['), PushFantasy(), true);
+      expectEqual(DerivationLine('['), Formula('P'), false);
+    });
+
+    test('pop fantasy', () {
+      expect(PopFantasy().toString(), ']');
+      expectEqual(DerivationLine(']'), PopFantasy(), true);
+      expectEqual(DerivationLine(']'), Formula('P'), false);
+    });
+
     test('complex parsing', () {
       expect(Formula('<P∧Q>').toString(), '<P∧Q>');
       expect(Formula('<P∧~P>').toString(), '<P∧~P>');

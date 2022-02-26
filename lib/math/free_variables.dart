@@ -8,15 +8,19 @@ class ContainsFreeVariable extends AnyVisitor {
   ContainsFreeVariable(this.variable);
 
   @override
-  bool visitExists(Exists node) =>
-      node.variable.name == variable.name ? false : node.operand.accept(this);
+  bool visitExists(Exists node, void param) =>
+      node.variable.name == variable.name
+          ? false
+          : node.operand.accept(this, param);
 
   @override
-  bool visitForall(Forall node) =>
-      node.variable.name == variable.name ? false : node.operand.accept(this);
+  bool visitForall(Forall node, void param) =>
+      node.variable.name == variable.name
+          ? false
+          : node.operand.accept(this, param);
 
   @override
-  bool visitVariable(Variable node) => node.name == variable.name;
+  bool visitVariable(Variable node, void param) => node.name == variable.name;
 }
 
 class ContainsVariable extends AnyVisitor {
@@ -25,18 +29,18 @@ class ContainsVariable extends AnyVisitor {
   const ContainsVariable._();
 
   @override
-  bool visitVariable(Variable node) => true;
+  bool visitVariable(Variable node, void param) => true;
 }
 
 class IsOpen extends AnyVisitor {
   final Set<String> quantifiedVariables = {};
 
   @override
-  bool visitExists(Exists node) {
+  bool visitExists(Exists node, void param) {
     var variableName = node.variable.name;
     var newlyAdded = quantifiedVariables.add(variableName);
     assert(newlyAdded);
-    var result = node.operand.accept(this);
+    var result = node.operand.accept(this, param);
     if (newlyAdded) {
       quantifiedVariables.remove(variableName);
     }
@@ -44,11 +48,11 @@ class IsOpen extends AnyVisitor {
   }
 
   @override
-  bool visitForall(Forall node) {
+  bool visitForall(Forall node, void param) {
     var variableName = node.variable.name;
     var newlyAdded = quantifiedVariables.add(variableName);
     assert(newlyAdded);
-    var result = node.operand.accept(this);
+    var result = node.operand.accept(this, param);
     if (newlyAdded) {
       quantifiedVariables.remove(variableName);
     }
@@ -56,5 +60,6 @@ class IsOpen extends AnyVisitor {
   }
 
   @override
-  bool visitVariable(Variable node) => !quantifiedVariables.contains(node.name);
+  bool visitVariable(Variable node, void param) =>
+      !quantifiedVariables.contains(node.name);
 }

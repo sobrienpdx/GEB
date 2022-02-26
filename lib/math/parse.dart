@@ -11,6 +11,8 @@ abstract class Parser {
 
   Formula parseFormula();
 
+  DerivationLine parseProofLine();
+
   Term parseTerm();
 
   static T run<T>(String input, T Function(Parser) parseFunction) {
@@ -132,6 +134,20 @@ class _Parser implements Parser {
             (variable, operand) => Exists(variable, operand));
       default:
         return parseEquation();
+    }
+  }
+
+  @override
+  DerivationLine parseProofLine() {
+    switch (peek()) {
+      case '[':
+        next();
+        return PushFantasy();
+      case ']':
+        next();
+        return PopFantasy();
+      default:
+        return parseFormula();
     }
   }
 

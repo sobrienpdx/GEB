@@ -19,28 +19,28 @@ class Proof {
     return _OrdinaryProofStep(this, x);
   }
 
-  ProofStep contrapositiveForward(FormulaContext context) {
-    var formula = context.formula;
+  ProofStep contrapositiveForward(DerivationLineContext context) {
+    var formula = context.derivationLine;
     if (formula is! Implies) return InvalidProofStep();
     return _rule(
-        [context.top],
+        [context.top as Formula],
         context.substitute(
             Implies(Not(formula.rightOperand), Not(formula.leftOperand))));
   }
 
-  ProofStep contrapositiveReverse(FormulaContext context) {
-    var formula = context.formula;
+  ProofStep contrapositiveReverse(DerivationLineContext context) {
+    var formula = context.derivationLine;
     if (formula is! Implies) return InvalidProofStep();
     var leftOperand = formula.leftOperand;
     if (leftOperand is! Not) return InvalidProofStep();
     var rightOperand = formula.rightOperand;
     if (rightOperand is! Not) return InvalidProofStep();
-    return _rule([context.top],
+    return _rule([context.top as Formula],
         context.substitute(Implies(rightOperand.operand, leftOperand.operand)));
   }
 
-  ProofStep deMorgan(FormulaContext context) {
-    var formula = context.formula;
+  ProofStep deMorgan(DerivationLineContext context) {
+    var formula = context.derivationLine;
     Formula replacement;
     if (formula is And) {
       var leftOperand = formula.leftOperand;
@@ -55,15 +55,16 @@ class Proof {
     } else {
       return InvalidProofStep();
     }
-    return _rule([context.top], context.substitute(replacement));
+    return _rule([context.top as Formula], context.substitute(replacement));
   }
 
   ProofStep detach(Formula x) => x is Implies
       ? _rule([x.leftOperand, x], x.rightOperand)
       : InvalidProofStep();
 
-  ProofStep introduceDoubleTilde(FormulaContext context) =>
-      _rule([context.top], context.substitute(Not(Not(context.formula))));
+  ProofStep introduceDoubleTilde(DerivationLineContext context) => _rule(
+      [context.top as Formula],
+      context.substitute(Not(Not(context.derivationLine as Formula))));
 
   bool isTheorem(Formula x) => _state.isTheorem(x);
 
@@ -78,19 +79,19 @@ class Proof {
   ProofStep pushFantasy(Formula premise) =>
       _PushFantasyProofStep(this, premise);
 
-  ProofStep removeDoubleTilde(FormulaContext context) {
-    var formula = context.formula;
+  ProofStep removeDoubleTilde(DerivationLineContext context) {
+    var formula = context.derivationLine;
     if (formula is! Not) return InvalidProofStep();
     var operand = formula.operand;
     if (operand is! Not) return InvalidProofStep();
-    return _rule([context.top], context.substitute(operand.operand));
+    return _rule([context.top as Formula], context.substitute(operand.operand));
   }
 
   ProofStep separate(Formula x, Side side) =>
       x is And ? _rule([x], x.getOperand(side)) : InvalidProofStep();
 
-  ProofStep switcheroo(FormulaContext context) {
-    var formula = context.formula;
+  ProofStep switcheroo(DerivationLineContext context) {
+    var formula = context.derivationLine;
     Formula replacement;
     if (formula is Or) {
       replacement = Implies(Not(formula.leftOperand), formula.rightOperand);
@@ -101,7 +102,7 @@ class Proof {
     } else {
       return InvalidProofStep();
     }
-    return _rule([context.top], context.substitute(replacement));
+    return _rule([context.top as Formula], context.substitute(replacement));
   }
 
   ProofStep _rule(List<Formula> premises, Formula theorem) {
