@@ -30,9 +30,8 @@ class FullLineStepRegionInfo extends StepRegionInfo {
 }
 
 class JoiningRule extends Rule<FullLineStepRegionInfo> {
-  factory JoiningRule() => const JoiningRule._();
-
-  const JoiningRule._() : super('joining');
+  const JoiningRule()
+      : super._('joining', 'If x and y are theorems, then <x∧y> is a theorem');
 
   List<DerivationStep> apply(
           FullLineStepRegionInfo x, FullLineStepRegionInfo y) =>
@@ -54,10 +53,12 @@ class PartialLineStepRegionInfo {
   PartialLineStepRegionInfo(this._formula);
 }
 
-abstract class Rule<Info> {
+abstract class Rule<Info extends StepRegionInfo> {
   final String name;
 
-  const Rule(this.name);
+  final String description;
+
+  const Rule._(this.name, this.description);
 
   List<Info?> getRegions(Derivation derivation) => [
         for (int i = 0; i < derivation._steps.length; i++)
@@ -68,9 +69,9 @@ abstract class Rule<Info> {
 }
 
 class SeparationRule extends Rule<SubexpressionsStepRegionInfo> {
-  factory SeparationRule() => const SeparationRule._();
-
-  const SeparationRule._() : super('separation');
+  const SeparationRule()
+      : super._('separation',
+            'If <x∧y> is a theorum, then both x and y are theorems. ');
 
   List<DerivationStep> apply(PartialLineStepRegionInfo x) =>
       [FormulaStep(x._formula)];
@@ -93,8 +94,17 @@ class SeparationRule extends Rule<SubexpressionsStepRegionInfo> {
 
 abstract class StepRegionInfo {}
 
-class SubexpressionsStepRegionInfo {
+class SubexpressionsStepRegionInfo extends StepRegionInfo {
   final List<PartialLineStepRegionInfo> _subexpressions;
 
   SubexpressionsStepRegionInfo(this._subexpressions);
+}
+
+class UnimplementedRule extends Rule<StepRegionInfo> {
+  const UnimplementedRule(String name, String description)
+      : super._(name, description);
+
+  @override
+  Never _getRegionsForLine(Derivation derivation, int line) =>
+      throw UnimplementedError();
 }

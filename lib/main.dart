@@ -3,6 +3,7 @@ import 'package:geb/widgets/base_button.dart';
 
 import 'math/ast.dart';
 import 'math/rule_definitions.dart';
+import 'math/rules.dart';
 import 'math/symbols.dart';
 
 void main() => runApp(const GEBParser());
@@ -33,7 +34,7 @@ class _GEBState extends State<GEB> {
   String messageToUser ="";
   Color validationColor = Colors.indigo;
   List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~", forall, exists];
-  List<String> ruleDefinitions = [joiningRule, separationRule, doubleTildeRule, fantasyRule, carryOverRule, detachmentRule, contrapositiveRule, deMorgansRule, switcherooRule];
+  List<Rule> ruleDefinitions = [joiningRule, separationRule, doubleTildeRule, fantasyRule, carryOverRule, detachmentRule, contrapositiveRule, deMorgansRule, switcherooRule];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,18 +136,18 @@ class _GEBState extends State<GEB> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    for (String rule in ruleDefinitions)
+                    for (Rule rule in ruleDefinitions)
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: BaseButton(
-                        text: "I'm a rule",
+                        text: rule.name,
                         width: 120,
                         height: 35,
                         textSize: 20,
                         onPressed: () {
                           setState(() {
-                            if (messageToUser != rule) {
-                              messageToUser = rule;
+                            if (messageToUser != rule.description) {
+                              messageToUser = rule.description;
                             } else {
                               messageToUser = "";
                             }
