@@ -83,6 +83,8 @@ class FullState {
           DerivationLineInfo._(this, i)
       ];
 
+  bool get isSelectionNeeded => _interactiveState.isSelectionNeeded;
+
   String get message => _interactiveState.message;
 
   String? get previewLine => _interactiveState.previewLine;
@@ -108,6 +110,8 @@ class FullState {
 
 abstract class InteractiveState {
   InteractiveState._();
+
+  bool get isSelectionNeeded;
 
   String get message;
 
@@ -137,6 +141,9 @@ class SelectRegion extends InteractiveState {
   SelectRegion(this._rule, this._interactiveLines) : super._();
 
   @override
+  bool get isSelectionNeeded => true;
+
+  @override
   String get message => 'Select a region for $_rule';
 
   @override
@@ -153,6 +160,9 @@ class SelectTwoLines extends InteractiveState {
   final List<int> selectedLines = [];
 
   SelectTwoLines(this.regions, this.rule) : super._();
+
+  @override
+  bool get isSelectionNeeded => true;
 
   @override
   String get message => 'Select 2 lines for $rule';
@@ -207,6 +217,9 @@ class _Quiescent extends InteractiveState {
   final String message;
 
   _Quiescent({this.message = ''}) : super._();
+
+  @override
+  bool get isSelectionNeeded => false;
 
   List<InteractiveText> decorateLine(
       FullState state, DerivationLine line, int index) {
