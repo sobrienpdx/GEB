@@ -59,14 +59,14 @@ main() {
 
     test('push fantasy', () {
       expect(PushFantasy().toString(), '[');
-      expectEqual(ProofLine('['), PushFantasy(), true);
-      expectEqual(ProofLine('['), Formula('P'), false);
+      expectEqual(DerivationLine('['), PushFantasy(), true);
+      expectEqual(DerivationLine('['), Formula('P'), false);
     });
 
     test('pop fantasy', () {
       expect(PopFantasy().toString(), ']');
-      expectEqual(ProofLine(']'), PopFantasy(), true);
-      expectEqual(ProofLine(']'), Formula('P'), false);
+      expectEqual(DerivationLine(']'), PopFantasy(), true);
+      expectEqual(DerivationLine(']'), Formula('P'), false);
     });
 
     test('complex parsing', () {

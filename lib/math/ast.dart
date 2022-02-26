@@ -59,6 +59,15 @@ abstract class BinaryFormula extends Formula {
   Formula _rebuild(Formula leftOperand, Formula rightOperand);
 }
 
+abstract class DerivationLine extends Node {
+  factory DerivationLine(String input) =>
+      Parser.run(input, (p) => p.parseProofLine());
+
+  DerivationLine._();
+
+  T accept<T>(ProofLineVisitor<T> visitor);
+}
+
 class Equation extends TNTAtom {
   final Term leftSide;
   final Term rightSide;
@@ -117,7 +126,7 @@ class Forall extends Quantification {
       Forall(variable, operand);
 }
 
-abstract class Formula extends ProofLine {
+abstract class Formula extends DerivationLine {
   factory Formula(String input) => Parser.run(input, (p) => p.parseFormula());
 
   Formula._() : super._();
@@ -224,7 +233,7 @@ class Plus extends Term {
   T accept<T>(TermVisitor<T> visitor) => visitor.visitPlus(this);
 }
 
-class PopFantasy extends ProofLine {
+class PopFantasy extends DerivationLine {
   PopFantasy() : super._();
 
   @override
@@ -235,15 +244,6 @@ class PopFantasy extends ProofLine {
 
   @override
   T accept<T>(ProofLineVisitor<T> visitor) => visitor.visitPopFantasy(this);
-}
-
-abstract class ProofLine extends Node {
-  factory ProofLine(String input) =>
-      Parser.run(input, (p) => p.parseProofLine());
-
-  ProofLine._();
-
-  T accept<T>(ProofLineVisitor<T> visitor);
 }
 
 class PropositionalAtom extends Atom {
@@ -276,7 +276,7 @@ class PropositionalAtom extends Atom {
   }
 }
 
-class PushFantasy extends ProofLine {
+class PushFantasy extends DerivationLine {
   PushFantasy() : super._();
 
   @override

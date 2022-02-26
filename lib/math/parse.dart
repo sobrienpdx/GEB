@@ -11,7 +11,7 @@ abstract class Parser {
 
   Formula parseFormula();
 
-  ProofLine parseProofLine();
+  DerivationLine parseProofLine();
 
   Term parseTerm();
 
@@ -138,7 +138,7 @@ class _Parser implements Parser {
   }
 
   @override
-  ProofLine parseProofLine() {
+  DerivationLine parseProofLine() {
     switch (peek()) {
       case '[':
         next();
