@@ -14,8 +14,11 @@ class PrettyPrinter extends PrettyPrinterBase {
 }
 
 abstract class PrettyPrinterBase
-    implements ProofLineVisitor<void, DerivationLineContext>, TermVisitor<void, void> {
-  void dispatchFormula(Formula node, DerivationLineContext context) {
+    implements
+        ProofLineVisitor<void, DerivationLineContext>,
+        TermVisitor<void, void> {
+  void dispatchDerivationLine(
+      DerivationLine node, DerivationLineContext context) {
     node.accept(this, context);
   }
 
@@ -26,9 +29,9 @@ abstract class PrettyPrinterBase
   @override
   void visitAnd(And node, DerivationLineContext context) {
     write('<');
-    dispatchFormula(node.leftOperand, context.leftOperand);
+    dispatchDerivationLine(node.leftOperand, context.leftOperand);
     write(and);
-    dispatchFormula(node.rightOperand, context.rightOperand);
+    dispatchDerivationLine(node.rightOperand, context.rightOperand);
     write('>');
   }
 
@@ -44,7 +47,7 @@ abstract class PrettyPrinterBase
     write(exists);
     visitVariable(node.variable, null);
     write(':');
-    dispatchFormula(node.operand, context.operand);
+    dispatchDerivationLine(node.operand, context.operand);
   }
 
   @override
@@ -52,30 +55,30 @@ abstract class PrettyPrinterBase
     write(forall);
     visitVariable(node.variable, null);
     write(':');
-    dispatchFormula(node.operand, context.operand);
+    dispatchDerivationLine(node.operand, context.operand);
   }
 
   @override
   void visitImplies(Implies node, DerivationLineContext context) {
     write('<');
-    dispatchFormula(node.leftOperand, context.leftOperand);
+    dispatchDerivationLine(node.leftOperand, context.leftOperand);
     write(implies);
-    dispatchFormula(node.rightOperand, context.rightOperand);
+    dispatchDerivationLine(node.rightOperand, context.rightOperand);
     write('>');
   }
 
   @override
   void visitNot(Not node, DerivationLineContext context) {
     write('~');
-    dispatchFormula(node.operand, context.operand);
+    dispatchDerivationLine(node.operand, context.operand);
   }
 
   @override
   void visitOr(Or node, DerivationLineContext context) {
     write('<');
-    dispatchFormula(node.leftOperand, context.leftOperand);
+    dispatchDerivationLine(node.leftOperand, context.leftOperand);
     write(or);
-    dispatchFormula(node.rightOperand, context.rightOperand);
+    dispatchDerivationLine(node.rightOperand, context.rightOperand);
     write('>');
   }
 
@@ -94,7 +97,8 @@ abstract class PrettyPrinterBase
   }
 
   @override
-  void visitPropositionalAtom(PropositionalAtom node, DerivationLineContext context) {
+  void visitPropositionalAtom(
+      PropositionalAtom node, DerivationLineContext context) {
     write(node.name);
   }
 

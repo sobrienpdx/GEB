@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:geb/math/rule_definitions.dart';
 
 import 'ast.dart';
@@ -14,40 +16,61 @@ class DerivationLineInfo {
 
   DerivationLineInfo._(this._state, this._index);
 
-  List<InteractiveText> get decorated {
-    var text = line.toString();
-    return [
-      _isSelectable ? _SelectableText(text, select: _select) : _SimpleText(text)
-    ];
-  }
+  List<InteractiveText> get decorated =>
+      _state._interactiveState.decorateLine(_state, line, _index);
 
   DerivationLine get line => _state._derivation[_index];
 
-  bool get _isSelectable => _state._interactiveState.isLineSelectable(_index);
+  @override
+  String toString() => 'ProofLine($line)';
+}
 
-  bool get _isSelected => _state._interactiveState.isLineSelected(_index);
+class DoubleTildePrinter extends _InteractiveTextPrinter {
+  final FullState state;
+
+  final Proof proof;
+
+  DoubleTildePrinter(this.state, this.proof);
 
   @override
-  String toString() {
-    var parts = [
-      line,
-      if (_isSelectable) 'selectable',
-      if (_isSelected) 'selected'
-    ];
-    return 'ProofLine(${parts.join(', ')})';
+  void dispatchDerivationLine(
+      DerivationLine node, DerivationLineContext context) {
+    flush();
+    if (node is Formula) {
+      result.add(_SelectableText(middleDot, select: () {
+        state._finishRule(
+            doubleTildeRule, [proof.introduceDoubleTilde(context)()]);
+      }));
+    }
+    super.dispatchDerivationLine(node, context);
   }
 
-  void _select() {
-    if (_isSelectable) {
-      _state._interactiveState.select(_state, _index);
+  @override
+  void visitNot(Not node, DerivationLineContext context) {
+    var operand = node.operand;
+    if (operand is Not) {
+      flush();
+      result.add(_SelectableText('~~', select: () {
+        state
+            ._finishRule(doubleTildeRule, [proof.removeDoubleTilde(context)()]);
+      }));
+      dispatchDerivationLine(operand.operand, context.operand.operand);
     } else {
-      assert(false, "Tried to select a line that wasn't selectable");
+      super.visitNot(node, context);
     }
+  }
+
+  static List<InteractiveText> run(
+      FullState state, Proof proof, DerivationLine line) {
+    var printer = DoubleTildePrinter(state, proof);
+    printer.dispatchDerivationLine(line, DerivationLineContext(line));
+    printer.flush();
+    return printer.result;
   }
 }
 
 class FullState {
-  _InteractiveState _interactiveState = _Quiescent();
+  InteractiveState _interactiveState = _Quiescent();
 
   final List<DerivationLine> _derivation = [];
 
@@ -64,14 +87,9 @@ class FullState {
 
   String? get previewLine => _interactiveState.previewLine;
 
-  void activateRule(Rule<StepRegionInfo> rule) {
+  void activateRule(Rule rule) {
     try {
-      if (rule is FullLineStepRule) {
-        _interactiveState = _SelectTwoLines(rule.getRegions(_derivation), rule);
-      } else {
-        throw UnimplementedError(
-            '''activateRule doesn't know how to handle the rule "$rule"''');
-      }
+      _interactiveState = rule.activate(this, _derivation);
     } on UnimplementedError catch (e) {
       _interactiveState = _Quiescent(message: 'Unimplemented: ${e.message}');
     }
@@ -88,6 +106,17 @@ class FullState {
   }
 }
 
+abstract class InteractiveState {
+  InteractiveState._();
+
+  String get message;
+
+  String? get previewLine => null;
+
+  List<InteractiveText> decorateLine(
+      FullState state, DerivationLine line, int index);
+}
+
 abstract class InteractiveText {
   final String text;
 
@@ -100,49 +129,58 @@ abstract class InteractiveText {
   void select();
 }
 
-class _DoubleTildePrinter extends _InteractiveTextPrinter {
-  final FullState state;
+class SelectRegion extends InteractiveState {
+  final Rule _rule;
 
-  final Proof proof;
+  final List<List<InteractiveText>> _interactiveLines;
 
-  _DoubleTildePrinter(this.state, this.proof);
-
-  @override
-  void dispatchFormula(Formula node, DerivationLineContext context) {
-    flush();
-    result.add(_SelectableText(middleDot, select: () {
-      state._finishRule(
-          doubleTildeRule, [proof.introduceDoubleTilde(context)()]);
-    }));
-    super.dispatchFormula(node, context);
-  }
+  SelectRegion(this._rule, this._interactiveLines) : super._();
 
   @override
-  void visitNot(Not node, DerivationLineContext context) {
-    var operand = node.operand;
-    if (operand is Not) {
-      flush();
-      result.add(_SelectableText('~~', select: () {
-        state
-            ._finishRule(doubleTildeRule, [proof.removeDoubleTilde(context)()]);
-      }));
-      dispatchFormula(operand.operand, context.operand.operand);
-    } else {
-      super.visitNot(node, context);
-    }
-  }
+  String get message => 'Select a region for $_rule';
+
+  @override
+  List<InteractiveText> decorateLine(
+          FullState state, DerivationLine line, int index) =>
+      _interactiveLines[index];
 }
 
-abstract class _InteractiveState {
-  String get message;
+class SelectTwoLines extends InteractiveState {
+  final FullLineStepRule rule;
 
-  String? get previewLine => null;
+  final List<FullLineStepRegionInfo?> regions;
 
-  bool isLineSelectable(int index) => false;
+  final List<int> selectedLines = [];
 
-  bool isLineSelected(int index) => false;
+  SelectTwoLines(this.regions, this.rule) : super._();
 
-  void select(FullState state, int index) {}
+  @override
+  String get message => 'Select 2 lines for $rule';
+
+  @override
+  String get previewLine =>
+      rule.preview([for (var index in selectedLines) regions[index]!]);
+
+  List<InteractiveText> decorateLine(
+      FullState state, DerivationLine line, int index) {
+    var text = line.toString();
+    return [
+      regions[index] != null
+          ? _SelectableText(text,
+              select: () {
+                selectedLines.add(index);
+                if (selectedLines.length == 2) {
+                  var selectedLinesList = selectedLines.toList();
+                  state._finishRule(
+                      rule,
+                      rule.apply(regions[selectedLinesList[0]]!,
+                          regions[selectedLinesList[1]]!));
+                }
+              },
+              isSelected: () => selectedLines.contains(index))
+          : _SimpleText(text)
+    ];
+  }
 }
 
 class _InteractiveTextPrinter extends PrettyPrinterBase {
@@ -164,11 +202,17 @@ class _InteractiveTextPrinter extends PrettyPrinterBase {
   }
 }
 
-class _Quiescent extends _InteractiveState {
+class _Quiescent extends InteractiveState {
   @override
   final String message;
 
-  _Quiescent({this.message = ''});
+  _Quiescent({this.message = ''}) : super._();
+
+  List<InteractiveText> decorateLine(
+      FullState state, DerivationLine line, int index) {
+    var text = line.toString();
+    return [_SimpleText(text)];
+  }
 }
 
 class _SelectableText extends InteractiveText {
@@ -196,41 +240,6 @@ class _SelectableText extends InteractiveText {
   static bool _alwaysFalse() => false;
 }
 
-class _SelectTwoLines extends _InteractiveState {
-  final FullLineStepRule rule;
-
-  final List<FullLineStepRegionInfo?> regions;
-
-  final List<int> selectedLines = [];
-
-  _SelectTwoLines(this.regions, this.rule);
-
-  @override
-  String get message => 'Select 2 lines for $rule';
-
-  @override
-  String get previewLine =>
-      rule.preview([for (var index in selectedLines) regions[index]!]);
-
-  @override
-  bool isLineSelectable(int index) => regions[index] != null;
-
-  @override
-  bool isLineSelected(int index) => selectedLines.contains(index);
-
-  @override
-  void select(FullState state, int index) {
-    selectedLines.add(index);
-    if (selectedLines.length == 2) {
-      var selectedLinesList = selectedLines.toList();
-      state._finishRule(
-          rule,
-          rule.apply(
-              regions[selectedLinesList[0]]!, regions[selectedLinesList[1]]!));
-    }
-  }
-}
-
 class _SimpleText extends InteractiveText {
   _SimpleText(String text) : super(text);
 
@@ -244,4 +253,6 @@ class _SimpleText extends InteractiveText {
   void select() {
     assert(false, 'Not selectable');
   }
+
+  String toString() => '_SimpleText(${json.encode(text)})';
 }

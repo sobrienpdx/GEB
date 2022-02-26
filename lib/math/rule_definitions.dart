@@ -16,8 +16,7 @@ const Rule joiningRule = JoiningRule();
 
 const Rule separationRule = SeparationRule();
 
-const Rule doubleTildeRule = UnimplementedRule('double tilde',
-    "The string '~~' can be deleted from any theorem. It can also be inserted into any theorem, provided that the resulting string is itself well formed.");
+const Rule doubleTildeRule = DoubleTildeRule();
 
 const Rule fantasyRule = UnimplementedRule('fantasy',
     'If y can be derived when x is assumed to be a theorem, then <x⊃y> is a theorem.');

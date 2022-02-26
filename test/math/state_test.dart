@@ -40,5 +40,25 @@ main() {
       expect(state.derivationLines, hasLength(2));
       expect(state.derivationLines[1].line, Formula('<P&P>'));
     });
+
+    group('double tilde: ', () {
+      test('introduce at top', () {
+        state.addDerivationLine(Formula('P'));
+        state.activateRule(doubleTildeRule);
+        expect(state.message, 'Select a region for double tilde');
+        var decoratedLine = state.derivationLines[0].decorated;
+        expect(decoratedLine, hasLength(2));
+        expect(decoratedLine[0].text, middleDot);
+        expect(decoratedLine[0].isSelectable, true);
+        expect(decoratedLine[0].isSelected, false);
+        expect(decoratedLine[1].text, 'P');
+        expect(decoratedLine[1].isSelectable, false);
+        expect(decoratedLine[1].isSelected, false);
+        expect(state.derivationLines, hasLength(1));
+        decoratedLine[0].select();
+        expect(state.derivationLines, hasLength(2));
+        expect(state.derivationLines[1].line, Formula('~~P'));
+      });
+    });
   });
 }
