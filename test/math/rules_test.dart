@@ -1,4 +1,5 @@
 import 'package:geb/math/ast.dart';
+import 'package:geb/math/proof.dart';
 import 'package:geb/math/rules.dart';
 import 'package:test/test.dart';
 
@@ -6,17 +7,19 @@ main() {
   test('joining', () {
     var derivation = makeDerivation(['P', 'Q']);
     var rule = JoiningRule();
-    var regions = rule.getRegions(derivation);
-    expect(regions, hasLength(2));
-    expect(regions[0], TypeMatcher<FullLineStepRegionInfo>());
-    expect(regions[1], TypeMatcher<FullLineStepRegionInfo>());
-    checkResult(rule.apply(regions[0]!, regions[1]!), ['<P&Q>']);
+    var isSelectable = rule.computeIsSelectable(derivation.lines);
+    expect(isSelectable, hasLength(2));
+    expect(isSelectable[0], true);
+    expect(isSelectable[1], true);
+    rule.apply(derivation, derivation.lines[0] as Formula,
+        derivation.lines[1] as Formula);
+    expect(derivation.lines.last, Formula('<P&Q>'));
   });
 
   test('separation', () {
     var derivation = makeDerivation(['P', 'Q', '<P&Q>']);
     var rule = SeparationRule();
-    var regions = rule.getRegions(derivation);
+    var regions = rule.getRegions(derivation.lines);
     expect(regions, hasLength(3));
     expect(regions[0], isNull);
     expect(regions[1], isNull);
@@ -33,5 +36,10 @@ void checkResult(List<Formula> result, List<String> newLines) {
   expect(result, [for (var line in newLines) Formula(line)]);
 }
 
-List<Formula> makeDerivation(Iterable<String> lines) =>
-    [for (var line in lines) Formula(line)];
+DerivationState makeDerivation(Iterable<String> lines) {
+  var derivation = DerivationState();
+  for (var line in lines) {
+    derivation.addLine(DerivationLine(line));
+  }
+  return derivation;
+}

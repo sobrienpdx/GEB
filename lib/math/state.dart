@@ -19,7 +19,7 @@ class DerivationLineInfo {
   List<InteractiveText> get decorated =>
       _state._interactiveState.decorateLine(_state, line, _index);
 
-  DerivationLine get line => _state._derivation[_index];
+  DerivationLine get line => _state._derivation.lines[_index];
 
   @override
   String toString() => 'ProofLine($line)';
@@ -28,7 +28,7 @@ class DerivationLineInfo {
 class DoubleTildePrinter extends _InteractiveTextPrinter {
   final FullState state;
 
-  final Proof proof;
+  final DerivationState proof;
 
   DoubleTildePrinter(this.state, this.proof);
 
@@ -37,9 +37,9 @@ class DoubleTildePrinter extends _InteractiveTextPrinter {
       DerivationLine node, DerivationLineContext context) {
     flush();
     if (node is Formula) {
-      result.add(_SelectableText(middleDot, select: () {
-        state._finishRule(
-            doubleTildeRule, [proof.introduceDoubleTilde(context)()]);
+      result.add(_SelectableText(star, select: () {
+        proof.introduceDoubleTilde(context);
+        state._finishRule(doubleTildeRule);
       }));
     }
     super.dispatchDerivationLine(node, context);
@@ -51,8 +51,8 @@ class DoubleTildePrinter extends _InteractiveTextPrinter {
     if (operand is Not) {
       flush();
       result.add(_SelectableText('~~', select: () {
-        state
-            ._finishRule(doubleTildeRule, [proof.removeDoubleTilde(context)()]);
+        proof.removeDoubleTilde(context);
+        state._finishRule(doubleTildeRule);
       }));
       dispatchDerivationLine(operand.operand, context.operand.operand);
     } else {
@@ -61,7 +61,7 @@ class DoubleTildePrinter extends _InteractiveTextPrinter {
   }
 
   static List<InteractiveText> run(
-      FullState state, Proof proof, DerivationLine line) {
+      FullState state, DerivationState proof, DerivationLine line) {
     var printer = DoubleTildePrinter(state, proof);
     printer.dispatchDerivationLine(line, DerivationLineContext(line));
     printer.flush();
@@ -72,14 +72,14 @@ class DoubleTildePrinter extends _InteractiveTextPrinter {
 class FullState {
   InteractiveState _interactiveState = _Quiescent();
 
-  final List<DerivationLine> _derivation = [];
+  final _derivation = DerivationState();
 
   FullState() {
     _interactiveState = _Quiescent();
   }
 
   List<DerivationLineInfo> get derivationLines => [
-        for (int i = 0; i < _derivation.length; i++)
+        for (int i = 0; i < _derivation.lines.length; i++)
           DerivationLineInfo._(this, i)
       ];
 
@@ -87,7 +87,7 @@ class FullState {
 
   String get message => _interactiveState.message;
 
-  String? get previewLine => _interactiveState.previewLine;
+  String? get previewLine => _interactiveState.previewLine(_derivation.lines);
 
   void activateRule(Rule rule) {
     try {
@@ -98,12 +98,11 @@ class FullState {
   }
 
   void addDerivationLine(DerivationLine line) {
-    _derivation.add(line);
+    _derivation.addLine(line);
     _interactiveState = _Quiescent();
   }
 
-  void _finishRule(Rule rule, List<DerivationLine> lines) {
-    _derivation.addAll(lines);
+  void _finishRule(Rule rule) {
     _interactiveState = _Quiescent(message: 'Applied rule "$rule"');
   }
 }
@@ -115,10 +114,10 @@ abstract class InteractiveState {
 
   String get message;
 
-  String? get previewLine => null;
-
   List<InteractiveText> decorateLine(
       FullState state, DerivationLine line, int index);
+
+  String? previewLine(List<DerivationLine> derivation) => null;
 }
 
 abstract class InteractiveText {
@@ -155,11 +154,11 @@ class SelectRegion extends InteractiveState {
 class SelectTwoLines extends InteractiveState {
   final FullLineStepRule rule;
 
-  final List<FullLineStepRegionInfo?> regions;
+  final List<bool> isSelectable;
 
   final List<int> selectedLines = [];
 
-  SelectTwoLines(this.regions, this.rule) : super._();
+  SelectTwoLines(this.isSelectable, this.rule) : super._();
 
   @override
   bool get isSelectionNeeded => true;
@@ -167,30 +166,31 @@ class SelectTwoLines extends InteractiveState {
   @override
   String get message => 'Select 2 lines for $rule';
 
-  @override
-  String get previewLine =>
-      rule.preview([for (var index in selectedLines) regions[index]!]);
-
   List<InteractiveText> decorateLine(
       FullState state, DerivationLine line, int index) {
     var text = line.toString();
     return [
-      regions[index] != null
+      isSelectable[index]
           ? _SelectableText(text,
               select: () {
                 selectedLines.add(index);
                 if (selectedLines.length == 2) {
                   var selectedLinesList = selectedLines.toList();
-                  state._finishRule(
-                      rule,
-                      rule.apply(regions[selectedLinesList[0]]!,
-                          regions[selectedLinesList[1]]!));
+                  rule.apply(
+                      state._derivation,
+                      state._derivation.lines[selectedLinesList[0]] as Formula,
+                      state._derivation.lines[selectedLinesList[1]] as Formula);
+                  state._finishRule(rule);
                 }
               },
               isSelected: () => selectedLines.contains(index))
           : _SimpleText(text)
     ];
   }
+
+  @override
+  String previewLine(List<DerivationLine> derivation) => rule
+      .preview([for (var index in selectedLines) derivation[index] as Formula]);
 }
 
 class _InteractiveTextPrinter extends PrettyPrinterBase {

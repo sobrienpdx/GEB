@@ -11,6 +11,13 @@ main() {
     state = FullState();
   });
 
+  group('addDerivationLine:', () {
+    test("don't crash on empty fantasy", () {
+      state.addDerivationLine(PushFantasy());
+      state.addDerivationLine(PopFantasy());
+    });
+  });
+
   group('joining:', () {
     test('basic', () {
       state.addDerivationLine(PushFantasy());
@@ -58,7 +65,7 @@ main() {
         expect(state.message, 'Select a region for double tilde');
         var decoratedLine = state.derivationLines[0].decorated;
         expect(decoratedLine, hasLength(2));
-        expect(decoratedLine[0].text, middleDot);
+        expect(decoratedLine[0].text, star);
         expect(decoratedLine[0].isSelectable, true);
         expect(decoratedLine[0].isSelected, false);
         expect(decoratedLine[1].text, 'P');
@@ -79,13 +86,13 @@ main() {
         expect(state.message, 'Select a region for double tilde');
         var decoratedLine = state.derivationLines[0].decorated;
         expect(decoratedLine, hasLength(4));
-        expect(decoratedLine[0].text, middleDot);
+        expect(decoratedLine[0].text, star);
         expect(decoratedLine[0].isSelectable, true);
         expect(decoratedLine[0].isSelected, false);
         expect(decoratedLine[1].text, '${forall}a:');
         expect(decoratedLine[1].isSelectable, false);
         expect(decoratedLine[1].isSelected, false);
-        expect(decoratedLine[2].text, middleDot);
+        expect(decoratedLine[2].text, star);
         expect(decoratedLine[2].isSelectable, true);
         expect(decoratedLine[2].isSelected, false);
         expect(decoratedLine[3].text, 'a=a');
@@ -106,13 +113,13 @@ main() {
         expect(state.message, 'Select a region for double tilde');
         var decoratedLine = state.derivationLines[0].decorated;
         expect(decoratedLine, hasLength(4));
-        expect(decoratedLine[0].text, middleDot);
+        expect(decoratedLine[0].text, star);
         expect(decoratedLine[0].isSelectable, true);
         expect(decoratedLine[0].isSelected, false);
         expect(decoratedLine[1].text, '~~');
         expect(decoratedLine[1].isSelectable, true);
         expect(decoratedLine[1].isSelected, false);
-        expect(decoratedLine[2].text, middleDot);
+        expect(decoratedLine[2].text, star);
         expect(decoratedLine[2].isSelectable, true);
         expect(decoratedLine[2].isSelected, false);
         expect(decoratedLine[3].text, 'P');

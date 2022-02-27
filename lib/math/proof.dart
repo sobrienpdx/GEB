@@ -1,203 +1,171 @@
 import 'ast.dart';
 import 'context.dart';
 
-class InvalidProofStep extends ProofStep {
-  @override
-  bool get isValid => false;
+class DerivationState {
+  _ProofStackEntry _stack = _ProofStackEntry();
 
-  @override
-  Never call() => throw MathError();
-}
+  final List<DerivationLine> lines = [];
 
-class Proof {
-  _ProofState _state = _ProofState();
+  DerivationState();
 
-  Proof();
-
-  Proof.fromDerivation(List<DerivationLine> derivation) {
-    // TODO(paul): just use Derivation directly rather than having a silly
-    // ProofState object.
-    for (int i = 0; i < derivation.length; i++) {
-      var line = derivation[i];
-      if (line is Formula) {
-        _state.addTheorem(line);
-      } else if (line is PushFantasy) {
-        var premise = i + 1 < derivation.length ? derivation[i + 1] : null;
-        if (premise is Formula) {
-          pushFantasy(premise);
-          i++;
-        }
-      } else if (line is PopFantasy) {
-        var state = _state;
-        if (state is _FantasyState) {
-          _state = state.parent;
-        }
-      } else {
-        assert(
-            false, 'Unrecognized kind of derivation line: ${line.runtimeType}');
+  void addLine(DerivationLine line) {
+    if (line is Formula) {
+      _stack.addTheorem(line);
+    } else if (line is PushFantasy) {
+      _stack = _FantasyStackEntry(_stack);
+    } else if (line is PopFantasy) {
+      var stack = _stack;
+      if (stack is _FantasyStackEntry) {
+        _stack = stack.parent;
       }
+    } else {
+      assert(
+          false, 'Unrecognized kind of derivation line: ${line.runtimeType}');
     }
+    lines.add(line);
   }
 
-  ProofStep carryOver(Formula x) {
-    var state = _state;
-    if (state is! _FantasyState) return InvalidProofStep();
-    if (!state.parent.isTheorem(x)) return InvalidProofStep();
-    return _OrdinaryProofStep(this, x);
+  Formula carryOver(Formula x) {
+    var state = _stack;
+    if (state is! _FantasyStackEntry) _invalidProofStep();
+    if (!state.parent.isTheorem(x)) _invalidProofStep();
+    return _ordinaryProofStep(x);
   }
 
-  ProofStep contrapositiveForward(DerivationLineContext context) {
+  Formula contrapositiveForward(DerivationLineContext context) {
     var formula = context.derivationLine;
-    if (formula is! Implies) return InvalidProofStep();
+    if (formula is! Implies) _invalidProofStep();
     return _rule(
         [context.top as Formula],
         context.substitute(
             Implies(Not(formula.rightOperand), Not(formula.leftOperand))));
   }
 
-  ProofStep contrapositiveReverse(DerivationLineContext context) {
+  Formula contrapositiveReverse(DerivationLineContext context) {
     var formula = context.derivationLine;
-    if (formula is! Implies) return InvalidProofStep();
+    if (formula is! Implies) _invalidProofStep();
     var leftOperand = formula.leftOperand;
-    if (leftOperand is! Not) return InvalidProofStep();
+    if (leftOperand is! Not) _invalidProofStep();
     var rightOperand = formula.rightOperand;
-    if (rightOperand is! Not) return InvalidProofStep();
+    if (rightOperand is! Not) _invalidProofStep();
     return _rule([context.top as Formula],
         context.substitute(Implies(rightOperand.operand, leftOperand.operand)));
   }
 
-  ProofStep deMorgan(DerivationLineContext context) {
+  Formula deMorgan(DerivationLineContext context) {
     var formula = context.derivationLine;
     Formula replacement;
     if (formula is And) {
       var leftOperand = formula.leftOperand;
-      if (leftOperand is! Not) return InvalidProofStep();
+      if (leftOperand is! Not) _invalidProofStep();
       var rightOperand = formula.rightOperand;
-      if (rightOperand is! Not) return InvalidProofStep();
+      if (rightOperand is! Not) _invalidProofStep();
       replacement = Not(Or(leftOperand.operand, rightOperand.operand));
     } else if (formula is Not) {
       var operand = formula.operand;
-      if (operand is! Or) return InvalidProofStep();
+      if (operand is! Or) _invalidProofStep();
       replacement = And(Not(operand.leftOperand), Not(operand.rightOperand));
     } else {
-      return InvalidProofStep();
+      _invalidProofStep();
     }
     return _rule([context.top as Formula], context.substitute(replacement));
   }
 
-  ProofStep detach(Formula x) => x is Implies
+  Formula detach(Formula x) => x is Implies
       ? _rule([x.leftOperand, x], x.rightOperand)
-      : InvalidProofStep();
+      : _invalidProofStep();
 
-  ProofStep introduceDoubleTilde(DerivationLineContext context) => _rule(
+  Formula introduceDoubleTilde(DerivationLineContext context) => _rule(
       [context.top as Formula],
       context.substitute(Not(Not(context.derivationLine as Formula))));
 
-  bool isTheorem(Formula x) => _state.isTheorem(x);
+  bool isTheorem(Formula x) => _stack.isTheorem(x);
 
-  ProofStep join(Formula x, Formula y) => _rule([x, y], And(x, y));
+  Formula join(Formula x, Formula y) => _rule([x, y], And(x, y));
 
-  ProofStep popFantasy() {
-    var state = _state;
-    if (state is! _FantasyState) return InvalidProofStep();
-    return _PopFantasyProofStep(this, state);
+  Formula popFantasy() {
+    var state = _stack;
+    if (state is! _FantasyStackEntry) _invalidProofStep();
+    return _popFantasyProofStep(state);
   }
 
-  ProofStep pushFantasy(Formula premise) =>
-      _PushFantasyProofStep(this, premise);
+  Formula pushFantasy(Formula premise) => _pushFantasyProofStep(premise);
 
-  ProofStep removeDoubleTilde(DerivationLineContext context) {
+  Formula removeDoubleTilde(DerivationLineContext context) {
     var formula = context.derivationLine;
-    if (formula is! Not) return InvalidProofStep();
+    if (formula is! Not) _invalidProofStep();
     var operand = formula.operand;
-    if (operand is! Not) return InvalidProofStep();
+    if (operand is! Not) _invalidProofStep();
     return _rule([context.top as Formula], context.substitute(operand.operand));
   }
 
-  ProofStep separate(Formula x, Side side) =>
-      x is And ? _rule([x], x.getOperand(side)) : InvalidProofStep();
+  Formula separate(Formula x, Side side) =>
+      x is And ? _rule([x], x.getOperand(side)) : _invalidProofStep();
 
-  ProofStep switcheroo(DerivationLineContext context) {
+  Formula switcheroo(DerivationLineContext context) {
     var formula = context.derivationLine;
     Formula replacement;
     if (formula is Or) {
       replacement = Implies(Not(formula.leftOperand), formula.rightOperand);
     } else if (formula is Implies) {
       var leftOperand = formula.leftOperand;
-      if (leftOperand is! Not) return InvalidProofStep();
+      if (leftOperand is! Not) _invalidProofStep();
       replacement = Or(leftOperand.operand, formula.rightOperand);
     } else {
-      return InvalidProofStep();
+      _invalidProofStep();
     }
     return _rule([context.top as Formula], context.substitute(replacement));
   }
 
-  ProofStep _rule(List<Formula> premises, Formula theorem) {
+  Never _invalidProofStep() => throw MathError();
+
+  Formula _ordinaryProofStep(Formula theorem) {
+    _stack.addTheorem(theorem);
+    lines.add(theorem);
+    return theorem;
+  }
+
+  Formula _popFantasyProofStep(_FantasyStackEntry innerState) {
+    _stack = innerState.parent;
+    return _ordinaryProofStep(
+        Implies(innerState.premise, innerState.conclusion));
+  }
+
+  Formula _pushFantasyProofStep(Formula premise) {
+    _stack = _FantasyStackEntry(_stack)..addTheorem(premise);
+    return premise;
+  }
+
+  Formula _rule(List<Formula> premises, Formula theorem) {
     for (var premise in premises) {
-      if (!isTheorem(premise)) return InvalidProofStep();
+      if (!isTheorem(premise)) _invalidProofStep();
     }
-    return _OrdinaryProofStep(this, theorem);
+    return _ordinaryProofStep(theorem);
   }
 }
 
-abstract class ProofStep {
-  bool get isValid;
+class _FantasyStackEntry extends _ProofStackEntry {
+  final _ProofStackEntry parent;
 
-  Formula call();
-}
+  Formula? _premise;
 
-abstract class ValidProofStep extends ProofStep {
-  @override
-  bool get isValid => true;
-}
+  Formula? _conclusion;
 
-class _FantasyState extends _ProofState {
-  final _ProofState parent;
+  _FantasyStackEntry(this.parent);
 
-  final Formula premise;
+  Formula get conclusion => _conclusion!;
 
-  Formula conclusion;
-
-  _FantasyState(this.parent, this.premise) : conclusion = premise {
-    super.addTheorem(premise);
-  }
+  Formula get premise => _premise!;
 
   @override
   void addTheorem(Formula x) {
     super.addTheorem(x);
-    conclusion = x;
+    _premise ??= x;
+    _conclusion = x;
   }
 }
 
-class _OrdinaryProofStep extends ValidProofStep {
-  final Proof _proof;
-
-  final Formula _theorem;
-
-  _OrdinaryProofStep(this._proof, this._theorem);
-
-  @override
-  Formula call() {
-    _proof._state.addTheorem(_theorem);
-    return _theorem;
-  }
-}
-
-class _PopFantasyProofStep extends _OrdinaryProofStep {
-  final _ProofState _outerState;
-
-  _PopFantasyProofStep(Proof proof, _FantasyState innerState)
-      : _outerState = innerState.parent,
-        super(proof, Implies(innerState.premise, innerState.conclusion));
-
-  @override
-  Formula call() {
-    _proof._state = _outerState;
-    return super.call();
-  }
-}
-
-class _ProofState {
+class _ProofStackEntry {
   final Set<Formula> theorems = {};
 
   void addTheorem(Formula x) {
@@ -205,18 +173,4 @@ class _ProofState {
   }
 
   bool isTheorem(Formula x) => theorems.contains(x);
-}
-
-class _PushFantasyProofStep extends ValidProofStep {
-  final Proof _proof;
-
-  final Formula _premise;
-
-  _PushFantasyProofStep(this._proof, this._premise);
-
-  @override
-  Formula call() {
-    _proof._state = _FantasyState(_proof._state, _premise);
-    return _premise;
-  }
 }
