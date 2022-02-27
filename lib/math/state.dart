@@ -135,7 +135,7 @@ class Quiescent extends InteractiveState {
   List<InteractiveText> decorateLine(
       FullState state, DerivationLine line, int index) {
     var text = line.toString();
-    return [_SimpleText(text)];
+    return [SimpleText(text)];
   }
 }
 
@@ -191,7 +191,7 @@ class SelectTwoLines extends InteractiveState {
                 }
               },
               isSelected: () => selectedLines.contains(index))
-          : _SimpleText(text)
+          : SimpleText(text)
     ];
   }
 
@@ -219,6 +219,23 @@ class SeparationPrinter extends _SelectionPrinter {
       super.dispatchDerivationLine(node, context);
     }
   }
+}
+
+class SimpleText extends InteractiveText {
+  SimpleText(String text) : super(text);
+
+  @override
+  bool get isSelectable => false;
+
+  @override
+  bool get isSelected => false;
+
+  @override
+  void select() {
+    assert(false, 'Not selectable: $this');
+  }
+
+  String toString() => '_SimpleText(${json.encode(text)})';
 }
 
 class _InteractiveTextPrinter extends PrettyPrinterBase {
@@ -252,7 +269,7 @@ class _InteractiveTextPrinter extends PrettyPrinterBase {
     (_accumulator ??= StringBuffer()).write(text);
   }
 
-  static InteractiveText _defaultDecorator(String text) => _SimpleText(text);
+  static InteractiveText _defaultDecorator(String text) => SimpleText(text);
 }
 
 class _SelectableText extends InteractiveText {
@@ -292,21 +309,4 @@ class _SelectionPrinter extends _InteractiveTextPrinter {
     flush();
     return result;
   }
-}
-
-class _SimpleText extends InteractiveText {
-  _SimpleText(String text) : super(text);
-
-  @override
-  bool get isSelectable => false;
-
-  @override
-  bool get isSelected => false;
-
-  @override
-  void select() {
-    assert(false, 'Not selectable: $this');
-  }
-
-  String toString() => '_SimpleText(${json.encode(text)})';
 }

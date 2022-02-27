@@ -19,10 +19,8 @@ class DoubleTildeRule extends Rule {
 
   @override
   SelectRegion activate(FullState state, DerivationState derivation) =>
-      SelectRegion(this, [
-        for (var line in derivation.lines)
-          DoubleTildePrinter(state, derivation).run(line)
-      ]);
+      _makeSelectRegion(derivation,
+          (line) => DoubleTildePrinter(state, derivation).run(line));
 }
 
 abstract class FullLineStepRule extends Rule {
@@ -31,12 +29,18 @@ abstract class FullLineStepRule extends Rule {
 
   @override
   SelectTwoLines activate(FullState state, DerivationState derivation) =>
-      SelectTwoLines(computeIsSelectable(derivation.lines), this);
+      SelectTwoLines(computeIsSelectable(derivation), this);
 
   void apply(DerivationState derivation, Formula x, Formula y);
 
-  List<bool> computeIsSelectable(List<DerivationLine> derivation) =>
-      [for (var line in derivation) _isLineSelectable(line)];
+  List<bool> computeIsSelectable(DerivationState derivation) {
+    var availableFlags = derivation.availableFlags;
+    var lines = derivation.lines;
+    return [
+      for (int i = 0; i < availableFlags.length; i++)
+        availableFlags[i] && _isLineSelectable(lines[i])
+    ];
+  }
 
   String preview(List<Formula> regions);
 
@@ -116,6 +120,18 @@ abstract class Rule {
 
   @override
   String toString() => name;
+
+  SelectRegion _makeSelectRegion(DerivationState derivation,
+      List<InteractiveText> Function(DerivationLine) callback) {
+    var availableFlags = derivation.availableFlags;
+    var lines = derivation.lines;
+    return SelectRegion(this, [
+      for (int i = 0; i < availableFlags.length; i++)
+        availableFlags[i]
+            ? callback(lines[i])
+            : [SimpleText(lines[i].toString())]
+    ]);
+  }
 }
 
 class SeparationRule extends Rule {
@@ -125,10 +141,8 @@ class SeparationRule extends Rule {
 
   @override
   SelectRegion activate(FullState state, DerivationState derivation) =>
-      SelectRegion(this, [
-        for (var line in derivation.lines)
-          SeparationPrinter(state, derivation).run(line)
-      ]);
+      _makeSelectRegion(
+          derivation, (line) => SeparationPrinter(state, derivation).run(line));
 }
 
 abstract class StepRegionInfo {}

@@ -7,7 +7,7 @@ main() {
   test('joining', () {
     var derivation = makeDerivation(['P', 'Q']);
     var rule = JoiningRule();
-    var isSelectable = rule.computeIsSelectable(derivation.lines);
+    var isSelectable = rule.computeIsSelectable(derivation);
     expect(isSelectable, hasLength(2));
     expect(isSelectable[0], true);
     expect(isSelectable[1], true);

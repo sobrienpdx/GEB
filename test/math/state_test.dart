@@ -56,6 +56,11 @@ main() {
           .hasSelectionState(selectable: {0: 'P'}, selected: {0: 'P'}));
       check(select(0, 'P').addsLines(['<P&P>']).isQuiescent());
     });
+
+    test('available theorems', () {
+      check(addLines(['P', '[', 'Q', '[', 'R', ']', 'P']));
+      check(rule(joiningRule).hasSelectionState(selectable: {2: 'Q', 6: 'P'}));
+    });
   });
 
   group('double tilde: ', () {
@@ -86,6 +91,12 @@ main() {
       }));
       check(select(0, '~~').addsLines(['P']).isQuiescent());
     });
+
+    test('available theorems', () {
+      check(addLines(['P', '[', 'Q', '[', 'R', ']', 'P']));
+      check(rule(doubleTildeRule)
+          .hasSelectionState(selectable: {2: star, 6: star}));
+    });
   });
 
   group('separation:', () {
@@ -110,6 +121,14 @@ main() {
     test('no match', () {
       check(addLine('<P|Q>'));
       check(rule(separationRule).hasSelectionState(selectable: isEmpty));
+    });
+
+    test('available theorems', () {
+      check(addLines(["<P&P'>", '[', "<Q&Q'>", '[', "<R&R'>", ']', "<P&P'>"]));
+      check(rule(separationRule).hasSelectionState(selectable: {
+        2: ['Q', "Q'"],
+        6: ['P', "P'"]
+      }));
     });
   });
 

@@ -1,3 +1,5 @@
+import 'package:geb/math/state.dart';
+
 import 'ast.dart';
 import 'context.dart';
 import 'rule_definitions.dart';
@@ -7,6 +9,22 @@ class DerivationState {
   final List<_DerivationStep> _steps = [];
 
   DerivationState();
+
+  List<bool> get availableFlags {
+    var result = List<bool>.filled(_steps.length, false);
+    var index = lastNonPopIndex;
+    while (index >= 0) {
+      var step = _steps[index];
+      var line = step.line;
+      if (line is PushFantasy) {
+        break;
+      } else if (line is Formula) {
+        result[index] = true;
+      }
+      index = step.previousIndex;
+    }
+    return result;
+  }
 
   List<String> get explanations => [for (var step in _steps) step.explanation];
 
