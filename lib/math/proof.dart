@@ -4,15 +4,25 @@ import 'rule_definitions.dart';
 import 'rules.dart';
 
 class DerivationState {
-  _ProofStackEntry _stack = _ProofStackEntry();
-
   final List<_DerivationStep> _steps = [];
 
   DerivationState();
 
   List<String> get explanations => [for (var step in _steps) step.explanation];
 
-  bool get isFantasyInProgress => _stack is _FantasyStackEntry;
+  bool get isFantasyInProgress => _findFantasyStart(lastNonPopIndex) >= 0;
+
+  int get lastNonPopIndex {
+    var index = _steps.length - 1;
+    if (index >= 0) {
+      var step = _steps[index];
+      if (step.line is PopFantasy) {
+        index = _findFantasyStart(step.previousIndex);
+        if (index >= 0) index--;
+      }
+    }
+    return index;
+  }
 
   /// TODO(paul): probably most callers of this are misusing it--it doesn't
   /// filter down to just the accessible theorems.
@@ -20,28 +30,23 @@ class DerivationState {
 
   void addLine(DerivationLine line, {String? explanation}) {
     if (line is Formula) {
-      _stack.addTheorem(line);
       explanation ??= 'User supplied premise';
     } else if (line is PushFantasy) {
-      _stack = _FantasyStackEntry(_stack);
       explanation ??= 'Applied rule "push fantasy"';
     } else if (line is PopFantasy) {
-      var stack = _stack;
-      if (stack is _FantasyStackEntry) {
-        _stack = stack.parent;
-      }
       explanation ??= 'Applied rule "$popFantasyRule"';
     } else {
-      assert(
-          false, 'Unrecognized kind of derivation line: ${line.runtimeType}');
+      throw StateError(
+          'Unrecognized kind of derivation line: ${line.runtimeType}');
     }
-    _steps.add(_DerivationStep(line, explanation!));
+    _steps.add(_DerivationStep(line, explanation, lastNonPopIndex));
   }
 
   Formula carryOver(Formula x) {
-    var state = _stack;
-    if (state is! _FantasyStackEntry) _invalidProofStep();
-    if (!state.parent.isTheorem(x)) _invalidProofStep();
+    var fantasyStart = _findFantasyStart(lastNonPopIndex);
+    if (fantasyStart < 0 || !isTheorem(x, startingIndex: fantasyStart - 1)) {
+      _invalidProofStep();
+    }
     return _ordinaryProofStep(x, 'Applied rule "$carryOverRule');
   }
 
@@ -99,14 +104,26 @@ class DerivationState {
       context.substitute(Not(Not(context.derivationLine as Formula))),
       doubleTildeRule);
 
-  bool isTheorem(Formula x) => _stack.isTheorem(x);
+  bool isTheorem(Formula x, {int? startingIndex}) {
+    var index = startingIndex ?? lastNonPopIndex;
+    while (index >= 0) {
+      var step = _steps[index];
+      var line = step.line;
+      if (line is PushFantasy) return false;
+      if (line == x) return true;
+      index = step.previousIndex;
+    }
+    return false;
+  }
 
   Formula join(Formula x, Formula y) => _rule([x, y], And(x, y), joiningRule);
 
   Formula popFantasy() {
-    var state = _stack;
-    if (state is! _FantasyStackEntry) _invalidProofStep();
-    return _popFantasyProofStep(state);
+    var fantasyStart = _findFantasyStart(lastNonPopIndex);
+    if (fantasyStart < 0 || fantasyStart + 1 >= _steps.length) {
+      _invalidProofStep();
+    }
+    return _popFantasyProofStep(fantasyStart);
   }
 
   Formula pushFantasy(Formula premise) => _pushFantasyProofStep(premise);
@@ -140,23 +157,40 @@ class DerivationState {
         switcherooRule);
   }
 
+  int _findFantasyStart(int index) {
+    while (index >= 0) {
+      var step = _steps[index];
+      if (step.line is PushFantasy) break;
+      index = step.previousIndex;
+    }
+    return index;
+  }
+
   Never _invalidProofStep() => throw MathError();
 
   Formula _ordinaryProofStep(Formula theorem, String explanation) {
-    _stack.addTheorem(theorem);
-    _steps.add(_DerivationStep(theorem, explanation));
+    _steps.add(_DerivationStep(theorem, explanation, lastNonPopIndex));
     return theorem;
   }
 
-  Formula _popFantasyProofStep(_FantasyStackEntry innerState) {
-    _stack = innerState.parent;
-    var theorem = Implies(innerState.premise, innerState.conclusion);
-    _steps.add(_DerivationStep(PopFantasy(), 'Applied rule "$popFantasyRule"'));
-    return _ordinaryProofStep(theorem, 'Resulting new theorem');
+  Formula _popFantasyProofStep(int fantasyStart) {
+    var premise = _steps[fantasyStart + 1].line;
+    if (premise is! Formula) _invalidProofStep();
+    var conclusion = _steps.last.line;
+    if (conclusion is! Formula) _invalidProofStep();
+    var theorem = Implies(premise, conclusion);
+    _steps.add(_DerivationStep(
+        PopFantasy(), 'Applied rule "$popFantasyRule"', lastNonPopIndex));
+    _steps.add(
+        _DerivationStep(theorem, 'Resulting new theorem', fantasyStart - 1));
+    return theorem;
   }
 
   Formula _pushFantasyProofStep(Formula premise) {
-    _stack = _FantasyStackEntry(_stack)..addTheorem(premise);
+    _steps.add(_DerivationStep(
+        PushFantasy(), 'Applied rule "push fantasy"', lastNonPopIndex));
+    _steps.add(
+        _DerivationStep(premise, 'User supplied premise', lastNonPopIndex));
     return premise;
   }
 
@@ -173,36 +207,7 @@ class _DerivationStep {
 
   final String explanation;
 
-  _DerivationStep(this.line, this.explanation);
-}
+  final int previousIndex;
 
-class _FantasyStackEntry extends _ProofStackEntry {
-  final _ProofStackEntry parent;
-
-  Formula? _premise;
-
-  Formula? _conclusion;
-
-  _FantasyStackEntry(this.parent);
-
-  Formula get conclusion => _conclusion!;
-
-  Formula get premise => _premise!;
-
-  @override
-  void addTheorem(Formula x) {
-    super.addTheorem(x);
-    _premise ??= x;
-    _conclusion = x;
-  }
-}
-
-class _ProofStackEntry {
-  final Set<Formula> theorems = {};
-
-  void addTheorem(Formula x) {
-    theorems.add(x);
-  }
-
-  bool isTheorem(Formula x) => theorems.contains(x);
+  _DerivationStep(this.line, this.explanation, this.previousIndex);
 }
