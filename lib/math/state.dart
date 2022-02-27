@@ -25,20 +25,17 @@ class DerivationLineInfo {
   String toString() => 'ProofLine($line)';
 }
 
-class DoubleTildePrinter extends _InteractiveTextPrinter {
-  final FullState state;
-
-  final DerivationState proof;
-
-  DoubleTildePrinter(this.state, this.proof);
+class DoubleTildePrinter extends _SelectionPrinter {
+  DoubleTildePrinter(FullState state, DerivationState derivation)
+      : super(state, derivation);
 
   @override
   void dispatchDerivationLine(
       DerivationLine node, DerivationLineContext context) {
-    flush();
     if (node is Formula) {
+      flush();
       result.add(_SelectableText(star, select: () {
-        proof.introduceDoubleTilde(context);
+        derivation.introduceDoubleTilde(context);
         state._finishRule(doubleTildeRule);
       }));
     }
@@ -51,21 +48,13 @@ class DoubleTildePrinter extends _InteractiveTextPrinter {
     if (operand is Not) {
       flush();
       result.add(_SelectableText('~~', select: () {
-        proof.removeDoubleTilde(context);
+        derivation.removeDoubleTilde(context);
         state._finishRule(doubleTildeRule);
       }));
       dispatchDerivationLine(operand.operand, context.operand.operand);
     } else {
       super.visitNot(node, context);
     }
-  }
-
-  static List<InteractiveText> run(
-      FullState state, DerivationState proof, DerivationLine line) {
-    var printer = DoubleTildePrinter(state, proof);
-    printer.dispatchDerivationLine(line, DerivationLineContext(line));
-    printer.flush();
-    return printer.result;
   }
 }
 
@@ -193,23 +182,58 @@ class SelectTwoLines extends InteractiveState {
       .preview([for (var index in selectedLines) derivation[index] as Formula]);
 }
 
+class SeparationPrinter extends _SelectionPrinter {
+  SeparationPrinter(FullState state, DerivationState derivation)
+      : super(state, derivation);
+
+  @override
+  void dispatchDerivationLine(
+      DerivationLine node, DerivationLineContext context) {
+    if (context.depth == 1 && context.top is And) {
+      withDecorator(
+          (text) => _SelectableText(text, select: () {
+                derivation.addLine(node);
+                state._finishRule(separationRule);
+              }),
+          () => super.dispatchDerivationLine(node, context));
+    } else {
+      super.dispatchDerivationLine(node, context);
+    }
+  }
+}
+
 class _InteractiveTextPrinter extends PrettyPrinterBase {
   final List<InteractiveText> result = [];
+
+  InteractiveText Function(String) _decorator = _defaultDecorator;
 
   StringBuffer? _accumulator;
 
   void flush() {
     var accumulator = _accumulator;
     if (accumulator != null) {
-      result.add(_SimpleText(accumulator.toString()));
+      result.add(_decorator(accumulator.toString()));
       _accumulator = null;
     }
+  }
+
+  T withDecorator<T>(
+      InteractiveText Function(String) decorator, T Function() callback) {
+    flush();
+    var previousDecorator = _decorator;
+    _decorator = decorator;
+    var result = callback();
+    flush();
+    _decorator = previousDecorator;
+    return result;
   }
 
   @override
   void write(String text) {
     (_accumulator ??= StringBuffer()).write(text);
   }
+
+  static InteractiveText _defaultDecorator(String text) => _SimpleText(text);
 }
 
 class _Quiescent extends InteractiveState {
@@ -251,6 +275,20 @@ class _SelectableText extends InteractiveText {
   }
 
   static bool _alwaysFalse() => false;
+}
+
+class _SelectionPrinter extends _InteractiveTextPrinter {
+  final FullState state;
+
+  final DerivationState derivation;
+
+  _SelectionPrinter(this.state, this.derivation);
+
+  List<InteractiveText> run(DerivationLine line) {
+    dispatchDerivationLine(line, DerivationLineContext(line));
+    flush();
+    return result;
+  }
 }
 
 class _SimpleText extends InteractiveText {

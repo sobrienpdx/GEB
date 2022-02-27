@@ -3,9 +3,12 @@ import 'ast.dart';
 abstract class DerivationLineContext {
   factory DerivationLineContext(DerivationLine derivationLine) =>
       _DerivationLineContext(
-          derivationLine, derivationLine, (replacement) => replacement);
+          derivationLine, derivationLine, (replacement) => replacement,
+          depth: 0);
 
   DerivationLineContext._();
+
+  int get depth;
 
   DerivationLine get derivationLine;
 
@@ -31,14 +34,19 @@ class _DerivationLineContext extends DerivationLineContext {
 
   final Formula Function(Formula) _substitute;
 
-  _DerivationLineContext(this.top, this.derivationLine, this._substitute)
+  @override
+  final int depth;
+
+  _DerivationLineContext(this.top, this.derivationLine, this._substitute,
+      {required this.depth})
       : super._();
 
   DerivationLineContext get operand {
     var formula = this.derivationLine;
     if (formula is! UnaryFormula) throw MathError();
     return _DerivationLineContext(top, formula.operand,
-        (replacement) => _substitute(formula.substituteOperand(replacement)));
+        (replacement) => _substitute(formula.substituteOperand(replacement)),
+        depth: depth + 1);
   }
 
   @override
@@ -46,7 +54,8 @@ class _DerivationLineContext extends DerivationLineContext {
     var formula = this.derivationLine;
     if (formula is! BinaryFormula) throw MathError();
     return _DerivationLineContext(top, formula.getOperand(side),
-        (replacement) => _substitute(formula.substitute(side, replacement)));
+        (replacement) => _substitute(formula.substitute(side, replacement)),
+        depth: depth + 1);
   }
 
   @override
