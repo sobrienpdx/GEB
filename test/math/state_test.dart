@@ -21,8 +21,11 @@ main() {
   group('joining:', () {
     test('basic', () {
       state.addDerivationLine(PushFantasy());
+      expect(state.explanations[0], 'Applied rule "push fantasy"');
       state.addDerivationLine(Formula('P'));
+      expect(state.explanations[1], 'User supplied premise');
       state.addDerivationLine(Formula('Q'));
+      expect(state.explanations[2], 'User supplied premise');
       expect(state.isSelectionNeeded, false);
       state.activateRule(joiningRule);
       expect(state.isSelectionNeeded, true);
@@ -39,11 +42,13 @@ main() {
       expect(state.isSelectionNeeded, false);
       expect(state.derivationLines, hasLength(4));
       expect(state.derivationLines[3].line, Formula('<P&Q>'));
+      expect(state.explanations[3], 'Applied rule "joining"');
       expect(state.message, 'Applied rule "joining".');
     });
 
     test('same line twice', () {
       state.addDerivationLine(Formula('P'));
+      expect(state.explanations[0], 'User supplied premise');
       expect(state.isSelectionNeeded, false);
       state.activateRule(joiningRule);
       expect(state.isSelectionNeeded, true);
@@ -54,12 +59,14 @@ main() {
       expect(state.isSelectionNeeded, false);
       expect(state.derivationLines, hasLength(2));
       expect(state.derivationLines[1].line, Formula('<P&P>'));
+      expect(state.explanations[1], 'Applied rule "joining"');
     });
   });
 
   group('double tilde: ', () {
     test('introduce at top', () {
       state.addDerivationLine(Formula('P'));
+      expect(state.explanations[0], 'User supplied premise');
       expect(state.isSelectionNeeded, false);
       state.activateRule(doubleTildeRule);
       expect(state.isSelectionNeeded, true);
@@ -77,10 +84,12 @@ main() {
       expect(state.isSelectionNeeded, false);
       expect(state.derivationLines, hasLength(2));
       expect(state.derivationLines[1].line, Formula('~~P'));
+      expect(state.explanations[1], 'Applied rule "double tilde"');
     });
 
     test('introduce inner', () {
       state.addDerivationLine(Formula('!a:a=a'));
+      expect(state.explanations[0], 'User supplied premise');
       expect(state.isSelectionNeeded, false);
       state.activateRule(doubleTildeRule);
       expect(state.isSelectionNeeded, true);
@@ -104,10 +113,12 @@ main() {
       expect(state.isSelectionNeeded, false);
       expect(state.derivationLines, hasLength(2));
       expect(state.derivationLines[1].line, Formula('!a:~~a=a'));
+      expect(state.explanations[1], 'Applied rule "double tilde"');
     });
 
     test('remove', () {
       state.addDerivationLine(Formula('~~P'));
+      expect(state.explanations[0], 'User supplied premise');
       expect(state.isSelectionNeeded, false);
       state.activateRule(doubleTildeRule);
       expect(state.isSelectionNeeded, true);
@@ -131,12 +142,14 @@ main() {
       expect(state.isSelectionNeeded, false);
       expect(state.derivationLines, hasLength(2));
       expect(state.derivationLines[1].line, Formula('P'));
+      expect(state.explanations[1], 'Applied rule "double tilde"');
     });
   });
 
   group('separation:', () {
     test('LHS', () {
       state.addDerivationLine(Formula('<P&Q>'));
+      expect(state.explanations[0], 'User supplied premise');
       expect(state.isSelectionNeeded, false);
       state.activateRule(separationRule);
       expect(state.isSelectionNeeded, true);
@@ -163,10 +176,12 @@ main() {
       expect(state.isSelectionNeeded, false);
       expect(state.derivationLines, hasLength(2));
       expect(state.derivationLines[1].line, Formula('P'));
+      expect(state.explanations[1], 'Applied rule "separation"');
     });
 
     test('RHS', () {
       state.addDerivationLine(Formula('<P&Q>'));
+      expect(state.explanations[0], 'User supplied premise');
       expect(state.isSelectionNeeded, false);
       state.activateRule(separationRule);
       expect(state.isSelectionNeeded, true);
@@ -193,10 +208,12 @@ main() {
       expect(state.isSelectionNeeded, false);
       expect(state.derivationLines, hasLength(2));
       expect(state.derivationLines[1].line, Formula('Q'));
+      expect(state.explanations[1], 'Applied rule "separation"');
     });
 
     test('no match', () {
       state.addDerivationLine(Formula('<P|Q>'));
+      expect(state.explanations[0], 'User supplied premise');
       expect(state.isSelectionNeeded, false);
       state.activateRule(separationRule);
       expect(state.isSelectionNeeded, true);
@@ -212,17 +229,23 @@ main() {
   group('fantasy:', () {
     test('basic', () {
       state.activateRule(pushFantasyRule);
+      expect(state.explanations[0], 'Applied rule "push fantasy"');
       expect(state.isSelectionNeeded, false);
       expect(state.message, 'Starting a fantasy,  Please enter the premise.');
       expect(state.derivationLines, hasLength(1));
       expect(state.derivationLines[0].line, PushFantasy());
       state.addDerivationLine(Formula('P'));
+      expect(state.explanations[1], 'User supplied premise');
       state.addDerivationLine(Formula('Q'));
+      expect(state.explanations[2], 'User supplied premise');
       state.activateRule(popFantasyRule);
       expect(state.isSelectionNeeded, false);
       expect(state.message, 'Applied rule "pop fantasy".');
       expect(state.derivationLines, hasLength(5));
+      expect(state.derivationLines[3].line, PopFantasy());
+      expect(state.explanations[3], 'Applied rule "pop fantasy"');
       expect(state.derivationLines[4].line, Formula('<P->Q>'));
+      expect(state.explanations[4], 'Resulting new theorem');
     });
 
     group('illegal pop:', () {

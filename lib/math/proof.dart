@@ -1,37 +1,48 @@
 import 'ast.dart';
 import 'context.dart';
+import 'rule_definitions.dart';
+import 'rules.dart';
 
 class DerivationState {
   _ProofStackEntry _stack = _ProofStackEntry();
 
-  final List<DerivationLine> lines = [];
+  final List<_DerivationStep> _steps = [];
 
   DerivationState();
 
+  List<String> get explanations => [for (var step in _steps) step.explanation];
+
   bool get isFantasyInProgress => _stack is _FantasyStackEntry;
 
-  void addLine(DerivationLine line) {
+  /// TODO(paul): probably most callers of this are misusing it--it doesn't
+  /// filter down to just the accessible theorems.
+  List<DerivationLine> get lines => [for (var step in _steps) step.line];
+
+  void addLine(DerivationLine line, {String? explanation}) {
     if (line is Formula) {
       _stack.addTheorem(line);
+      explanation ??= 'User supplied premise';
     } else if (line is PushFantasy) {
       _stack = _FantasyStackEntry(_stack);
+      explanation ??= 'Applied rule "push fantasy"';
     } else if (line is PopFantasy) {
       var stack = _stack;
       if (stack is _FantasyStackEntry) {
         _stack = stack.parent;
       }
+      explanation ??= 'Applied rule "$popFantasyRule"';
     } else {
       assert(
           false, 'Unrecognized kind of derivation line: ${line.runtimeType}');
     }
-    lines.add(line);
+    _steps.add(_DerivationStep(line, explanation!));
   }
 
   Formula carryOver(Formula x) {
     var state = _stack;
     if (state is! _FantasyStackEntry) _invalidProofStep();
     if (!state.parent.isTheorem(x)) _invalidProofStep();
-    return _ordinaryProofStep(x);
+    return _ordinaryProofStep(x, 'Applied rule "$carryOverRule');
   }
 
   Formula contrapositiveForward(DerivationLineContext context) {
@@ -40,7 +51,8 @@ class DerivationState {
     return _rule(
         [context.top as Formula],
         context.substitute(
-            Implies(Not(formula.rightOperand), Not(formula.leftOperand))));
+            Implies(Not(formula.rightOperand), Not(formula.leftOperand))),
+        contrapositiveRule);
   }
 
   Formula contrapositiveReverse(DerivationLineContext context) {
@@ -50,8 +62,10 @@ class DerivationState {
     if (leftOperand is! Not) _invalidProofStep();
     var rightOperand = formula.rightOperand;
     if (rightOperand is! Not) _invalidProofStep();
-    return _rule([context.top as Formula],
-        context.substitute(Implies(rightOperand.operand, leftOperand.operand)));
+    return _rule(
+        [context.top as Formula],
+        context.substitute(Implies(rightOperand.operand, leftOperand.operand)),
+        contrapositiveRule);
   }
 
   Formula deMorgan(DerivationLineContext context) {
@@ -70,20 +84,24 @@ class DerivationState {
     } else {
       _invalidProofStep();
     }
-    return _rule([context.top as Formula], context.substitute(replacement));
+    return _rule([context.top as Formula], context.substitute(replacement),
+        deMorgansRule);
   }
 
   Formula detach(Formula x) => x is Implies
-      ? _rule([x.leftOperand, x], x.rightOperand)
+      ? _rule([x.leftOperand, x], x.rightOperand, detachmentRule)
       : _invalidProofStep();
+
+  DerivationLine getLine(int index) => _steps[index].line;
 
   Formula introduceDoubleTilde(DerivationLineContext context) => _rule(
       [context.top as Formula],
-      context.substitute(Not(Not(context.derivationLine as Formula))));
+      context.substitute(Not(Not(context.derivationLine as Formula))),
+      doubleTildeRule);
 
   bool isTheorem(Formula x) => _stack.isTheorem(x);
 
-  Formula join(Formula x, Formula y) => _rule([x, y], And(x, y));
+  Formula join(Formula x, Formula y) => _rule([x, y], And(x, y), joiningRule);
 
   Formula popFantasy() {
     var state = _stack;
@@ -98,11 +116,13 @@ class DerivationState {
     if (formula is! Not) _invalidProofStep();
     var operand = formula.operand;
     if (operand is! Not) _invalidProofStep();
-    return _rule([context.top as Formula], context.substitute(operand.operand));
+    return _rule([context.top as Formula], context.substitute(operand.operand),
+        doubleTildeRule);
   }
 
-  Formula separate(Formula x, Side side) =>
-      x is And ? _rule([x], x.getOperand(side)) : _invalidProofStep();
+  Formula separate(Formula x, Side side) => x is And
+      ? _rule([x], x.getOperand(side), separationRule)
+      : _invalidProofStep();
 
   Formula switcheroo(DerivationLineContext context) {
     var formula = context.derivationLine;
@@ -116,22 +136,23 @@ class DerivationState {
     } else {
       _invalidProofStep();
     }
-    return _rule([context.top as Formula], context.substitute(replacement));
+    return _rule([context.top as Formula], context.substitute(replacement),
+        switcherooRule);
   }
 
   Never _invalidProofStep() => throw MathError();
 
-  Formula _ordinaryProofStep(Formula theorem) {
+  Formula _ordinaryProofStep(Formula theorem, String explanation) {
     _stack.addTheorem(theorem);
-    lines.add(theorem);
+    _steps.add(_DerivationStep(theorem, explanation));
     return theorem;
   }
 
   Formula _popFantasyProofStep(_FantasyStackEntry innerState) {
     _stack = innerState.parent;
     var theorem = Implies(innerState.premise, innerState.conclusion);
-    lines.add(PopFantasy());
-    return _ordinaryProofStep(theorem);
+    _steps.add(_DerivationStep(PopFantasy(), 'Applied rule "$popFantasyRule"'));
+    return _ordinaryProofStep(theorem, 'Resulting new theorem');
   }
 
   Formula _pushFantasyProofStep(Formula premise) {
@@ -139,12 +160,20 @@ class DerivationState {
     return premise;
   }
 
-  Formula _rule(List<Formula> premises, Formula theorem) {
+  Formula _rule(List<Formula> premises, Formula theorem, Rule rule) {
     for (var premise in premises) {
       if (!isTheorem(premise)) _invalidProofStep();
     }
-    return _ordinaryProofStep(theorem);
+    return _ordinaryProofStep(theorem, 'Applied rule "$rule"');
   }
+}
+
+class _DerivationStep {
+  final DerivationLine line;
+
+  final String explanation;
+
+  _DerivationStep(this.line, this.explanation);
 }
 
 class _FantasyStackEntry extends _ProofStackEntry {

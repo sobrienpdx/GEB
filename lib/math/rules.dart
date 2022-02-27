@@ -84,8 +84,6 @@ class PopFantasyRule extends Rule {
     if (derivation.isFantasyInProgress) {
       if (lines.last is Formula) {
         derivation.popFantasy();
-        state.rulesImplemented.add('Applied rule "$popFantasyRule"');
-        state.rulesImplemented.add('Resulting new theorem');
         return Quiescent(message: 'Applied rule "$popFantasyRule".');
       }
     }
@@ -100,7 +98,6 @@ class PushFantasyRule extends Rule {
   @override
   Quiescent activate(FullState state, DerivationState derivation) {
     derivation.addLine(PushFantasy());
-    state.rulesImplemented.add('Applied rule "push fantasy"');
     return Quiescent(message: 'Starting a fantasy,  Please enter the premise.');
   }
 }

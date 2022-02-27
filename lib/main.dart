@@ -150,10 +150,10 @@ class _GEBState extends State<GEB> {
                               flex: 2,
                               child: Column(
                                 children: [
-                                  for (int i= 0; i< state.rulesImplemented.length; i++ )
+                                  for (int i= 0; i< state.explanations.length; i++ )
                                     RichText(
                                     text: TextSpan(children: [
-                                        TextSpan(text: "${i+1}: ${state.rulesImplemented[i]}",
+                                        TextSpan(text: "${i+1}: ${state.explanations[i]}",
                                           style: TextStyle(color: Colors.primaries[colorDecider(i)], fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
                                     ],
                                     ),
@@ -190,7 +190,6 @@ class _GEBState extends State<GEB> {
                                           messageToUser = "Good work! Your feelings and formula are valid!";
                                           state.addDerivationLine(line);
                                           validationColor = Colors.cyan;
-                                          state.rulesImplemented.add("User supplied premise");
                                         } catch (e) {
                                           validationColor = Colors.pink;
                                           messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
