@@ -7,11 +7,12 @@ main() {
   test('joining', () {
     var derivation = makeDerivation(['P', 'Q']);
     var rule = JoiningRule();
-    var regions = rule.getRegions(derivation.lines);
-    expect(regions, hasLength(2));
-    expect(regions[0], TypeMatcher<FullLineStepRegionInfo>());
-    expect(regions[1], TypeMatcher<FullLineStepRegionInfo>());
-    rule.apply(derivation, regions[0]!, regions[1]!);
+    var isSelectable = rule.computeIsSelectable(derivation.lines);
+    expect(isSelectable, hasLength(2));
+    expect(isSelectable[0], true);
+    expect(isSelectable[1], true);
+    rule.apply(derivation, derivation.lines[0] as Formula,
+        derivation.lines[1] as Formula);
     expect(derivation.lines.last, Formula('<P&Q>'));
   });
 

@@ -27,32 +27,22 @@ class DoubleTildeRule extends Rule {
   }
 }
 
-class FullLineStepRegionInfo extends StepRegionInfo {
-  final Formula _formula;
-
-  FullLineStepRegionInfo._(this._formula);
-}
-
 abstract class FullLineStepRule extends Rule {
   const FullLineStepRule._(String name, String description)
       : super._(name, description);
 
   @override
   SelectTwoLines activate(FullState state, DerivationState derivation) =>
-      SelectTwoLines(getRegions(derivation.lines), this);
+      SelectTwoLines(computeIsSelectable(derivation.lines), this);
 
-  void apply(DerivationState derivation, FullLineStepRegionInfo x,
-      FullLineStepRegionInfo y);
+  void apply(DerivationState derivation, Formula x, Formula y);
 
-  List<FullLineStepRegionInfo?> getRegions(List<DerivationLine> derivation) => [
-        for (int i = 0; i < derivation.length; i++)
-          _getRegionsForLine(derivation, i)
-      ];
+  String preview(List<Formula> regions);
 
-  String preview(List<FullLineStepRegionInfo> regions);
+  List<bool> computeIsSelectable(List<DerivationLine> derivation) =>
+      [for (var line in derivation) _isLineSelectable(line)];
 
-  FullLineStepRegionInfo? _getRegionsForLine(
-      List<DerivationLine> derivation, int index);
+  bool _isLineSelectable(DerivationLine line);
 }
 
 class JoiningRule extends FullLineStepRule {
@@ -60,29 +50,21 @@ class JoiningRule extends FullLineStepRule {
       : super._('joining', 'If x and y are theorems, then <x∧y> is a theorem');
 
   @override
-  void apply(DerivationState derivation, FullLineStepRegionInfo x,
-      FullLineStepRegionInfo y) {
-    derivation.join(x._formula, y._formula);
+  void apply(DerivationState derivation, Formula x, Formula y) {
+    derivation.join(x, y);
   }
 
   @override
-  String preview(List<FullLineStepRegionInfo> regions) => [
+  String preview(List<Formula> formulas) => [
         '<',
-        regions.length > 0 ? regions[0]._formula : 'x',
+        formulas.length > 0 ? formulas[0] : 'x',
         and,
-        regions.length > 1 ? regions[1]._formula : 'y',
+        formulas.length > 1 ? formulas[1] : 'y',
         '>'
       ].join();
 
-  FullLineStepRegionInfo? _getRegionsForLine(
-      List<DerivationLine> derivation, int index) {
-    var derivationLine = derivation[index];
-    if (derivationLine is Formula) {
-      return FullLineStepRegionInfo._(derivationLine);
-    } else {
-      return null;
-    }
-  }
+  @override
+  bool _isLineSelectable(DerivationLine line) => line is Formula;
 }
 
 class PartialLineStepRegionInfo {

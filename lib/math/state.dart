@@ -87,7 +87,7 @@ class FullState {
 
   String get message => _interactiveState.message;
 
-  String? get previewLine => _interactiveState.previewLine;
+  String? get previewLine => _interactiveState.previewLine(_derivation.lines);
 
   void activateRule(Rule rule) {
     try {
@@ -114,10 +114,10 @@ abstract class InteractiveState {
 
   String get message;
 
-  String? get previewLine => null;
-
   List<InteractiveText> decorateLine(
       FullState state, DerivationLine line, int index);
+
+  String? previewLine(List<DerivationLine> derivation) => null;
 }
 
 abstract class InteractiveText {
@@ -154,11 +154,11 @@ class SelectRegion extends InteractiveState {
 class SelectTwoLines extends InteractiveState {
   final FullLineStepRule rule;
 
-  final List<FullLineStepRegionInfo?> regions;
+  final List<bool> isSelectable;
 
   final List<int> selectedLines = [];
 
-  SelectTwoLines(this.regions, this.rule) : super._();
+  SelectTwoLines(this.isSelectable, this.rule) : super._();
 
   @override
   bool get isSelectionNeeded => true;
@@ -166,22 +166,20 @@ class SelectTwoLines extends InteractiveState {
   @override
   String get message => 'Select 2 lines for $rule';
 
-  @override
-  String get previewLine =>
-      rule.preview([for (var index in selectedLines) regions[index]!]);
-
   List<InteractiveText> decorateLine(
       FullState state, DerivationLine line, int index) {
     var text = line.toString();
     return [
-      regions[index] != null
+      isSelectable[index]
           ? _SelectableText(text,
               select: () {
                 selectedLines.add(index);
                 if (selectedLines.length == 2) {
                   var selectedLinesList = selectedLines.toList();
-                  rule.apply(state._derivation, regions[selectedLinesList[0]]!,
-                      regions[selectedLinesList[1]]!);
+                  rule.apply(
+                      state._derivation,
+                      state._derivation.lines[selectedLinesList[0]] as Formula,
+                      state._derivation.lines[selectedLinesList[1]] as Formula);
                   state._finishRule(rule);
                 }
               },
@@ -189,6 +187,10 @@ class SelectTwoLines extends InteractiveState {
           : _SimpleText(text)
     ];
   }
+
+  @override
+  String previewLine(List<DerivationLine> derivation) => rule
+      .preview([for (var index in selectedLines) derivation[index] as Formula]);
 }
 
 class _InteractiveTextPrinter extends PrettyPrinterBase {
