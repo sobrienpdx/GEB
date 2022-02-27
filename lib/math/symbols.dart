@@ -10,6 +10,6 @@ const String or = '∨';
 
 const String prime = '′';
 
-const String star = '★';
+const String star = '+';
 
 const String times = '⋅';
