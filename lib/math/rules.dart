@@ -5,6 +5,26 @@ import 'ast.dart';
 import 'proof.dart';
 import 'state.dart';
 
+class CarryOverRule extends Rule {
+  const CarryOverRule()
+      : super._(
+            'carry-over',
+            'Inside a fantasy, any theorem from the "reality" one level higher '
+                'can be brought in and used.');
+
+  @override
+  SelectRegion activate(FullState state, DerivationState derivation) =>
+      _makeSelectRegion(
+          derivation,
+          (line) => [
+                SelectableText(line.toString(), select: () {
+                  derivation.carryOver(line);
+                  state.finishRule(this);
+                })
+              ],
+          carryOver: true);
+}
+
 abstract class DerivationRegionInfo {
   StepRegionInfo? operator [](int index);
 }
@@ -34,7 +54,7 @@ abstract class FullLineStepRule extends Rule {
   void apply(DerivationState derivation, Formula x, Formula y);
 
   List<bool> computeIsSelectable(DerivationState derivation) {
-    var availableFlags = derivation.availableFlags;
+    var availableFlags = derivation.getAvailableFlags();
     var lines = derivation.lines;
     return [
       for (int i = 0; i < availableFlags.length; i++)
@@ -122,13 +142,14 @@ abstract class Rule {
   String toString() => name;
 
   SelectRegion _makeSelectRegion(DerivationState derivation,
-      List<InteractiveText> Function(DerivationLine) callback) {
-    var availableFlags = derivation.availableFlags;
+      List<InteractiveText> Function(Formula) callback,
+      {bool carryOver = false}) {
+    var availableFlags = derivation.getAvailableFlags(carryOver: carryOver);
     var lines = derivation.lines;
     return SelectRegion(this, [
       for (int i = 0; i < availableFlags.length; i++)
         availableFlags[i]
-            ? callback(lines[i])
+            ? callback(lines[i] as Formula)
             : [SimpleText(lines[i].toString())]
     ]);
   }

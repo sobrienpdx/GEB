@@ -23,8 +23,7 @@ const Rule pushFantasyRule = PushFantasyRule();
 
 const Rule popFantasyRule = PopFantasyRule();
 
-const Rule carryOverRule = UnimplementedRule('carry-over',
-    'Inside a fantasy, any theorem from the "reality" one level higher can be brought in and used.');
+const Rule carryOverRule = CarryOverRule();
 
 const Rule detachmentRule = UnimplementedRule(
     'detachment', 'If x and <x⊃y> are both theorems, then y is a theorem.');

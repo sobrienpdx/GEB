@@ -34,9 +34,9 @@ class DoubleTildePrinter extends _SelectionPrinter {
       DerivationLine node, DerivationLineContext context) {
     if (node is Formula) {
       flush();
-      result.add(_SelectableText(star, select: () {
+      result.add(SelectableText(star, select: () {
         derivation.introduceDoubleTilde(context);
-        state._finishRule(doubleTildeRule);
+        state.finishRule(doubleTildeRule);
       }));
     }
     super.dispatchDerivationLine(node, context);
@@ -47,9 +47,9 @@ class DoubleTildePrinter extends _SelectionPrinter {
     var operand = node.operand;
     if (operand is Not) {
       flush();
-      result.add(_SelectableText('~~', select: () {
+      result.add(SelectableText('~~', select: () {
         derivation.removeDoubleTilde(context);
-        state._finishRule(doubleTildeRule);
+        state.finishRule(doubleTildeRule);
       }));
       dispatchDerivationLine(operand.operand, context.operand.operand);
     } else {
@@ -93,7 +93,7 @@ class FullState {
     _interactiveState = Quiescent();
   }
 
-  void _finishRule(Rule rule) {
+  void finishRule(Rule rule) {
     _interactiveState = Quiescent(message: 'Applied rule "$rule".');
   }
 }
@@ -139,6 +139,31 @@ class Quiescent extends InteractiveState {
   }
 }
 
+class SelectableText extends InteractiveText {
+  final bool Function() _isSelected;
+
+  final void Function() _select;
+
+  SelectableText(String text,
+      {bool Function() isSelected = _alwaysFalse,
+      required void Function() select})
+      : _isSelected = isSelected,
+        _select = select,
+        super(text);
+
+  @override
+  bool get isSelectable => true;
+
+  @override
+  bool get isSelected => _isSelected();
+
+  void select() {
+    _select();
+  }
+
+  static bool _alwaysFalse() => false;
+}
+
 class SelectRegion extends InteractiveState {
   final Rule _rule;
 
@@ -178,7 +203,7 @@ class SelectTwoLines extends InteractiveState {
     var text = line.toString();
     return [
       isSelectable[index]
-          ? _SelectableText(text,
+          ? SelectableText(text,
               select: () {
                 selectedLines.add(index);
                 if (selectedLines.length == 2) {
@@ -187,7 +212,7 @@ class SelectTwoLines extends InteractiveState {
                       state._derivation,
                       state._derivation.lines[selectedLinesList[0]] as Formula,
                       state._derivation.lines[selectedLinesList[1]] as Formula);
-                  state._finishRule(rule);
+                  state.finishRule(rule);
                 }
               },
               isSelected: () => selectedLines.contains(index))
@@ -209,10 +234,10 @@ class SeparationPrinter extends _SelectionPrinter {
       DerivationLine node, DerivationLineContext context) {
     if (context.depth == 1 && context.top is And) {
       withDecorator(
-          (text) => _SelectableText(text, select: () {
+          (text) => SelectableText(text, select: () {
                 derivation.addLine(node,
                     explanation: 'Applied rule "$separationRule"');
-                state._finishRule(separationRule);
+                state.finishRule(separationRule);
               }),
           () => super.dispatchDerivationLine(node, context));
     } else {
@@ -270,31 +295,6 @@ class _InteractiveTextPrinter extends PrettyPrinterBase {
   }
 
   static InteractiveText _defaultDecorator(String text) => SimpleText(text);
-}
-
-class _SelectableText extends InteractiveText {
-  final bool Function() _isSelected;
-
-  final void Function() _select;
-
-  _SelectableText(String text,
-      {bool Function() isSelected = _alwaysFalse,
-      required void Function() select})
-      : _isSelected = isSelected,
-        _select = select,
-        super(text);
-
-  @override
-  bool get isSelectable => true;
-
-  @override
-  bool get isSelected => _isSelected();
-
-  void select() {
-    _select();
-  }
-
-  static bool _alwaysFalse() => false;
 }
 
 class _SelectionPrinter extends _InteractiveTextPrinter {

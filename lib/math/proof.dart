@@ -1,5 +1,3 @@
-import 'package:geb/math/state.dart';
-
 import 'ast.dart';
 import 'context.dart';
 import 'rule_definitions.dart';
@@ -9,22 +7,6 @@ class DerivationState {
   final List<_DerivationStep> _steps = [];
 
   DerivationState();
-
-  List<bool> get availableFlags {
-    var result = List<bool>.filled(_steps.length, false);
-    var index = lastNonPopIndex;
-    while (index >= 0) {
-      var step = _steps[index];
-      var line = step.line;
-      if (line is PushFantasy) {
-        break;
-      } else if (line is Formula) {
-        result[index] = true;
-      }
-      index = step.previousIndex;
-    }
-    return result;
-  }
 
   List<String> get explanations => [for (var step in _steps) step.explanation];
 
@@ -61,11 +43,11 @@ class DerivationState {
   }
 
   Formula carryOver(Formula x) {
-    var fantasyStart = _findFantasyStart(lastNonPopIndex);
-    if (fantasyStart < 0 || !isTheorem(x, startingIndex: fantasyStart - 1)) {
+    int startingIndex = _popFantasyIndex(lastNonPopIndex);
+    if (startingIndex < 0 || !isTheorem(x, startingIndex: startingIndex)) {
       _invalidProofStep();
     }
-    return _ordinaryProofStep(x, 'Applied rule "$carryOverRule');
+    return _ordinaryProofStep(x, 'Applied rule "$carryOverRule"');
   }
 
   Formula contrapositiveForward(DerivationLineContext context) {
@@ -114,6 +96,25 @@ class DerivationState {
   Formula detach(Formula x) => x is Implies
       ? _rule([x.leftOperand, x], x.rightOperand, detachmentRule)
       : _invalidProofStep();
+
+  List<bool> getAvailableFlags({bool carryOver = false}) {
+    var result = List<bool>.filled(_steps.length, false);
+    var index = lastNonPopIndex;
+    if (carryOver) {
+      index = _popFantasyIndex(index);
+    }
+    while (index >= 0) {
+      var step = _steps[index];
+      var line = step.line;
+      if (line is PushFantasy) {
+        break;
+      } else if (line is Formula) {
+        result[index] = true;
+      }
+      index = step.previousIndex;
+    }
+    return result;
+  }
 
   DerivationLine getLine(int index) => _steps[index].line;
 
@@ -189,6 +190,12 @@ class DerivationState {
   Formula _ordinaryProofStep(Formula theorem, String explanation) {
     _steps.add(_DerivationStep(theorem, explanation, lastNonPopIndex));
     return theorem;
+  }
+
+  int _popFantasyIndex(int index) {
+    var startingIndex = _findFantasyStart(index);
+    if (startingIndex >= 0) startingIndex--;
+    return startingIndex;
   }
 
   Formula _popFantasyProofStep(int fantasyStart) {

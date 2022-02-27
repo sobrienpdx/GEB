@@ -165,6 +165,26 @@ main() {
       });
     });
   });
+
+  group('carry-over:', () {
+    test('basic', () {
+      check(addLines(['[', 'P', '[', 'Q']));
+      check(rule(carryOverRule)
+          .showsMessage('Select a region for carry-over')
+          .hasSelectionState(selectable: {1: 'P'}));
+      check(select(1, 'P')
+          .addsLines(['P'])
+          .addsExplanations(['Applied rule "carry-over"'])
+          .isQuiescent()
+          .showsMessage('Applied rule "carry-over".'));
+    });
+
+    test('available theorems', () {
+      check(addLines(['P', '[', 'Q', '[', 'R', ']', 'P', '[', 'Q']));
+      check(
+          rule(carryOverRule).hasSelectionState(selectable: {2: 'Q', 6: 'P'}));
+    });
+  });
 }
 
 @useResult
