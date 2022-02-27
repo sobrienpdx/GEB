@@ -94,7 +94,7 @@ class FullState {
 
   void _finishRule(Rule rule) {
     rulesImplemented.add('Applied rule "$rule"');
-    _interactiveState = Quiescent(message: 'Applied rule "$rule"');
+    _interactiveState = Quiescent(message: 'Applied rule "$rule".');
   }
 }
 
