@@ -70,6 +70,17 @@ class PartialLineStepRegionInfo {
   PartialLineStepRegionInfo(this.formula);
 }
 
+class PushFantasyRule extends Rule {
+  const PushFantasyRule()
+      : super._('push fantasy', 'Begin a fantasy, assuming x is a theorem.');
+
+  @override
+  Quiescent activate(FullState state, DerivationState derivation) {
+    derivation.addLine(PushFantasy());
+    return Quiescent(message: 'Starting a fantasy,  Please enter the premise.');
+  }
+}
+
 abstract class Rule {
   final String name;
 

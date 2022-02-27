@@ -208,4 +208,12 @@ main() {
       expect(decoratedLine[0].isSelected, false);
     });
   });
+
+  test('fantasy', () {
+    state.activateRule(pushFantasyRule);
+    expect(state.isSelectionNeeded, false);
+    expect(state.message, 'Starting a fantasy,  Please enter the premise.');
+    expect(state.derivationLines, hasLength(1));
+    expect(state.derivationLines[0].line, PushFantasy());
+  });
 }
