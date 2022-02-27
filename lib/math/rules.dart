@@ -29,6 +29,47 @@ abstract class DerivationRegionInfo {
   StepRegionInfo? operator [](int index);
 }
 
+class DetachmentRule extends FullLineStepRule {
+  const DetachmentRule()
+      : super._('detachment',
+            'If x and <x⊃y> are both theorems, then y is a theorem.');
+
+  @override
+  void apply(DerivationState derivation, Formula x, Formula y) {
+    if (x is Implies && x.leftOperand == y) {
+      derivation.detach(x);
+    } else {
+      derivation.detach(y);
+    }
+  }
+
+  @override
+  String preview(List<Formula> regions) {
+    if (regions.isEmpty) return '';
+    var line = regions[0];
+    if (line is Implies) {
+      return line.rightOperand.toString();
+    } else {
+      return '';
+    }
+  }
+
+  @override
+  bool _isLineSelectable(
+      DerivationLine line, List<DerivationLine> selectedLines) {
+    if (line is! Formula) return false;
+    if (selectedLines.isEmpty) return true;
+    var selectedLine = selectedLines[0];
+    if (selectedLine is Implies && line == selectedLine.leftOperand) {
+      return true;
+    }
+    if (line is Implies && selectedLine == line.leftOperand) {
+      return true;
+    }
+    return false;
+  }
+}
+
 class DoubleTildeRule extends Rule {
   const DoubleTildeRule()
       : super._(
@@ -48,8 +89,16 @@ abstract class FullLineStepRule extends Rule {
       : super._(name, description);
 
   @override
-  SelectTwoLines activate(FullState state, DerivationState derivation) =>
-      SelectTwoLines(computeIsSelectable(derivation), this);
+  SelectTwoLines activate(FullState state, DerivationState derivation) {
+    var lines = derivation.lines;
+    var availableFlags = derivation.getAvailableFlags();
+    return SelectTwoLines(
+        (index, selectedLines) =>
+            availableFlags[index] &&
+            _isLineSelectable(
+                lines[index], [for (var index in selectedLines) lines[index]]),
+        this);
+  }
 
   void apply(DerivationState derivation, Formula x, Formula y);
 
@@ -58,13 +107,14 @@ abstract class FullLineStepRule extends Rule {
     var lines = derivation.lines;
     return [
       for (int i = 0; i < availableFlags.length; i++)
-        availableFlags[i] && _isLineSelectable(lines[i])
+        availableFlags[i] && _isLineSelectable(lines[i], [])
     ];
   }
 
   String preview(List<Formula> regions);
 
-  bool _isLineSelectable(DerivationLine line);
+  bool _isLineSelectable(
+      DerivationLine line, List<DerivationLine> selectedLines);
 }
 
 class JoiningRule extends FullLineStepRule {
@@ -86,7 +136,9 @@ class JoiningRule extends FullLineStepRule {
       ].join();
 
   @override
-  bool _isLineSelectable(DerivationLine line) => line is Formula;
+  bool _isLineSelectable(
+          DerivationLine line, List<DerivationLine> selectedLines) =>
+      line is Formula;
 }
 
 class PartialLineStepRegionInfo {

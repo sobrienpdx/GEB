@@ -185,6 +185,68 @@ main() {
           rule(carryOverRule).hasSelectionState(selectable: {2: 'Q', 6: 'P'}));
     });
   });
+
+  group('detachment:', () {
+    test('basic', () {
+      check(addLines(['[', 'P', '<P->Q>']));
+      check(rule(detachmentRule)
+          .showsMessage('Select 2 lines for detachment')
+          .hasSelectionState(
+              selectable: {1: 'P', 2: '<P->Q>'}).showsPreview(''));
+      check(select(1, 'P')
+          .showsMessage('Select 2 lines for detachment')
+          .hasSelectionState(
+              selectable: {2: '<P->Q>'}, selected: {1: 'P'}).showsPreview(''));
+      check(select(2, '<P->Q>')
+          .addsLines(['Q'])
+          .addsExplanations(['Applied rule "detachment"'])
+          .isQuiescent()
+          .showsMessage('Applied rule "detachment".'));
+    });
+
+    test('reversed selection order', () {
+      check(addLines(['[', 'P', '<P->Q>']));
+      check(rule(detachmentRule)
+          .showsMessage('Select 2 lines for detachment')
+          .hasSelectionState(
+              selectable: {1: 'P', 2: '<P->Q>'}).showsPreview(''));
+      check(select(2, '<P->Q>')
+          .showsMessage('Select 2 lines for detachment')
+          .hasSelectionState(
+              selectable: {1: 'P'}, selected: {2: '<P->Q>'}).showsPreview('Q'));
+      check(select(1, 'P')
+          .addsLines(['Q'])
+          .addsExplanations(['Applied rule "detachment"'])
+          .isQuiescent()
+          .showsMessage('Applied rule "detachment".'));
+    });
+
+    group('ambiguous first selection:', () {
+      void firstPart() {
+        check(addLines(['[', 'P', '<P->Q>', '<<P->Q>->R>']));
+        check(rule(detachmentRule).hasSelectionState(
+            selectable: {1: 'P', 2: '<P->Q>', 3: '<<P->Q>->R>'}));
+        check(select(2, '<P->Q>').hasSelectionState(
+            selectable: {1: 'P', 3: '<<P->Q>->R>'},
+            selected: {2: '<P->Q>'}).showsPreview('Q'));
+      }
+
+      test('implication', () {
+        firstPart();
+        check(select(1, 'P').addsLines(['Q']).isQuiescent());
+      });
+
+      test('premise', () {
+        firstPart();
+        check(select(3, '<<P->Q>->R>').addsLines(['R']).isQuiescent());
+      });
+    });
+
+    test('available theorems', () {
+      check(addLines(['P', '[', 'Q', '[', 'R', ']', 'P']));
+      check(rule(joiningRule).hasSelectionState(selectable: {2: 'Q', 6: 'P'}));
+    });
+  });
 }
 
 @useResult

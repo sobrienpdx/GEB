@@ -25,8 +25,7 @@ const Rule popFantasyRule = PopFantasyRule();
 
 const Rule carryOverRule = CarryOverRule();
 
-const Rule detachmentRule = UnimplementedRule(
-    'detachment', 'If x and <x⊃y> are both theorems, then y is a theorem.');
+const Rule detachmentRule = DetachmentRule();
 
 const Rule contrapositiveRule = UnimplementedRule(
     'contrapositive', '<x⊃y and <~y⊃~x> are interchangeable.');

@@ -140,19 +140,23 @@ class Quiescent extends InteractiveState {
 }
 
 class SelectableText extends InteractiveText {
+  final bool Function() _isSelectable;
+
   final bool Function() _isSelected;
 
   final void Function() _select;
 
   SelectableText(String text,
-      {bool Function() isSelected = _alwaysFalse,
+      {bool Function() isSelectable = _alwaysTrue,
+      bool Function() isSelected = _alwaysFalse,
       required void Function() select})
-      : _isSelected = isSelected,
+      : _isSelectable = isSelectable,
+        _isSelected = isSelected,
         _select = select,
         super(text);
 
   @override
-  bool get isSelectable => true;
+  bool get isSelectable => _isSelectable();
 
   @override
   bool get isSelected => _isSelected();
@@ -162,6 +166,8 @@ class SelectableText extends InteractiveText {
   }
 
   static bool _alwaysFalse() => false;
+
+  static bool _alwaysTrue() => true;
 }
 
 class SelectRegion extends InteractiveState {
@@ -186,7 +192,7 @@ class SelectRegion extends InteractiveState {
 class SelectTwoLines extends InteractiveState {
   final FullLineStepRule rule;
 
-  final List<bool> isSelectable;
+  final bool Function(int, List<int>) isSelectable;
 
   final List<int> selectedLines = [];
 
@@ -202,21 +208,20 @@ class SelectTwoLines extends InteractiveState {
       FullState state, DerivationLine line, int index) {
     var text = line.toString();
     return [
-      isSelectable[index]
-          ? SelectableText(text,
-              select: () {
-                selectedLines.add(index);
-                if (selectedLines.length == 2) {
-                  var selectedLinesList = selectedLines.toList();
-                  rule.apply(
-                      state._derivation,
-                      state._derivation.lines[selectedLinesList[0]] as Formula,
-                      state._derivation.lines[selectedLinesList[1]] as Formula);
-                  state.finishRule(rule);
-                }
-              },
-              isSelected: () => selectedLines.contains(index))
-          : SimpleText(text)
+      SelectableText(text,
+          select: () {
+            selectedLines.add(index);
+            if (selectedLines.length == 2) {
+              var selectedLinesList = selectedLines.toList();
+              rule.apply(
+                  state._derivation,
+                  state._derivation.lines[selectedLinesList[0]] as Formula,
+                  state._derivation.lines[selectedLinesList[1]] as Formula);
+              state.finishRule(rule);
+            }
+          },
+          isSelectable: () => isSelectable(index, selectedLines),
+          isSelected: () => selectedLines.contains(index))
     ];
   }
 
