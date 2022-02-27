@@ -60,6 +60,7 @@ class DoubleTildePrinter extends _SelectionPrinter {
 
 class FullState {
   InteractiveState _interactiveState = _Quiescent();
+  List<String> rulesImplemented = [];
 
   final _derivation = DerivationState();
 
@@ -92,6 +93,7 @@ class FullState {
   }
 
   void _finishRule(Rule rule) {
+    rulesImplemented.add('Applied rule "$rule"');
     _interactiveState = _Quiescent(message: 'Applied rule "$rule"');
   }
 }

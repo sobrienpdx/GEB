@@ -38,7 +38,7 @@ class _GEBState extends State<GEB> {
   FullState state = FullState();
   final _textController = TextEditingController();
   String messageToUser ="";
-  Color validationColor = Colors.indigo;
+  Color validationColor = Colors.cyan;
   List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~", forall, exists];
 
   int colorDecider(int i) {
@@ -74,7 +74,7 @@ class _GEBState extends State<GEB> {
                         padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                         child: Text(
                           state.message,
-                          style: TextStyle(fontSize: 25, color: validationColor, fontWeight: FontWeight.w800),
+                          style: TextStyle(fontSize: 25, color: Colors.deepPurple, fontWeight: FontWeight.w800),
                         ),
                       ),
                       Wrap(
@@ -118,15 +118,42 @@ class _GEBState extends State<GEB> {
                           ),
                         ],
                       ),
-                      for (int i= 0; i< state.derivationLines.length; i++ )
-                      RichText(
-                        text: TextSpan(children: [
-                          TextSpan(text: "${i+1}: ",
-                          style: TextStyle(color: Colors.primaries[colorDecider(i)].withOpacity(state.isSelectionNeeded ? .3 : 1), fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
-                          for (var chunk in state.derivationLines[i].decorated)
-                            convertInteractiveTextToTextSpan(chunk, i),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Flexible(
+                            flex: 2,
+                            child: Column(
+                              children: [
+                                for (int i= 0; i< state.derivationLines.length; i++ )
+                                  RichText(
+                                  text: TextSpan(children: [
+                                    TextSpan(text: "${i+1}: ",
+                                    style: TextStyle(color: Colors.primaries[colorDecider(i)].withOpacity(state.isSelectionNeeded ? .3 : 1), fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
+                                    for (var chunk in state.derivationLines[i].decorated)
+                                      convertInteractiveTextToTextSpan(chunk, i),
+                                  ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Flexible(
+                            flex: 2,
+                            child: Column(
+                              children: [
+                                for (int i= 0; i< state.rulesImplemented.length; i++ )
+                                  RichText(
+                                  text: TextSpan(children: [
+                                      TextSpan(text: "${i+1}: ${state.rulesImplemented[i]}",
+                                        style: TextStyle(color: Colors.primaries[colorDecider(i)], fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
+                                  ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
-                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(18.0),
@@ -154,7 +181,8 @@ class _GEBState extends State<GEB> {
                                         DerivationLine line = DerivationLine(_textController.text);
                                         messageToUser = "Good work! Your feelings and formula are valid!";
                                         state.addDerivationLine(line);
-                                        validationColor = Colors.indigo;
+                                        validationColor = Colors.cyan;
+                                        state.rulesImplemented.add("User supplied premise");
                                       } catch (e) {
                                         validationColor = Colors.pink;
                                         messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
