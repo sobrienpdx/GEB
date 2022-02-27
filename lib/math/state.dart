@@ -19,7 +19,7 @@ class DerivationLineInfo {
   List<InteractiveText> get decorated =>
       _state._interactiveState.decorateLine(_state, line, _index);
 
-  DerivationLine get line => _state._derivation.lines[_index];
+  DerivationLine get line => _state._derivation.getLine(_index);
 
   @override
   String toString() => 'ProofLine($line)';
@@ -60,7 +60,6 @@ class DoubleTildePrinter extends _SelectionPrinter {
 
 class FullState {
   InteractiveState _interactiveState = Quiescent();
-  List<String> rulesImplemented = [];
 
   final _derivation = DerivationState();
 
@@ -72,6 +71,8 @@ class FullState {
         for (int i = 0; i < _derivation.lines.length; i++)
           DerivationLineInfo._(this, i)
       ];
+
+  List<String> get explanations => _derivation.explanations;
 
   bool get isSelectionNeeded => _interactiveState.isSelectionNeeded;
 
@@ -93,7 +94,6 @@ class FullState {
   }
 
   void _finishRule(Rule rule) {
-    rulesImplemented.add('Applied rule "$rule"');
     _interactiveState = Quiescent(message: 'Applied rule "$rule".');
   }
 }
@@ -210,7 +210,8 @@ class SeparationPrinter extends _SelectionPrinter {
     if (context.depth == 1 && context.top is And) {
       withDecorator(
           (text) => _SelectableText(text, select: () {
-                derivation.addLine(node);
+                derivation.addLine(node,
+                    explanation: 'Applied rule "$separationRule"');
                 state._finishRule(separationRule);
               }),
           () => super.dispatchDerivationLine(node, context));
