@@ -59,13 +59,13 @@ class DoubleTildePrinter extends _SelectionPrinter {
 }
 
 class FullState {
-  InteractiveState _interactiveState = _Quiescent();
+  InteractiveState _interactiveState = Quiescent();
   List<String> rulesImplemented = [];
 
   final _derivation = DerivationState();
 
   FullState() {
-    _interactiveState = _Quiescent();
+    _interactiveState = Quiescent();
   }
 
   List<DerivationLineInfo> get derivationLines => [
@@ -83,18 +83,18 @@ class FullState {
     try {
       _interactiveState = rule.activate(this, _derivation);
     } on UnimplementedError catch (e) {
-      _interactiveState = _Quiescent(message: 'Unimplemented: ${e.message}');
+      _interactiveState = Quiescent(message: 'Unimplemented: ${e.message}');
     }
   }
 
   void addDerivationLine(DerivationLine line) {
     _derivation.addLine(line);
-    _interactiveState = _Quiescent();
+    _interactiveState = Quiescent();
   }
 
   void _finishRule(Rule rule) {
     rulesImplemented.add('Applied rule "$rule"');
-    _interactiveState = _Quiescent(message: 'Applied rule "$rule"');
+    _interactiveState = Quiescent(message: 'Applied rule "$rule"');
   }
 }
 
@@ -121,6 +121,22 @@ abstract class InteractiveText {
   bool get isSelected;
 
   void select();
+}
+
+class Quiescent extends InteractiveState {
+  @override
+  final String message;
+
+  Quiescent({this.message = ''}) : super._();
+
+  @override
+  bool get isSelectionNeeded => false;
+
+  List<InteractiveText> decorateLine(
+      FullState state, DerivationLine line, int index) {
+    var text = line.toString();
+    return [_SimpleText(text)];
+  }
 }
 
 class SelectRegion extends InteractiveState {
@@ -236,22 +252,6 @@ class _InteractiveTextPrinter extends PrettyPrinterBase {
   }
 
   static InteractiveText _defaultDecorator(String text) => _SimpleText(text);
-}
-
-class _Quiescent extends InteractiveState {
-  @override
-  final String message;
-
-  _Quiescent({this.message = ''}) : super._();
-
-  @override
-  bool get isSelectionNeeded => false;
-
-  List<InteractiveText> decorateLine(
-      FullState state, DerivationLine line, int index) {
-    var text = line.toString();
-    return [_SimpleText(text)];
-  }
 }
 
 class _SelectableText extends InteractiveText {

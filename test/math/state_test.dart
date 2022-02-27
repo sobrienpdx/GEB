@@ -39,7 +39,7 @@ main() {
       expect(state.isSelectionNeeded, false);
       expect(state.derivationLines, hasLength(4));
       expect(state.derivationLines[3].line, Formula('<P&Q>'));
-      expect(state.message, 'Applied rule "joining"');
+      expect(state.message, 'Applied rule "joining".');
     });
 
     test('same line twice', () {
@@ -206,6 +206,41 @@ main() {
       expect(decoratedLine[0].text, '<P${or}Q>');
       expect(decoratedLine[0].isSelectable, false);
       expect(decoratedLine[0].isSelected, false);
+    });
+  });
+
+  group('fantasy:', () {
+    test('basic', () {
+      state.activateRule(pushFantasyRule);
+      expect(state.isSelectionNeeded, false);
+      expect(state.message, 'Starting a fantasy,  Please enter the premise.');
+      expect(state.derivationLines, hasLength(1));
+      expect(state.derivationLines[0].line, PushFantasy());
+      state.addDerivationLine(Formula('P'));
+      state.addDerivationLine(Formula('Q'));
+      state.activateRule(popFantasyRule);
+      expect(state.isSelectionNeeded, false);
+      expect(state.message, 'Applied rule "pop fantasy".');
+      expect(state.derivationLines, hasLength(5));
+      expect(state.derivationLines[4].line, Formula('<P->Q>'));
+    });
+
+    group('illegal pop:', () {
+      test('no fantasy in progress', () {
+        state.activateRule(popFantasyRule);
+        expect(state.message, 'Cannot pop a fantasy right now.');
+        expect(state.derivationLines, isEmpty);
+      });
+
+      test('last line is not a formula', () {
+        state.activateRule(pushFantasyRule);
+        state.addDerivationLine(Formula('P'));
+        state.addDerivationLine(PushFantasy());
+        expect(state.derivationLines, hasLength(3));
+        state.activateRule(popFantasyRule);
+        expect(state.message, 'Cannot pop a fantasy right now.');
+        expect(state.derivationLines, hasLength(3));
+      });
     });
   });
 }

@@ -4,7 +4,8 @@ const List<Rule> ruleDefinitions = [
   joiningRule,
   separationRule,
   doubleTildeRule,
-  fantasyRule,
+  pushFantasyRule,
+  popFantasyRule,
   carryOverRule,
   detachmentRule,
   contrapositiveRule,
@@ -18,8 +19,9 @@ const Rule separationRule = SeparationRule();
 
 const Rule doubleTildeRule = DoubleTildeRule();
 
-const Rule fantasyRule = UnimplementedRule('fantasy',
-    'If y can be derived when x is assumed to be a theorem, then <x⊃y> is a theorem.');
+const Rule pushFantasyRule = PushFantasyRule();
+
+const Rule popFantasyRule = PopFantasyRule();
 
 const Rule carryOverRule = UnimplementedRule('carry-over',
     'Inside a fantasy, any theorem from the "reality" one level higher can be brought in and used.');

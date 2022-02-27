@@ -122,7 +122,7 @@ class _GEBState extends State<GEB> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           Flexible(
-                            flex: 2,
+                            flex: 3,
                             child: Column(
                               children: [
                                 for (int i= 0; i< state.derivationLines.length; i++ )

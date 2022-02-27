@@ -1,3 +1,4 @@
+import 'package:geb/math/rule_definitions.dart';
 import 'package:geb/math/symbols.dart';
 
 import 'ast.dart';
@@ -68,6 +69,40 @@ class PartialLineStepRegionInfo {
   final Formula formula;
 
   PartialLineStepRegionInfo(this.formula);
+}
+
+class PopFantasyRule extends Rule {
+  const PopFantasyRule()
+      : super._(
+            'pop fantasy',
+            'If y can be derived when x is assumed to be a theorem, then <x⊃y> '
+                'is a theorem.');
+
+  @override
+  Quiescent activate(FullState state, DerivationState derivation) {
+    var lines = derivation.lines;
+    if (derivation.isFantasyInProgress) {
+      if (lines.last is Formula) {
+        derivation.popFantasy();
+        state.rulesImplemented.add('Applied rule "$popFantasyRule"');
+        state.rulesImplemented.add('Resulting new theorem');
+        return Quiescent(message: 'Applied rule "$popFantasyRule".');
+      }
+    }
+    return Quiescent(message: 'Cannot pop a fantasy right now.');
+  }
+}
+
+class PushFantasyRule extends Rule {
+  const PushFantasyRule()
+      : super._('push fantasy', 'Begin a fantasy, assuming x is a theorem.');
+
+  @override
+  Quiescent activate(FullState state, DerivationState derivation) {
+    derivation.addLine(PushFantasy());
+    state.rulesImplemented.add('Applied rule "push fantasy"');
+    return Quiescent(message: 'Starting a fantasy,  Please enter the premise.');
+  }
 }
 
 abstract class Rule {
