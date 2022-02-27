@@ -264,7 +264,7 @@ class _SimpleText extends InteractiveText {
 
   @override
   void select() {
-    assert(false, 'Not selectable');
+    assert(false, 'Not selectable: $this');
   }
 
   String toString() => '_SimpleText(${json.encode(text)})';

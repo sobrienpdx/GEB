@@ -1,6 +1,9 @@
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geb/widgets/base_button.dart';
+import 'package:geb/widgets/custom_text_span.dart';
 
 import 'math/ast.dart';
 import 'math/rule_definitions.dart';
@@ -46,6 +49,7 @@ class _GEBState extends State<GEB> {
 
   @override
   Widget build(BuildContext context) {
+    _disposeGestureRecognizers();
     return Scaffold(
       backgroundColor: Colors.grey[200],
       body: Center(
@@ -112,11 +116,7 @@ class _GEBState extends State<GEB> {
                       RichText(
                         text: TextSpan(children: [
                           for (var chunk in state.derivationLines[i].decorated)
-                            TextSpan(text: "${i+1}: ${chunk.text}",
-                                style: TextStyle(
-                                  color: chunk.isSelectable || !state.isSelectionNeeded ? Colors.primaries[colorDecider(i)] : Colors.primaries[colorDecider(i)].withOpacity(.3),
-                                    fontWeight: chunk.isSelectable || !state.isSelectionNeeded  ? FontWeight.bold: FontWeight.w100,
-                                    fontFamily: "NotoSansMath")),
+                            convertInteractiveTextToTextSpan(chunk, i),
                         ],
                         ),
                       ),
@@ -197,5 +197,36 @@ class _GEBState extends State<GEB> {
         ),
       ),
     );
+  }
+
+  final List<TapGestureRecognizer> _gestureRecognizers = [];
+
+  void _disposeGestureRecognizers() {
+    for (var recognizer in _gestureRecognizers) {
+      recognizer.dispose();
+    }
+    _gestureRecognizers.clear();
+  }
+
+  @override
+  void dispose() {
+    _disposeGestureRecognizers();
+    super.dispose();
+  }
+
+  TextSpan convertInteractiveTextToTextSpan(InteractiveText chunk, int i) {
+    var recognizer = TapGestureRecognizer()..onTap = () {
+        setState(() {
+          chunk.select();
+        });
+      };
+    _gestureRecognizers.add(recognizer);
+    return CustomTextSpan(text: "${i+1}: ${chunk.text}",
+      recognizer: recognizer,
+      style: TextStyle(
+          backgroundColor: chunk.isSelected ? Colors.black.withOpacity(.9) : Colors.black.withOpacity(0),
+          color: chunk.isSelectable || !state.isSelectionNeeded ? Colors.primaries[colorDecider(i)] : Colors.primaries[colorDecider(i)].withOpacity(.3),
+          fontWeight: chunk.isSelectable || !state.isSelectionNeeded  ? FontWeight.bold: FontWeight.w100,
+          fontFamily: "NotoSansMath"));
   }
 }
