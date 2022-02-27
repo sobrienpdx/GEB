@@ -1,7 +1,9 @@
-import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geb/widgets/base_button.dart';
+import 'package:geb/widgets/custom_text_span.dart';
 
 import 'math/ast.dart';
 import 'math/rule_definitions.dart';
@@ -47,6 +49,7 @@ class _GEBState extends State<GEB> {
 
   @override
   Widget build(BuildContext context) {
+    _disposeGestureRecognizers();
     return Scaffold(
       backgroundColor: Colors.grey[200],
       body: Center(
@@ -110,13 +113,12 @@ class _GEBState extends State<GEB> {
                         ],
                       ),
                       for (int i= 0; i< state.derivationLines.length; i++ )
-                      Text("${i+1}: ${state.derivationLines[i].line.toString()}",
-                          style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.primaries[colorDecider(i)]
-
-                      ),
+                      RichText(
+                        text: TextSpan(children: [
+                          for (var chunk in state.derivationLines[i].decorated)
+                            convertInteractiveTextToTextSpan(chunk, i),
+                        ],
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(18.0),
@@ -180,11 +182,8 @@ class _GEBState extends State<GEB> {
                           textSize: 17,
                           onPressed: () {
                             setState(() {
-                              if (messageToUser != rule.description) {
-                                messageToUser = rule.description;
-                              } else {
-                                messageToUser = "";
-                              }
+                              state.activateRule(rule);
+                              messageToUser = state.message;
                             });
                           },
                         ),
@@ -198,5 +197,36 @@ class _GEBState extends State<GEB> {
         ),
       ),
     );
+  }
+
+  final List<TapGestureRecognizer> _gestureRecognizers = [];
+
+  void _disposeGestureRecognizers() {
+    for (var recognizer in _gestureRecognizers) {
+      recognizer.dispose();
+    }
+    _gestureRecognizers.clear();
+  }
+
+  @override
+  void dispose() {
+    _disposeGestureRecognizers();
+    super.dispose();
+  }
+
+  TextSpan convertInteractiveTextToTextSpan(InteractiveText chunk, int i) {
+    var recognizer = TapGestureRecognizer()..onTap = () {
+        setState(() {
+          chunk.select();
+        });
+      };
+    _gestureRecognizers.add(recognizer);
+    return CustomTextSpan(text: "${i+1}: ${chunk.text}",
+      recognizer: recognizer,
+      style: TextStyle(
+          backgroundColor: chunk.isSelected ? Colors.black.withOpacity(.9) : Colors.black.withOpacity(0),
+          color: chunk.isSelectable || !state.isSelectionNeeded ? Colors.primaries[colorDecider(i)] : Colors.primaries[colorDecider(i)].withOpacity(.3),
+          fontWeight: chunk.isSelectable || !state.isSelectionNeeded  ? FontWeight.bold: FontWeight.w100,
+          fontFamily: "NotoSansMath"));
   }
 }
