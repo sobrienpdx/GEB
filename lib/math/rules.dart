@@ -17,14 +17,11 @@ class DoubleTildeRule extends Rule {
                 "resulting string is itself well formed.");
 
   @override
-  SelectRegion activate(FullState state, DerivationState derivation) {
-    // TODO(paul): get rid of the old Proof object once it's not needed
-    // anymore.
-    return SelectRegion(this, [
-      for (var line in derivation.lines)
-        DoubleTildePrinter.run(state, derivation, line)
-    ]);
-  }
+  SelectRegion activate(FullState state, DerivationState derivation) =>
+      SelectRegion(this, [
+        for (var line in derivation.lines)
+          DoubleTildePrinter(state, derivation).run(line)
+      ]);
 }
 
 abstract class FullLineStepRule extends Rule {
@@ -37,10 +34,10 @@ abstract class FullLineStepRule extends Rule {
 
   void apply(DerivationState derivation, Formula x, Formula y);
 
-  String preview(List<Formula> regions);
-
   List<bool> computeIsSelectable(List<DerivationLine> derivation) =>
       [for (var line in derivation) _isLineSelectable(line)];
+
+  String preview(List<Formula> regions);
 
   bool _isLineSelectable(DerivationLine line);
 }
@@ -92,28 +89,14 @@ abstract class Rule {
 class SeparationRule extends Rule {
   const SeparationRule()
       : super._('separation',
-            'If <x∧y> is a theorem, then both x and y are theorems. ');
+            'If <x∧y> is a theorem, then both x and y are theorems.');
 
-  List<Formula> apply(PartialLineStepRegionInfo x) => [x.formula];
-
-  List<SubexpressionsStepRegionInfo?> getRegions(
-          List<DerivationLine> derivation) =>
-      [
-        for (int i = 0; i < derivation.length; i++)
-          _getRegionsForLine(derivation, i)
-      ];
-
-  SubexpressionsStepRegionInfo? _getRegionsForLine(
-      List<DerivationLine> derivation, int index) {
-    var line = derivation[index];
-    if (line is And) {
-      return SubexpressionsStepRegionInfo([
-        PartialLineStepRegionInfo(line.leftOperand),
-        PartialLineStepRegionInfo(line.rightOperand)
+  @override
+  SelectRegion activate(FullState state, DerivationState derivation) =>
+      SelectRegion(this, [
+        for (var line in derivation.lines)
+          SeparationPrinter(state, derivation).run(line)
       ]);
-    }
-    return null;
-  }
 }
 
 abstract class StepRegionInfo {}
