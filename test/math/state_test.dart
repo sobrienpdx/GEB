@@ -362,6 +362,58 @@ main() {
           .hasSelectionState(selectable: {2: "<Q|Q'>", 6: "<P|P'>"}));
     });
   });
+
+  test("Ganto's Ax", () {
+    check(rule(pushFantasyRule).addsLines(['['])); // 0: [
+    check(addLine('<<P->Q>&<~P->Q>>')); // 1: <<P->Q>&<~P->Q>>
+    check(rule(separationRule));
+    check(select(1, '<P->Q>').addsLines(['<P->Q>'])); // 2: <P->Q>
+    check(rule(contrapositiveRule));
+    check(select(2, '<P->Q>').addsLines(['<~Q->~P>'])); // 3: <~Q->~P>
+    check(rule(separationRule));
+    check(select(1, '<~P->Q>').addsLines(['<~P->Q>'])); // 4: <~P->Q>
+    check(rule(contrapositiveRule));
+    check(select(4, '<~P->Q>').addsLines(['<~Q->~~P>'])); // 5: <~Q->~~P>
+    check(rule(pushFantasyRule).addsLines(['['])); // 6: [
+    check(addLine('~Q')); // 7: ~Q
+    check(rule(carryOverRule));
+    check(select(3, '<~Q->~P>').addsLines(['<~Q->~P>'])); // 8: <~Q->~P>
+    check(rule(detachmentRule));
+    check(select(7, '~Q'));
+    check(select(8, '<~Q->~P>').addsLines(['~P'])); // 9: ~P
+    check(rule(carryOverRule));
+    check(select(5, '<~Q->~~P>').addsLines(['<~Q->~~P>'])); // 10: <~Q->~~P>
+    check(rule(detachmentRule));
+    check(select(7, '~Q'));
+    check(select(10, '<~Q->~~P>').addsLines(['~~P'])); // 11: ~~P
+    check(rule(joiningRule));
+    check(select(9, '~P'));
+    check(select(11, '~~P').addsLines(['<~P&~~P>'])); // 12: <~P&~~P>
+    check(rule(deMorgansRule));
+    check(select(12, '<~P&~~P>').addsLines(['~<P|~P>'])); // 13: ~<P|~P>
+    check(rule(popFantasyRule).addsLines([
+      ']', // 14: ]
+      '<~Q->~<P|~P>>' // 15: <~Q->~<P|~P>>
+    ]));
+    check(rule(contrapositiveRule));
+    check(select(15, '<~Q->~<P|~P>>')
+        .addsLines(['<<P|~P>->Q>'])); // 16: <<P|~P>->Q>
+    check(rule(pushFantasyRule).addsLines(['['])); // 17: [
+    check(addLine('~P')); // 18: ~P
+    check(rule(popFantasyRule).addsLines([
+      ']', // 19: ]
+      '<~P->~P>', // 20: <~P->~P>
+    ]));
+    check(rule(switcherooRule));
+    check(select(20, '<~P->~P>').addsLines(['<P|~P>'])); // 21: <P|~P>
+    check(rule(detachmentRule));
+    check(select(21, '<P|~P>'));
+    check(select(16, '<<P|~P>->Q>').addsLines(['Q'])); // 22: Q
+    check(rule(popFantasyRule).addsLines([
+      ']', // 23: ]
+      '<<<P->Q>&<~P->Q>>->Q>' // 24: <<<P->Q>&<~P->Q>>->Q>
+    ]));
+  });
 }
 
 @useResult
