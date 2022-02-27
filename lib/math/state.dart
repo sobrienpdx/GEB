@@ -37,7 +37,7 @@ class DoubleTildePrinter extends _InteractiveTextPrinter {
       DerivationLine node, DerivationLineContext context) {
     flush();
     if (node is Formula) {
-      result.add(_SelectableText(middleDot, select: () {
+      result.add(_SelectableText(star, select: () {
         proof.introduceDoubleTilde(context);
         state._finishRule(doubleTildeRule);
       }));
