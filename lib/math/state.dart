@@ -92,7 +92,7 @@ class FullState {
   }
 
   void _finishRule(Rule rule) {
-    _interactiveState = Quiescent(message: 'Applied rule "$rule"');
+    _interactiveState = Quiescent(message: 'Applied rule "$rule".');
   }
 }
 

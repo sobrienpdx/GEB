@@ -21,8 +21,7 @@ const Rule doubleTildeRule = DoubleTildeRule();
 
 const Rule pushFantasyRule = PushFantasyRule();
 
-const Rule popFantasyRule = UnimplementedRule('pop fantasy',
-    'If y can be derived when x is assumed to be a theorem, then <x⊃y> is a theorem.');
+const Rule popFantasyRule = PopFantasyRule();
 
 const Rule carryOverRule = UnimplementedRule('carry-over',
     'Inside a fantasy, any theorem from the "reality" one level higher can be brought in and used.');

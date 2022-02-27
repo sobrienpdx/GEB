@@ -8,6 +8,8 @@ class DerivationState {
 
   DerivationState();
 
+  bool get isFantasyInProgress => _stack is _FantasyStackEntry;
+
   void addLine(DerivationLine line) {
     if (line is Formula) {
       _stack.addTheorem(line);
@@ -127,8 +129,9 @@ class DerivationState {
 
   Formula _popFantasyProofStep(_FantasyStackEntry innerState) {
     _stack = innerState.parent;
-    return _ordinaryProofStep(
-        Implies(innerState.premise, innerState.conclusion));
+    var theorem = Implies(innerState.premise, innerState.conclusion);
+    lines.add(PopFantasy());
+    return _ordinaryProofStep(theorem);
   }
 
   Formula _pushFantasyProofStep(Formula premise) {
