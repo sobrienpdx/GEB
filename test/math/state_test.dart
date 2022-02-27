@@ -247,6 +247,56 @@ main() {
       check(rule(joiningRule).hasSelectionState(selectable: {2: 'Q', 6: 'P'}));
     });
   });
+
+  group('contrapositive: ', () {
+    group('forward', () {
+      test('basic', () {
+        check(addLine('<P->Q>'));
+        check(rule(contrapositiveRule)
+            .hasSelectionState(selectable: {0: '<P->Q>'})
+            .showsPreview('<~y⊃~x>')
+            .showsMessage('Select 1 line for contrapositive'));
+        check(select(0, '<P->Q>')
+            .addsLines(['<~Q->~P>'])
+            .addsExplanations(['Applied rule "contrapositive"'])
+            .isQuiescent()
+            .showsMessage('Applied rule "contrapositive".'));
+      });
+
+      test('premise inverted', () {
+        check(addLine('<~P->Q>'));
+        check(rule(contrapositiveRule)
+            .hasSelectionState(selectable: {0: '<~P->Q>'}));
+        check(select(0, '<~P->Q>').addsLines(['<~Q->~~P>']).isQuiescent());
+      });
+
+      test('conclusion inverted', () {
+        check(addLine('<P->~Q>'));
+        check(rule(contrapositiveRule)
+            .hasSelectionState(selectable: {0: '<P->~Q>'}));
+        check(select(0, '<P->~Q>').addsLines(['<~~Q->~P>']).isQuiescent());
+      });
+    });
+
+    test('reversed', () {
+      check(addLine('<~P->~Q>'));
+      check(rule(contrapositiveRule)
+          .hasSelectionState(selectable: {0: '<~P->~Q>'}));
+      check(select(0, '<~P->~Q>').addsLines(['<Q->P>']).isQuiescent());
+    });
+
+    test('mismatch', () {
+      check(addLine('<P&Q>'));
+      check(rule(contrapositiveRule).hasSelectionState(selectable: isEmpty));
+    });
+
+    test('available theorems', () {
+      check(addLines(
+          ["<P->P'>", '[', "<Q->Q'>", '[', "<R->R'>", ']', "<P->P'>"]));
+      check(rule(contrapositiveRule)
+          .hasSelectionState(selectable: {2: "<Q->Q'>", 6: "<P->P'>"}));
+    });
+  });
 }
 
 @useResult

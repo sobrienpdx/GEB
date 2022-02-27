@@ -1,3 +1,4 @@
+import 'package:geb/math/context.dart';
 import 'package:geb/math/rule_definitions.dart';
 import 'package:geb/math/symbols.dart';
 
@@ -25,6 +26,30 @@ class CarryOverRule extends Rule {
           carryOver: true);
 }
 
+class ContrapositiveRule extends FullLineStepRule {
+  const ContrapositiveRule()
+      : super._('contrapositive', '<x⊃y and <~y⊃~x> are interchangeable.',
+            count: 1);
+
+  @override
+  void apply(DerivationState derivation, List<Formula> formulas) {
+    var x = formulas.single as Implies;
+    if (x.leftOperand is Not && x.rightOperand is Not) {
+      derivation.contrapositiveReverse(DerivationLineContext(x));
+    } else {
+      derivation.contrapositiveForward(DerivationLineContext(x));
+    }
+  }
+
+  @override
+  String preview(List<Formula> formulas) => '<~y⊃~x>';
+
+  @override
+  bool _isLineSelectable(
+          DerivationLine line, List<DerivationLine> selectedLines) =>
+      line is Implies;
+}
+
 abstract class DerivationRegionInfo {
   StepRegionInfo? operator [](int index);
 }
@@ -32,10 +57,13 @@ abstract class DerivationRegionInfo {
 class DetachmentRule extends FullLineStepRule {
   const DetachmentRule()
       : super._('detachment',
-            'If x and <x⊃y> are both theorems, then y is a theorem.');
+            'If x and <x⊃y> are both theorems, then y is a theorem.',
+            count: 2);
 
   @override
-  void apply(DerivationState derivation, Formula x, Formula y) {
+  void apply(DerivationState derivation, List<Formula> formulas) {
+    var x = formulas[0];
+    var y = formulas[1];
     if (x is Implies && x.leftOperand == y) {
       derivation.detach(x);
     } else {
@@ -85,22 +113,27 @@ class DoubleTildeRule extends Rule {
 }
 
 abstract class FullLineStepRule extends Rule {
-  const FullLineStepRule._(String name, String description)
-      : super._(name, description);
+  final int _count;
+
+  const FullLineStepRule._(String name, String description,
+      {required int count})
+      : _count = count,
+        super._(name, description);
 
   @override
-  SelectTwoLines activate(FullState state, DerivationState derivation) {
+  SelectLines activate(FullState state, DerivationState derivation) {
     var lines = derivation.lines;
     var availableFlags = derivation.getAvailableFlags();
-    return SelectTwoLines(
+    return SelectLines(
         (index, selectedLines) =>
             availableFlags[index] &&
             _isLineSelectable(
                 lines[index], [for (var index in selectedLines) lines[index]]),
-        this);
+        this,
+        count: _count);
   }
 
-  void apply(DerivationState derivation, Formula x, Formula y);
+  void apply(DerivationState derivation, List<Formula> formulas);
 
   List<bool> computeIsSelectable(DerivationState derivation) {
     var availableFlags = derivation.getAvailableFlags();
@@ -119,11 +152,12 @@ abstract class FullLineStepRule extends Rule {
 
 class JoiningRule extends FullLineStepRule {
   const JoiningRule()
-      : super._('joining', 'If x and y are theorems, then <x∧y> is a theorem');
+      : super._('joining', 'If x and y are theorems, then <x∧y> is a theorem',
+            count: 2);
 
   @override
-  void apply(DerivationState derivation, Formula x, Formula y) {
-    derivation.join(x, y);
+  void apply(DerivationState derivation, List<Formula> formulas) {
+    derivation.join(formulas[0], formulas[1]);
   }
 
   @override

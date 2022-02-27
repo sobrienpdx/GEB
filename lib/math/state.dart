@@ -170,6 +170,49 @@ class SelectableText extends InteractiveText {
   static bool _alwaysTrue() => true;
 }
 
+class SelectLines extends InteractiveState {
+  final FullLineStepRule rule;
+
+  final bool Function(int, List<int>) isSelectable;
+
+  final List<int> selectedLines = [];
+
+  final int count;
+
+  SelectLines(this.isSelectable, this.rule, {required this.count}) : super._();
+
+  @override
+  bool get isSelectionNeeded => true;
+
+  @override
+  String get message => 'Select $count line${count == 1 ? '' : 's'} for $rule';
+
+  List<InteractiveText> decorateLine(
+      FullState state, DerivationLine line, int index) {
+    var text = line.toString();
+    return [
+      SelectableText(text,
+          select: () {
+            selectedLines.add(index);
+            if (selectedLines.length >= count) {
+              var selectedLinesList = selectedLines.toList();
+              var lines = state._derivation.lines;
+              rule.apply(state._derivation, [
+                for (var index in selectedLinesList) lines[index] as Formula
+              ]);
+              state.finishRule(rule);
+            }
+          },
+          isSelectable: () => isSelectable(index, selectedLines),
+          isSelected: () => selectedLines.contains(index))
+    ];
+  }
+
+  @override
+  String previewLine(List<DerivationLine> derivation) => rule
+      .preview([for (var index in selectedLines) derivation[index] as Formula]);
+}
+
 class SelectRegion extends InteractiveState {
   final Rule _rule;
 
@@ -187,47 +230,6 @@ class SelectRegion extends InteractiveState {
   List<InteractiveText> decorateLine(
           FullState state, DerivationLine line, int index) =>
       _interactiveLines[index];
-}
-
-class SelectTwoLines extends InteractiveState {
-  final FullLineStepRule rule;
-
-  final bool Function(int, List<int>) isSelectable;
-
-  final List<int> selectedLines = [];
-
-  SelectTwoLines(this.isSelectable, this.rule) : super._();
-
-  @override
-  bool get isSelectionNeeded => true;
-
-  @override
-  String get message => 'Select 2 lines for $rule';
-
-  List<InteractiveText> decorateLine(
-      FullState state, DerivationLine line, int index) {
-    var text = line.toString();
-    return [
-      SelectableText(text,
-          select: () {
-            selectedLines.add(index);
-            if (selectedLines.length == 2) {
-              var selectedLinesList = selectedLines.toList();
-              rule.apply(
-                  state._derivation,
-                  state._derivation.lines[selectedLinesList[0]] as Formula,
-                  state._derivation.lines[selectedLinesList[1]] as Formula);
-              state.finishRule(rule);
-            }
-          },
-          isSelectable: () => isSelectable(index, selectedLines),
-          isSelected: () => selectedLines.contains(index))
-    ];
-  }
-
-  @override
-  String previewLine(List<DerivationLine> derivation) => rule
-      .preview([for (var index in selectedLines) derivation[index] as Formula]);
 }
 
 class SeparationPrinter extends _SelectionPrinter {

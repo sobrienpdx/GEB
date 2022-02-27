@@ -11,8 +11,8 @@ main() {
     expect(isSelectable, hasLength(2));
     expect(isSelectable[0], true);
     expect(isSelectable[1], true);
-    rule.apply(derivation, derivation.lines[0] as Formula,
-        derivation.lines[1] as Formula);
+    rule.apply(derivation,
+        [derivation.lines[0] as Formula, derivation.lines[1] as Formula]);
     expect(derivation.lines.last, Formula('<P&Q>'));
   });
 }

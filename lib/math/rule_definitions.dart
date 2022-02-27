@@ -27,8 +27,7 @@ const Rule carryOverRule = CarryOverRule();
 
 const Rule detachmentRule = DetachmentRule();
 
-const Rule contrapositiveRule = UnimplementedRule(
-    'contrapositive', '<x⊃y and <~y⊃~x> are interchangeable.');
+const Rule contrapositiveRule = ContrapositiveRule();
 
 const Rule deMorgansRule =
     UnimplementedRule('de morgan', '<~x∧~y> and ~<x∨y> are interchangeable.');
