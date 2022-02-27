@@ -416,24 +416,20 @@ main() {
   });
 }
 
-@useResult
 TestStep addLine(String line) {
   var parsedLine = DerivationLine(line);
   return TestStep((state) => state.addDerivationLine(parsedLine))
       .addsLines([parsedLine]).isQuiescent();
 }
 
-@useResult
 TestStep addLines(List<String> lines) => TestStep((state) {
       for (var line in lines) {
         addLine(line).check(state);
       }
     }).addsLines(anything);
 
-@useResult
 TestStep<void> rule(Rule rule) => TestStep((state) => state.activateRule(rule));
 
-@useResult
 TestStep<void> select(int lineIndex, String target, {int? index}) =>
     TestStep((state) {
       target = TestStep._translateChunkExpectation(target) as String;
@@ -464,7 +460,6 @@ class TestStep<R> {
 
   TestStep(this._action);
 
-  @useResult
   TestStep<R> addsExplanations(Object expectation) {
     late List<String> before;
     _preChecks.add((state) => before = state.explanations.toList());
@@ -477,7 +472,6 @@ class TestStep<R> {
     return this;
   }
 
-  @useResult
   TestStep<R> addsLines(Object expectation) {
     _mayAddLines = true;
     if (expectation is List<String>) {
@@ -510,7 +504,6 @@ class TestStep<R> {
     }
   }
 
-  @useResult
   TestStep<R> hasSelectionState(
       {required Object? selectable,
       Object? selected = isEmpty,
@@ -539,29 +532,24 @@ class TestStep<R> {
     return this;
   }
 
-  @useResult
   TestStep<R> isQuiescent() =>
       this.hasSelectionState(selectable: isEmpty, isSelectionNeeded: false);
 
-  @useResult
   TestStep<R> mayAddLines() {
     _mayAddLines = true;
     return this;
   }
 
-  @useResult
   TestStep<R> returns(Object? expectation) {
     _tests.add((state, returnValue) => expect(returnValue, expectation));
     return this;
   }
 
-  @useResult
   TestStep<R> showsMessage(Object? expectation) {
     _tests.add((state, returnValue) => expect(state.message, expectation));
     return this;
   }
 
-  @useResult
   TestStep<R> showsPreview(Object? expectation) {
     _tests.add((state, returnValue) {
       expect(state.previewLine, expectation);
