@@ -63,14 +63,20 @@ class _GEBState extends State<GEB> {
                   flex: 3,
                   child: Column(
                     children: [
-                      messageToUser != "" ?
                       Padding(
                         padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                         child: Text(
                           messageToUser,
                           style: TextStyle(fontSize: 25, color: validationColor, fontWeight: FontWeight.w800),
                         ),
-                      ) : Container(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
+                        child: Text(
+                          state.message,
+                          style: TextStyle(fontSize: 25, color: validationColor, fontWeight: FontWeight.w800),
+                        ),
+                      ),
                       Wrap(
                         children: [
                           for (String sc in specialCharacters)
@@ -115,6 +121,8 @@ class _GEBState extends State<GEB> {
                       for (int i= 0; i< state.derivationLines.length; i++ )
                       RichText(
                         text: TextSpan(children: [
+                          TextSpan(text: "${i+1}:",
+                          style: TextStyle(color: Colors.primaries[colorDecider(i)].withOpacity(state.isSelectionNeeded ? .3 : 1) )),
                           for (var chunk in state.derivationLines[i].decorated)
                             convertInteractiveTextToTextSpan(chunk, i),
                         ],
@@ -160,10 +168,6 @@ class _GEBState extends State<GEB> {
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Text("You have typed: ${_textController.text}"),
-                      ),
                     ],
                   ),
                 ),
@@ -183,7 +187,6 @@ class _GEBState extends State<GEB> {
                           onPressed: () {
                             setState(() {
                               state.activateRule(rule);
-                              messageToUser = state.message;
                             });
                           },
                         ),
@@ -221,7 +224,7 @@ class _GEBState extends State<GEB> {
         });
       };
     _gestureRecognizers.add(recognizer);
-    return CustomTextSpan(text: "${i+1}: ${chunk.text}",
+    return CustomTextSpan(text:  "${chunk.text}",
       recognizer: recognizer,
       style: TextStyle(
           backgroundColor: chunk.isSelected ? Colors.black.withOpacity(.9) : Colors.black.withOpacity(0),
