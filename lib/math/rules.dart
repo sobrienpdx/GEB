@@ -282,6 +282,25 @@ class SubexpressionsStepRegionInfo extends StepRegionInfo {
   Iterable<PartialLineStepRegionInfo> get subexpressions => _subexpressions;
 }
 
+class SwitcherooRule extends FullLineStepRule {
+  const SwitcherooRule()
+      : super._('switcheroo', '<x∨y> and <~x⊃y> are interchangeable.',
+            count: 1);
+
+  @override
+  void apply(DerivationState derivation, List<Formula> formulas) {
+    derivation.switcheroo(DerivationLineContext(formulas.single));
+  }
+
+  @override
+  String preview(List<Formula> formulas) => '';
+
+  @override
+  bool _isLineSelectable(
+          DerivationLine line, List<DerivationLine> selectedLines) =>
+      line is Or || line is Implies && line.leftOperand is Not;
+}
+
 class UnimplementedRule extends Rule {
   const UnimplementedRule(String name, String description)
       : super._(name, description);

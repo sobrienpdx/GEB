@@ -330,6 +330,38 @@ main() {
           .hasSelectionState(selectable: {2: "~<Q|Q'>", 6: "~<P|P'>"}));
     });
   });
+
+  group('switcheroo: ', () {
+    test('forward', () {
+      check(addLine('<P|Q>'));
+      check(rule(switcherooRule)
+          .hasSelectionState(selectable: {0: '<P|Q>'})
+          .showsPreview('')
+          .showsMessage('Select 1 line for switcheroo'));
+      check(select(0, '<P|Q>')
+          .addsLines(['<~P->Q>'])
+          .addsExplanations(['Applied rule "switcheroo"'])
+          .isQuiescent()
+          .showsMessage('Applied rule "switcheroo".'));
+    });
+
+    test('reversed', () {
+      check(addLine('<~P->Q>'));
+      check(rule(switcherooRule).hasSelectionState(selectable: {0: '<~P->Q>'}));
+      check(select(0, '<~P->Q>').addsLines(['<P|Q>']).isQuiescent());
+    });
+
+    test('mismatch', () {
+      check(addLines(['<P&Q>', '<P->Q>']));
+      check(rule(switcherooRule).hasSelectionState(selectable: isEmpty));
+    });
+
+    test('available theorems', () {
+      check(addLines(["<P|P'>", '[', "<Q|Q'>", '[', "<R|R'>", ']', "<P|P'>"]));
+      check(rule(switcherooRule)
+          .hasSelectionState(selectable: {2: "<Q|Q'>", 6: "<P|P'>"}));
+    });
+  });
 }
 
 @useResult

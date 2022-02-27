@@ -31,5 +31,4 @@ const Rule contrapositiveRule = ContrapositiveRule();
 
 const Rule deMorgansRule = DeMorgansRule();
 
-const Rule switcherooRule =
-    UnimplementedRule('switcheroo', '<x∨y> and <~x⊃y> are interchangeable.');
+const Rule switcherooRule = SwitcherooRule();
