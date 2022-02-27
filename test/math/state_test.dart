@@ -297,6 +297,39 @@ main() {
           .hasSelectionState(selectable: {2: "<Q->Q'>", 6: "<P->P'>"}));
     });
   });
+
+  group('de morgan: ', () {
+    test('forward', () {
+      check(addLine('<~P&~Q>'));
+      check(rule(deMorgansRule)
+          .hasSelectionState(selectable: {0: '<~P&~Q>'})
+          .showsPreview('')
+          .showsMessage('Select 1 line for de morgan'));
+      check(select(0, '<~P&~Q>')
+          .addsLines(['~<P|Q>'])
+          .addsExplanations(['Applied rule "de morgan"'])
+          .isQuiescent()
+          .showsMessage('Applied rule "de morgan".'));
+    });
+
+    test('reversed', () {
+      check(addLine('~<P|Q>'));
+      check(rule(deMorgansRule).hasSelectionState(selectable: {0: '~<P|Q>'}));
+      check(select(0, '~<P|Q>').addsLines(['<~P&~Q>']).isQuiescent());
+    });
+
+    test('mismatch', () {
+      check(addLines(['<~P&Q>', '<P&~Q>', '~<P&Q>', '<~P|~Q>']));
+      check(rule(deMorgansRule).hasSelectionState(selectable: isEmpty));
+    });
+
+    test('available theorems', () {
+      check(addLines(
+          ["~<P|P'>", '[', "~<Q|Q'>", '[', "~<R|R'>", ']', "~<P|P'>"]));
+      check(rule(deMorgansRule)
+          .hasSelectionState(selectable: {2: "~<Q|Q'>", 6: "~<P|P'>"}));
+    });
+  });
 }
 
 @useResult

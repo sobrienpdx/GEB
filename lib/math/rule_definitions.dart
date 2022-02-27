@@ -29,8 +29,7 @@ const Rule detachmentRule = DetachmentRule();
 
 const Rule contrapositiveRule = ContrapositiveRule();
 
-const Rule deMorgansRule =
-    UnimplementedRule('de morgan', '<~x∧~y> and ~<x∨y> are interchangeable.');
+const Rule deMorgansRule = DeMorgansRule();
 
 const Rule switcherooRule =
     UnimplementedRule('switcheroo', '<x∨y> and <~x⊃y> are interchangeable.');

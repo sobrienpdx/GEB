@@ -50,6 +50,26 @@ class ContrapositiveRule extends FullLineStepRule {
       line is Implies;
 }
 
+class DeMorgansRule extends FullLineStepRule {
+  const DeMorgansRule()
+      : super._('de morgan', '<~x∧~y> and ~<x∨y> are interchangeable.',
+            count: 1);
+
+  @override
+  void apply(DerivationState derivation, List<Formula> formulas) {
+    derivation.deMorgan(DerivationLineContext(formulas.single));
+  }
+
+  @override
+  String preview(List<Formula> formulas) => '';
+
+  @override
+  bool _isLineSelectable(
+          DerivationLine line, List<DerivationLine> selectedLines) =>
+      line is And && line.leftOperand is Not && line.rightOperand is Not ||
+      line is Not && line.operand is Or;
+}
+
 abstract class DerivationRegionInfo {
   StepRegionInfo? operator [](int index);
 }
