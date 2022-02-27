@@ -121,8 +121,8 @@ class _GEBState extends State<GEB> {
                       for (int i= 0; i< state.derivationLines.length; i++ )
                       RichText(
                         text: TextSpan(children: [
-                          TextSpan(text: "${i+1}:",
-                          style: TextStyle(color: Colors.primaries[colorDecider(i)].withOpacity(state.isSelectionNeeded ? .3 : 1) )),
+                          TextSpan(text: "${i+1}: ",
+                          style: TextStyle(color: Colors.primaries[colorDecider(i)].withOpacity(state.isSelectionNeeded ? .3 : 1), fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
                           for (var chunk in state.derivationLines[i].decorated)
                             convertInteractiveTextToTextSpan(chunk, i),
                         ],
@@ -137,7 +137,7 @@ class _GEBState extends State<GEB> {
                               flex: 4,
                               child: TextFormField(
                                 controller: _textController,
-                                decoration: const InputDecoration(hintText: 'Type stuff'),
+                                decoration: const InputDecoration(hintText: 'Write your formula here'),
                               ),
                             ),
                             Flexible(
@@ -227,7 +227,7 @@ class _GEBState extends State<GEB> {
     return CustomTextSpan(text:  "${chunk.text}",
       recognizer: recognizer,
       style: TextStyle(
-          backgroundColor: chunk.isSelected ? Colors.black.withOpacity(.9) : Colors.black.withOpacity(0),
+          backgroundColor: chunk.isSelected ? Colors.amberAccent.withOpacity(.8) : Colors.black.withOpacity(0),
           color: chunk.isSelectable || !state.isSelectionNeeded ? Colors.primaries[colorDecider(i)] : Colors.primaries[colorDecider(i)].withOpacity(.3),
           fontWeight: chunk.isSelectable || !state.isSelectionNeeded  ? FontWeight.bold: FontWeight.w100,
           fontFamily: "NotoSansMath"));
