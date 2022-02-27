@@ -62,7 +62,7 @@ class JoiningRule extends FullLineStepRule {
   @override
   void apply(DerivationState derivation, FullLineStepRegionInfo x,
       FullLineStepRegionInfo y) {
-    derivation.join(x._formula, y._formula)();
+    derivation.join(x._formula, y._formula);
   }
 
   @override

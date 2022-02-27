@@ -38,7 +38,7 @@ class DoubleTildePrinter extends _InteractiveTextPrinter {
     flush();
     if (node is Formula) {
       result.add(_SelectableText(middleDot, select: () {
-        proof.introduceDoubleTilde(context)();
+        proof.introduceDoubleTilde(context);
         state._finishRule(doubleTildeRule);
       }));
     }
@@ -51,7 +51,7 @@ class DoubleTildePrinter extends _InteractiveTextPrinter {
     if (operand is Not) {
       flush();
       result.add(_SelectableText('~~', select: () {
-        proof.removeDoubleTilde(context)();
+        proof.removeDoubleTilde(context);
         state._finishRule(doubleTildeRule);
       }));
       dispatchDerivationLine(operand.operand, context.operand.operand);
