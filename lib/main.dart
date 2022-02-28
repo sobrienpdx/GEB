@@ -51,61 +51,47 @@ class _GEBState extends State<GEB> {
   Widget build(BuildContext context) {
     _disposeGestureRecognizers();
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            alignment: Alignment.topCenter,
-            image: AssetImage("assets/images/rainbowEscher.png"),
-            fit: BoxFit.fitWidth,
+      appBar: AppBar(
+        toolbarHeight: 90,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              alignment: Alignment.topCenter,
+              image: AssetImage("assets/images/rainbowEscher.png"),
+              fit: BoxFit.fitWidth,
+            ),
           ),
         ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Flexible(
-                    flex: 3,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
-                          child: Text(
-                            messageToUser,
-                            style: TextStyle(fontSize: 25, color: validationColor, fontWeight: FontWeight.w800),
-                          ),
+      ),
+      backgroundColor: Colors.grey[200],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Flexible(
+                  flex: 3,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
+                        child: Text(
+                          messageToUser,
+                          style: TextStyle(fontSize: 25, color: validationColor, fontWeight: FontWeight.w800),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
-                          child: Text(
-                            state.message,
-                            style: TextStyle(fontSize: 25, color: Colors.deepPurple, fontWeight: FontWeight.w800),
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
+                        child: Text(
+                          state.message,
+                          style: TextStyle(fontSize: 25, color: Colors.deepPurple, fontWeight: FontWeight.w800),
                         ),
-                        Wrap(
-                          children: [
-                            for (String sc in specialCharacters)
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: BaseButton(
-                                  onPressed: () {
-                                    var start = _textController.selection.start;
-                                    var end = _textController.selection.end;
-                                    setState(() {
-                                      if (_textController.selection.start == -1) {
-                                        start = _textController.text.length;
-                                        end = _textController.text.length;
-                                      }
-                                      _textController.text = _textController.text.substring(0, start) + sc +_textController.text.substring(end);
-                                      _textController.selection= TextSelection.fromPosition(TextPosition(offset: start +1));
-                                    });
-                                  },
-                                  text: sc,
-                                ),
-                              ),
+                      ),
+                      Wrap(
+                        children: [
+                          for (String sc in specialCharacters)
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: BaseButton(
@@ -117,20 +103,39 @@ class _GEBState extends State<GEB> {
                                       start = _textController.text.length;
                                       end = _textController.text.length;
                                     }
-                                    _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
-                                    _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
+                                    _textController.text = _textController.text.substring(0, start) + sc +_textController.text.substring(end);
+                                    _textController.selection= TextSelection.fromPosition(TextPosition(offset: start +1));
                                   });
                                 },
-                                icon: Icons.backspace,
+                                text: sc,
                               ),
                             ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Flexible(
-                              flex: 3,
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: BaseButton(
+                              onPressed: () {
+                                var start = _textController.selection.start;
+                                var end = _textController.selection.end;
+                                setState(() {
+                                  if (_textController.selection.start == -1) {
+                                    start = _textController.text.length;
+                                    end = _textController.text.length;
+                                  }
+                                  _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
+                                  _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
+                                });
+                              },
+                              icon: Icons.backspace,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Flexible(
+                            flex: 3,
+                            child: SingleChildScrollView(
                               child: Column(
                                 children: [
                                   for (int i= 0; i< state.derivationLines.length; i++ )
@@ -146,96 +151,96 @@ class _GEBState extends State<GEB> {
                                 ],
                               ),
                             ),
-                            Flexible(
-                              flex: 2,
-                              child: Column(
-                                children: [
-                                  for (int i= 0; i< state.explanations.length; i++ )
-                                    RichText(
-                                    text: TextSpan(children: [
-                                        TextSpan(text: "${i+1}: ${state.explanations[i]}",
-                                          style: TextStyle(color: Colors.primaries[colorDecider(i)], fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
-                                    ],
-                                    ),
+                          ),
+                          Flexible(
+                            flex: 2,
+                            child: Column(
+                              children: [
+                                for (int i= 0; i< state.explanations.length; i++ )
+                                  RichText(
+                                  text: TextSpan(children: [
+                                      TextSpan(text: "${i+1}: ${state.explanations[i]}",
+                                        style: TextStyle(color: Colors.primaries[colorDecider(i)], fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
+                                  ],
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(18.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              flex: 4,
+                              child: TextFormField(
+                                controller: _textController,
+                                decoration: const InputDecoration(hintText: 'Write your formula here'),
+                              ),
+                            ),
+                            Flexible(
+                              flex: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: BaseButton(
+                                  height: 50,
+                                  width: 100,
+                                  textSize: 20,
+                                  onPressed: () {
+                                    setState(() {
+                                      try {
+                                        DerivationLine line = DerivationLine(_textController.text);
+                                        messageToUser = "Good work! Your feelings and formula are valid!";
+                                        state.addDerivationLine(line);
+                                        validationColor = Colors.cyan;
+                                        _textController.text = "";
+                                      } catch (e) {
+                                        validationColor = Colors.pink;
+                                        messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
+                                      }
+                                    });
+                                  },
+                                  text: "Validate",
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(18.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Flexible(
-                                flex: 4,
-                                child: TextFormField(
-                                  controller: _textController,
-                                  decoration: const InputDecoration(hintText: 'Write your formula here'),
-                                ),
-                              ),
-                              Flexible(
-                                flex: 1,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: BaseButton(
-                                    height: 50,
-                                    width: 100,
-                                    textSize: 20,
-                                    onPressed: () {
-                                      setState(() {
-                                        try {
-                                          DerivationLine line = DerivationLine(_textController.text);
-                                          messageToUser = "Good work! Your feelings and formula are valid!";
-                                          state.addDerivationLine(line);
-                                          validationColor = Colors.cyan;
-                                          _textController.text = "";
-                                        } catch (e) {
-                                          validationColor = Colors.pink;
-                                          messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
-                                        }
-                                      });
-                                    },
-                                    text: "Validate",
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Flexible(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        for (Rule rule in ruleDefinitions)
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: BaseButton(
-                            text: rule.name,
-                            width: 130,
-                            height: 35,
-                            textSize: 17,
-                            onPressed: () {
-                              setState(() {
-                                validationColor = Colors.green;
-                                messageToUser = rule.description;
-                                state.activateRule(rule);
-                              });
-                            },
-                          ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      for (Rule rule in ruleDefinitions)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: BaseButton(
+                          text: rule.name,
+                          width: 130,
+                          height: 35,
+                          textSize: 17,
+                          onPressed: () {
+                            setState(() {
+                              validationColor = Colors.green;
+                              messageToUser = rule.description;
+                              state.activateRule(rule);
+                            });
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
