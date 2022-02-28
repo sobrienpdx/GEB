@@ -190,6 +190,7 @@ class _GEBState extends State<GEB> {
                                           messageToUser = "Good work! Your feelings and formula are valid!";
                                           state.addDerivationLine(line);
                                           validationColor = Colors.cyan;
+                                          _textController.text = "";
                                         } catch (e) {
                                           validationColor = Colors.pink;
                                           messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";

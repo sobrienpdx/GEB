@@ -6,7 +6,6 @@ import 'package:geb/math/rule_definitions.dart';
 import 'package:geb/math/rules.dart';
 import 'package:geb/math/state.dart';
 import 'package:geb/math/symbols.dart';
-import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 main() {
