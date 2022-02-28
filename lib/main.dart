@@ -222,6 +222,8 @@ class _GEBState extends State<GEB> {
                             textSize: 17,
                             onPressed: () {
                               setState(() {
+                                validationColor = Colors.green;
+                                messageToUser = rule.description;
                                 state.activateRule(rule);
                               });
                             },
