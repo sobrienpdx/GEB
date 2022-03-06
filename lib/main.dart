@@ -68,16 +68,30 @@ class _GEBState extends State<GEB> {
     _disposeGestureRecognizers();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0,0,20,0),
+            child: IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.videogame_asset),
+                iconSize: 90,
+              color: Colors.cyan,
+            ),
+          )
+        ],
+        backgroundColor: Colors.black,
         foregroundColor: Colors.transparent,
         shadowColor: Colors.transparent,
         toolbarHeight: 90,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              alignment: Alignment.topCenter,
-              image: AssetImage("assets/images/rainbowEscher.png"),
-              fit: BoxFit.fitWidth,
+        flexibleSpace: Opacity(
+          opacity: .6,
+          child: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                alignment: Alignment.topCenter,
+                image: AssetImage("assets/images/rainbowEscher.png"),
+                fit: BoxFit.fitWidth,
+              ),
             ),
           ),
         ),
