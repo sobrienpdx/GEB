@@ -61,7 +61,7 @@ class _GEBState extends State<GEB> {
   @override
   Widget build(BuildContext context) {
     if (_needsScroll) {
-      WidgetsBinding.instance?.addPostFrameCallback(
+      WidgetsBinding.instance!.addPostFrameCallback(
               (_) => _scrollToEnd());
       _needsScroll = false;
     }
