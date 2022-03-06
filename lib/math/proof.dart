@@ -123,6 +123,24 @@ class DerivationState {
       context.substitute(Not(Not(context.derivationLine as Formula))),
       doubleTildeRule);
 
+  bool isGoalSatisfied(Formula goal) {
+    var index = lastNonPopIndex;
+    while (true) {
+      var fantasyStart = _findFantasyStart(index);
+      if (fantasyStart >= 0) {
+        index = fantasyStart - 1;
+      } else {
+        break;
+      }
+    }
+    while (index >= 0) {
+      var step = _steps[index];
+      if (step.line == goal) return true;
+      index = step.previousIndex;
+    }
+    return false;
+  }
+
   bool isTheorem(Formula x, {int? startingIndex}) {
     var index = startingIndex ?? lastNonPopIndex;
     while (index >= 0) {

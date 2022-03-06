@@ -97,6 +97,8 @@ class FullState {
     _interactiveState = Quiescent(message: 'Applied rule "$rule".');
   }
 
+  bool isGoalSatisfied(Formula goal) => _derivation.isGoalSatisfied(goal);
+
   void undo() {
     if (_interactiveState is Quiescent) {
       _interactiveState = Quiescent(message: _derivation.undo());
