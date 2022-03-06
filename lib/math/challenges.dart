@@ -3,6 +3,8 @@ import 'ast.dart';
 final List<ChallengeSet> challengeSets = [
   ChallengeSet('Fantasy, carry over', [
     Challenge(Formula('<P->P>'), 4),
+    Challenge(Formula('<P-><Q->Q>>'), 8),
+    Challenge(Formula('<P-><Q->P>>'), 9),
   ]),
   ChallengeSet('Switcheroo', [
     Challenge(Formula('<P|~P>'), 5),
