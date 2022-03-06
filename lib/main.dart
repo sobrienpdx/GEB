@@ -41,6 +41,16 @@ class _GEBState extends State<GEB> {
   String messageToUser ="";
   Color validationColor = Colors.cyan;
   List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~", forall, exists];
+  ScrollController _scrollController = ScrollController();
+  bool _needsScroll = false;
+
+  _scrollToEnd() async {
+    _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeInOut
+    );
+  }
 
   int colorDecider(int i) {
     List<int> acceptableColors = [0,1,2,3,4,5,6,7,8,9,10,13,14,15];
@@ -50,6 +60,11 @@ class _GEBState extends State<GEB> {
 
   @override
   Widget build(BuildContext context) {
+    if (_needsScroll) {
+      WidgetsBinding.instance!.addPostFrameCallback(
+              (_) => _scrollToEnd());
+      _needsScroll = false;
+    }
     _disposeGestureRecognizers();
     return Scaffold(
       appBar: AppBar(
@@ -133,25 +148,29 @@ class _GEBState extends State<GEB> {
                   ),
                   Expanded(
                     child: SingleChildScrollView(
+                      controller: _scrollController,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Column(
-                            children: [
-                              for (int i= 0; i< state.derivationLines.length; i++ )
-                                RichText(
-                                text: TextSpan(children: [
-                                  TextSpan(text: "${i+1}: ",
-                                  style: TextStyle(color: Colors.primaries[colorDecider(i)].withOpacity(state.isSelectionNeeded ? .3 : 1), fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
-                                  for (var chunk in state.derivationLines[i].decorated)
-                                    convertInteractiveTextToTextSpan(chunk, i),
-                                ],
-                                ),
-                              ),
-                            ],
-                          ),
                           Flexible(
                             flex: 2,
+                            child: Column(
+                              children: [
+                                for (int i= 0; i< state.derivationLines.length; i++ )
+                                  RichText(
+                                  text: TextSpan(children: [
+                                    TextSpan(text: "${i+1}: ",
+                                    style: TextStyle(color: Colors.primaries[colorDecider(i)].withOpacity(state.isSelectionNeeded ? .3 : 1), fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
+                                    for (var chunk in state.derivationLines[i].decorated)
+                                      convertInteractiveTextToTextSpan(chunk, i),
+                                  ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Flexible(
+                            flex: 1,
                             child: Column(
                               children: [
                                 for (int i= 0; i< state.explanations.length; i++ )
@@ -197,6 +216,7 @@ class _GEBState extends State<GEB> {
                                     state.addDerivationLine(line);
                                     validationColor = Colors.cyan;
                                     _textController.text = "";
+                                    _needsScroll = true;
                                   } catch (e) {
                                     validationColor = Colors.pink;
                                     messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
@@ -231,6 +251,7 @@ class _GEBState extends State<GEB> {
                           validationColor = Colors.green;
                           messageToUser = rule.description;
                           state.activateRule(rule);
+                          _needsScroll = true;
                         });
                       },
                     ),
