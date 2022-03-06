@@ -144,16 +144,22 @@ class _GEBState extends State<GEB> {
                         padding: const EdgeInsets.all(8.0),
                         child: BaseButton(
                           onPressed: () {
-                            var start = _textController.selection.start;
-                            var end = _textController.selection.end;
-                            setState(() {
-                              if (_textController.selection.start == -1) {
-                                start = _textController.text.length;
-                                end = _textController.text.length;
-                              }
-                              _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
-                              _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
-                            });
+                            if (_textController.text.length != 0) {
+                              var start = _textController.selection.start;
+                              var end = _textController.selection.end;
+                              setState(() {
+                                if (_textController.selection.start == -1) {
+                                  start = _textController.text.length;
+                                  end = _textController.text.length;
+                                }
+                                _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
+                                _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
+                              });
+                            } else {
+                              setState(() {
+                                state.undo();
+                              });
+                            }
                           },
                           icon: Icons.backspace,
                         ),
