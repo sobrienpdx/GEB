@@ -68,16 +68,30 @@ class _GEBState extends State<GEB> {
     _disposeGestureRecognizers();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0,0,20,0),
+            child: IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.videogame_asset),
+                iconSize: 90,
+              color: Colors.cyan,
+            ),
+          )
+        ],
+        backgroundColor: Colors.black,
         foregroundColor: Colors.transparent,
         shadowColor: Colors.transparent,
         toolbarHeight: 90,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              alignment: Alignment.topCenter,
-              image: AssetImage("assets/images/rainbowEscher.png"),
-              fit: BoxFit.fitWidth,
+        flexibleSpace: Opacity(
+          opacity: .6,
+          child: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                alignment: Alignment.topCenter,
+                image: AssetImage("assets/images/rainbowEscher.png"),
+                fit: BoxFit.fitWidth,
+              ),
             ),
           ),
         ),
@@ -130,16 +144,22 @@ class _GEBState extends State<GEB> {
                         padding: const EdgeInsets.all(8.0),
                         child: BaseButton(
                           onPressed: () {
-                            var start = _textController.selection.start;
-                            var end = _textController.selection.end;
-                            setState(() {
-                              if (_textController.selection.start == -1) {
-                                start = _textController.text.length;
-                                end = _textController.text.length;
-                              }
-                              _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
-                              _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
-                            });
+                            if (_textController.text.length != 0) {
+                              var start = _textController.selection.start;
+                              var end = _textController.selection.end;
+                              setState(() {
+                                if (_textController.selection.start == -1) {
+                                  start = _textController.text.length;
+                                  end = _textController.text.length;
+                                }
+                                _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
+                                _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
+                              });
+                            } else {
+                              setState(() {
+                                state.undo();
+                              });
+                            }
                           },
                           icon: Icons.backspace,
                         ),
