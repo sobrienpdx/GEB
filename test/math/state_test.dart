@@ -362,6 +362,38 @@ main() {
     });
   });
 
+  group('undo:', () {
+    test('when not quiescent', () {
+      check(addLines(['P', 'Q']));
+      check(rule(joiningRule));
+      check(undo().isQuiescent().showsMessage(''));
+    });
+
+    test('when proof is empty', () {
+      check(undo().isQuiescent().showsMessage('Nothing to undo!'));
+    });
+
+    test('after single derivation line', () {
+      check(addLine('P'));
+      check(undo().isQuiescent().deletesLines(hasLength(1)));
+    });
+
+    test('after two derivation lines', () {
+      check(addLines(['P', 'Q']));
+      check(undo().isQuiescent().deletesLines(hasLength(1)).showsMessage(''));
+    });
+
+    test('after push', () {
+      check(addLines(['P', '[', 'Q']));
+      check(undo().isQuiescent().deletesLines(hasLength(2)).showsMessage(''));
+    });
+
+    test('after pop', () {
+      check(addLines(['P', '[', 'Q', ']', '<Q->Q>']));
+      check(undo().isQuiescent().deletesLines(hasLength(2)).showsMessage(''));
+    });
+  });
+
   test("Ganto's Ax", () {
     check(rule(pushFantasyRule).addsLines(['['])); // 0: [
     check(addLine('<<P->Q>&<~P->Q>>')); // 1: <<P->Q>&<~P->Q>>
@@ -448,6 +480,8 @@ TestStep<void> select(int lineIndex, String target, {int? index}) =>
       candidateChunks[index ?? 0].select();
     });
 
+TestStep<void> undo() => TestStep((state) => state.undo());
+
 class TestStep<R> {
   final R Function(FullState) _action;
 
@@ -484,6 +518,7 @@ class TestStep<R> {
     _tests.add((state, returnValue) {
       var after = [for (var line in state.derivationLines) line.line];
       expect(after, hasLength(greaterThanOrEqualTo(before.length)));
+      expect(after.sublist(0, before.length), before);
       var added = after.sublist(before.length);
       expect(added, expectation);
     });
@@ -501,6 +536,21 @@ class TestStep<R> {
     for (var test in _tests) {
       test(state, returnValue);
     }
+  }
+
+  TestStep<R> deletesLines(Object expectation) {
+    _mayAddLines = true;
+    late List<DerivationLine> before;
+    _preChecks.add((state) =>
+        before = [for (var line in state.derivationLines) line.line]);
+    _tests.add((state, returnValue) {
+      var after = [for (var line in state.derivationLines) line.line];
+      expect(after, hasLength(lessThanOrEqualTo(before.length)));
+      expect(after, before.sublist(0, after.length));
+      var deleted = before.sublist(after.length);
+      expect(deleted, expectation);
+    });
+    return this;
   }
 
   TestStep<R> hasSelectionState(

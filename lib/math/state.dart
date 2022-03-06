@@ -96,6 +96,14 @@ class FullState {
   void finishRule(Rule rule) {
     _interactiveState = Quiescent(message: 'Applied rule "$rule".');
   }
+
+  void undo() {
+    if (_interactiveState is Quiescent) {
+      _interactiveState = Quiescent(message: _derivation.undo());
+    } else {
+      _interactiveState = Quiescent();
+    }
+  }
 }
 
 abstract class InteractiveState {

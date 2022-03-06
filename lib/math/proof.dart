@@ -176,6 +176,17 @@ class DerivationState {
         switcherooRule);
   }
 
+  String undo() {
+    if (_steps.isEmpty) return 'Nothing to undo!';
+    _steps.removeLast();
+    if (_steps.isEmpty) return '';
+    var lastStep = _steps.last;
+    if (lastStep.line is PushFantasy || lastStep.line is PopFantasy) {
+      _steps.removeLast();
+    }
+    return '';
+  }
+
   int _findFantasyStart(int index) {
     while (index >= 0) {
       var step = _steps[index];
