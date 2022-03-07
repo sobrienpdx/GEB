@@ -388,9 +388,33 @@ main() {
       check(undo().isQuiescent().deletesLines(hasLength(2)).showsMessage(''));
     });
 
+    test('after partial push', () {
+      check(addLines(['P', '[']));
+      check(undo().isQuiescent().deletesLines(hasLength(1)).showsMessage(''));
+    });
+
+    test('after double push', () {
+      // This is not really valid, but if it crops up, we want undo to delete
+      // just the last line.
+      check(addLines(['P', '[', '[']));
+      check(undo().isQuiescent().deletesLines(hasLength(1)).showsMessage(''));
+    });
+
     test('after pop', () {
       check(addLines(['P', '[', 'Q', ']', '<Q->Q>']));
       check(undo().isQuiescent().deletesLines(hasLength(2)).showsMessage(''));
+    });
+
+    test('after partial pop', () {
+      check(addLines(['P', '[', 'Q', ']']));
+      check(undo().isQuiescent().deletesLines(hasLength(1)).showsMessage(''));
+    });
+
+    test('after double pop', () {
+      // This is not really valid, but if it crops up, we want undo to delete
+      // just the last line.
+      check(addLines(['P', '[', 'Q', '[', 'R', ']', ']']));
+      check(undo().isQuiescent().deletesLines(hasLength(1)).showsMessage(''));
     });
   });
 

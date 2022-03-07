@@ -200,8 +200,8 @@ class DerivationState {
 
   String undo({required int minLines}) {
     if (_steps.length <= minLines) return 'Nothing to undo!';
-    _steps.removeLast();
-    if (_steps.length <= minLines) return '';
+    var removedStep = _steps.removeLast();
+    if (removedStep.line is! Formula || _steps.length <= minLines) return '';
     var lastStep = _steps.last;
     if (lastStep.line is PushFantasy || lastStep.line is PopFantasy) {
       _steps.removeLast();
