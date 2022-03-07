@@ -1,10 +1,10 @@
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:geb/widgets/base_button.dart';
 import 'package:geb/widgets/custom_text_span.dart';
+import 'package:geb/widgets/game_menu.dart';
 
 import 'math/ast.dart';
 import 'math/rule_definitions.dart';
@@ -38,31 +38,41 @@ class GEB extends StatefulWidget {
 class _GEBState extends State<GEB> {
   FullState state = FullState();
   final _textController = TextEditingController();
-  String messageToUser ="";
+  String messageToUser = "";
   Color validationColor = Colors.cyan;
-  List<String> specialCharacters = ["<", ">", "P", "Q", "R", and, implies, or, prime, "[", "]", "~", forall, exists];
+  List<String> specialCharacters = [
+    "<",
+    ">",
+    "P",
+    "Q",
+    "R",
+    and,
+    implies,
+    or,
+    prime,
+    "[",
+    "]",
+    "~",
+    forall,
+    exists
+  ];
   ScrollController _scrollController = ScrollController();
   bool _needsScroll = false;
 
   _scrollToEnd() async {
-    _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 200),
-        curve: Curves.easeInOut
-    );
+    _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 200), curve: Curves.easeInOut);
   }
 
   int colorDecider(int i) {
-    List<int> acceptableColors = [0,1,2,3,4,5,6,7,8,9,10,13,14,15];
-    return acceptableColors[i%acceptableColors.length];
+    List<int> acceptableColors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15];
+    return acceptableColors[i % acceptableColors.length];
   }
-
 
   @override
   Widget build(BuildContext context) {
     if (_needsScroll) {
-      WidgetsBinding.instance!.addPostFrameCallback(
-              (_) => _scrollToEnd());
+      WidgetsBinding.instance!.addPostFrameCallback((_) => _scrollToEnd());
       _needsScroll = false;
     }
     _disposeGestureRecognizers();
@@ -70,11 +80,19 @@ class _GEBState extends State<GEB> {
       appBar: AppBar(
         actions: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(0,0,20,0),
+            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
             child: IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.videogame_asset),
-                iconSize: 90,
+              onPressed: () {
+                setState(() {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return GameMenuDialog();
+                      });
+                });
+              },
+              icon: Icon(Icons.videogame_asset),
+              iconSize: 90,
               color: Colors.cyan,
             ),
           )
@@ -109,14 +127,20 @@ class _GEBState extends State<GEB> {
                     padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                     child: Text(
                       messageToUser,
-                      style: TextStyle(fontSize: 25, color: validationColor, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                          fontSize: 25,
+                          color: validationColor,
+                          fontWeight: FontWeight.w800),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                     child: Text(
                       state.message,
-                      style: TextStyle(fontSize: 25, color: Colors.deepPurple, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                          fontSize: 25,
+                          color: Colors.deepPurple,
+                          fontWeight: FontWeight.w800),
                     ),
                   ),
                   Wrap(
@@ -133,8 +157,13 @@ class _GEBState extends State<GEB> {
                                   start = _textController.text.length;
                                   end = _textController.text.length;
                                 }
-                                _textController.text = _textController.text.substring(0, start) + sc +_textController.text.substring(end);
-                                _textController.selection= TextSelection.fromPosition(TextPosition(offset: start +1));
+                                _textController.text =
+                                    _textController.text.substring(0, start) +
+                                        sc +
+                                        _textController.text.substring(end);
+                                _textController.selection =
+                                    TextSelection.fromPosition(
+                                        TextPosition(offset: start + 1));
                               });
                             },
                             text: sc,
@@ -152,8 +181,12 @@ class _GEBState extends State<GEB> {
                                   start = _textController.text.length;
                                   end = _textController.text.length;
                                 }
-                                _textController.text = _textController.text.substring(0, start -1) +_textController.text.substring(end);
-                                _textController.selection= TextSelection.fromPosition(TextPosition(offset: start -1));
+                                _textController.text = _textController.text
+                                        .substring(0, start - 1) +
+                                    _textController.text.substring(end);
+                                _textController.selection =
+                                    TextSelection.fromPosition(
+                                        TextPosition(offset: start - 1));
                               });
                             } else {
                               setState(() {
@@ -176,16 +209,30 @@ class _GEBState extends State<GEB> {
                             flex: 2,
                             child: Column(
                               children: [
-                                for (int i= 0; i< state.derivationLines.length; i++ )
+                                for (int i = 0;
+                                    i < state.derivationLines.length;
+                                    i++)
                                   RichText(
-                                  text: TextSpan(children: [
-                                    TextSpan(text: "${i+1}: ",
-                                    style: TextStyle(color: Colors.primaries[colorDecider(i)].withOpacity(state.isSelectionNeeded ? .3 : 1), fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
-                                    for (var chunk in state.derivationLines[i].decorated)
-                                      convertInteractiveTextToTextSpan(chunk, i),
-                                  ],
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                            text: "${i + 1}: ",
+                                            style: TextStyle(
+                                                color: Colors
+                                                    .primaries[colorDecider(i)]
+                                                    .withOpacity(
+                                                        state.isSelectionNeeded
+                                                            ? .3
+                                                            : 1),
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: "NotoSansMath")),
+                                        for (var chunk in state
+                                            .derivationLines[i].decorated)
+                                          convertInteractiveTextToTextSpan(
+                                              chunk, i),
+                                      ],
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
@@ -193,14 +240,23 @@ class _GEBState extends State<GEB> {
                             flex: 1,
                             child: Column(
                               children: [
-                                for (int i= 0; i< state.explanations.length; i++ )
+                                for (int i = 0;
+                                    i < state.explanations.length;
+                                    i++)
                                   RichText(
-                                  text: TextSpan(children: [
-                                      TextSpan(text: "${i+1}: ${state.explanations[i]}",
-                                        style: TextStyle(color: Colors.primaries[colorDecider(i)], fontWeight: FontWeight.bold, fontFamily: "NotoSansMath" )),
-                                  ],
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                            text:
+                                                "${i + 1}: ${state.explanations[i]}",
+                                            style: TextStyle(
+                                                color: Colors
+                                                    .primaries[colorDecider(i)],
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: "NotoSansMath")),
+                                      ],
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
@@ -217,7 +273,8 @@ class _GEBState extends State<GEB> {
                           flex: 4,
                           child: TextFormField(
                             controller: _textController,
-                            decoration: const InputDecoration(hintText: 'Write your formula here'),
+                            decoration: const InputDecoration(
+                                hintText: 'Write your formula here'),
                           ),
                         ),
                         Flexible(
@@ -231,15 +288,18 @@ class _GEBState extends State<GEB> {
                               onPressed: () {
                                 setState(() {
                                   try {
-                                    DerivationLine line = DerivationLine(_textController.text);
-                                    messageToUser = "Good work! Your feelings and formula are valid!";
+                                    DerivationLine line =
+                                        DerivationLine(_textController.text);
+                                    messageToUser =
+                                        "Good work! Your feelings and formula are valid!";
                                     state.addDerivationLine(line);
                                     validationColor = Colors.cyan;
                                     _textController.text = "";
                                     _needsScroll = true;
                                   } catch (e) {
                                     validationColor = Colors.pink;
-                                    messageToUser = "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
+                                    messageToUser =
+                                        "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
                                   }
                                 });
                               },
@@ -259,23 +319,23 @@ class _GEBState extends State<GEB> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   for (Rule rule in ruleDefinitions)
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: BaseButton(
-                      text: rule.name,
-                      width: 130,
-                      height: 35,
-                      textSize: 17,
-                      onPressed: () {
-                        setState(() {
-                          validationColor = Colors.green;
-                          messageToUser = rule.description;
-                          state.activateRule(rule);
-                          _needsScroll = true;
-                        });
-                      },
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: BaseButton(
+                        text: rule.name,
+                        width: 130,
+                        height: 35,
+                        textSize: 17,
+                        onPressed: () {
+                          setState(() {
+                            validationColor = Colors.green;
+                            messageToUser = rule.description;
+                            state.activateRule(rule);
+                            _needsScroll = true;
+                          });
+                        },
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -301,18 +361,26 @@ class _GEBState extends State<GEB> {
   }
 
   TextSpan convertInteractiveTextToTextSpan(InteractiveText chunk, int i) {
-    var recognizer = TapGestureRecognizer()..onTap = () {
+    var recognizer = TapGestureRecognizer()
+      ..onTap = () {
         setState(() {
           chunk.select();
         });
       };
     _gestureRecognizers.add(recognizer);
-    return CustomTextSpan(text:  "${chunk.text}",
-      recognizer: recognizer,
-      style: TextStyle(
-          backgroundColor: chunk.isSelected ? Colors.amberAccent.withOpacity(.8) : Colors.black.withOpacity(0),
-          color: chunk.isSelectable || !state.isSelectionNeeded ? Colors.primaries[colorDecider(i)] : Colors.primaries[colorDecider(i)].withOpacity(.3),
-          fontWeight: chunk.isSelectable || !state.isSelectionNeeded  ? FontWeight.bold: FontWeight.w100,
-          fontFamily: "NotoSansMath"));
+    return CustomTextSpan(
+        text: "${chunk.text}",
+        recognizer: recognizer,
+        style: TextStyle(
+            backgroundColor: chunk.isSelected
+                ? Colors.amberAccent.withOpacity(.8)
+                : Colors.black.withOpacity(0),
+            color: chunk.isSelectable || !state.isSelectionNeeded
+                ? Colors.primaries[colorDecider(i)]
+                : Colors.primaries[colorDecider(i)].withOpacity(.3),
+            fontWeight: chunk.isSelectable || !state.isSelectionNeeded
+                ? FontWeight.bold
+                : FontWeight.w100,
+            fontFamily: "NotoSansMath"));
   }
 }
