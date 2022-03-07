@@ -1,12 +1,22 @@
 import 'ast.dart';
 
 final List<ChallengeSet> challengeSets = [
+  ChallengeSet('Switcheroo', [
+    Challenge(Formula('<~P->Q>'), 2, initialLines: [Formula('<P|Q>')]),
+    Challenge(Formula('<~a=b->a=c>'), 2, initialLines: [Formula('<a=b|a=c>')]),
+    Challenge(Formula('<~P->~P>'), 2, initialLines: [Formula('<P|~P>')]),
+    Challenge(Formula('<P|Q>'), 2, initialLines: [Formula('<~P->Q>')]),
+    Challenge(Formula('<a=b|a=c>'), 2, initialLines: [Formula('<~a=b->a=c>')]),
+    Challenge(Formula('<P|~P>'), 2, initialLines: [Formula('<~P->~P>')]),
+  ]),
   ChallengeSet('Fantasy, carry over', [
     Challenge(Formula('<P->P>'), 4),
+    Challenge(Formula('<a=0->a=0>'), 4),
+    Challenge(Formula('<P->Q>'), 6, initialLines: [Formula('Q')]),
+    Challenge(Formula('<(a+b)=0->a=0>'), 6, initialLines: [Formula('a=0')]),
     Challenge(Formula('<P-><Q->Q>>'), 8),
     Challenge(Formula('<P-><Q->P>>'), 9),
-  ]),
-  ChallengeSet('Switcheroo', [
+    Challenge(Formula('<~Q->~Q>'), 4),
     Challenge(Formula('<P|~P>'), 5),
   ]),
   ChallengeSet('Contrapositive, De Morgan', [
