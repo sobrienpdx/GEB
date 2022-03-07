@@ -394,63 +394,6 @@ main() {
     });
   });
 
-  group('isGoalSatisfied', () {
-    test('Empty derivation', () {
-      expect(state.isGoalSatisfied(Formula('P')), false);
-      expect(state.isGoalSatisfied(Formula('Q')), false);
-      expect(state.isGoalSatisfied(Formula('<Q->Q>')), false);
-    });
-
-    test('Success', () {
-      check(addLines(['P']));
-      expect(state.isGoalSatisfied(Formula('P')), true);
-      expect(state.isGoalSatisfied(Formula('Q')), false);
-      expect(state.isGoalSatisfied(Formula('<Q->Q>')), false);
-    });
-
-    test('Inside fantasy, no premise yet', () {
-      check(addLines(['P', '[']));
-      expect(state.isGoalSatisfied(Formula('P')), true);
-      expect(state.isGoalSatisfied(Formula('Q')), false);
-      expect(state.isGoalSatisfied(Formula('<Q->Q>')), false);
-    });
-
-    test('Inside fantasy, after premise', () {
-      check(addLines(['P', '[', 'Q']));
-      expect(state.isGoalSatisfied(Formula('P')), true);
-      expect(state.isGoalSatisfied(Formula('Q')), false);
-      expect(state.isGoalSatisfied(Formula('<Q->Q>')), false);
-    });
-
-    test('Inside fantasy, after nested fantasy', () {
-      check(addLines(['P', '[', 'Q', '[']));
-      expect(state.isGoalSatisfied(Formula('P')), true);
-      expect(state.isGoalSatisfied(Formula('Q')), false);
-      expect(state.isGoalSatisfied(Formula('<Q->Q>')), false);
-    });
-
-    test('Inside fantasy, after nested fantasy and premise', () {
-      check(addLines(['P', '[', 'Q', '[']));
-      expect(state.isGoalSatisfied(Formula('P')), true);
-      expect(state.isGoalSatisfied(Formula('Q')), false);
-      expect(state.isGoalSatisfied(Formula('<Q->Q>')), false);
-    });
-
-    test('After pop but no conclusion', () {
-      check(addLines(['P', '[', 'Q', ']']));
-      expect(state.isGoalSatisfied(Formula('P')), true);
-      expect(state.isGoalSatisfied(Formula('Q')), false);
-      expect(state.isGoalSatisfied(Formula('<Q->Q>')), false);
-    });
-
-    test('After pop and conclusion', () {
-      check(addLines(['P', '[', 'Q', ']', '<Q->Q>']));
-      expect(state.isGoalSatisfied(Formula('P')), true);
-      expect(state.isGoalSatisfied(Formula('Q')), false);
-      expect(state.isGoalSatisfied(Formula('<Q->Q>')), true);
-    });
-  });
-
   test("Ganto's Ax", () {
     check(rule(pushFantasyRule).addsLines(['['])); // 0: [
     check(addLine('<<P->Q>&<~P->Q>>')); // 1: <<P->Q>&<~P->Q>>

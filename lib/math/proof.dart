@@ -50,6 +50,10 @@ class DerivationState {
     return _ordinaryProofStep(x, 'Applied rule "$carryOverRule"');
   }
 
+  void clear() {
+    _steps.clear();
+  }
+
   Formula contrapositiveForward(DerivationLineContext context) {
     var formula = context.derivationLine;
     if (formula is! Implies) _invalidProofStep();

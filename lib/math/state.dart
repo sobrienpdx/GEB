@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:geb/math/challenges.dart';
 import 'package:geb/math/rule_definitions.dart';
 
 import 'ast.dart';
@@ -63,8 +64,17 @@ class FullState {
 
   final _derivation = DerivationState();
 
+  Challenge? _challenge;
+
   FullState() {
     _interactiveState = Quiescent();
+  }
+
+  Challenge? get challenge => _challenge;
+
+  set challenge(Challenge? challenge) {
+    _derivation.clear();
+    _challenge = challenge;
   }
 
   List<DerivationLineInfo> get derivationLines => [
@@ -73,6 +83,11 @@ class FullState {
       ];
 
   List<String> get explanations => _derivation.explanations;
+
+  bool get isGoalSatisfied {
+    var challenge = _challenge;
+    return challenge != null && _derivation.isGoalSatisfied(challenge.goal);
+  }
 
   bool get isSelectionNeeded => _interactiveState.isSelectionNeeded;
 
@@ -96,8 +111,6 @@ class FullState {
   void finishRule(Rule rule) {
     _interactiveState = Quiescent(message: 'Applied rule "$rule".');
   }
-
-  bool isGoalSatisfied(Formula goal) => _derivation.isGoalSatisfied(goal);
 
   void undo() {
     if (_interactiveState is Quiescent) {
