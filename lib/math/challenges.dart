@@ -3,6 +3,8 @@ import 'ast.dart';
 final List<ChallengeSet> challengeSets = [
   ChallengeSet('Fantasy, carry over', [
     Challenge(Formula('<P->P>'), 4),
+    Challenge(Formula('<P-><Q->Q>>'), 8),
+    Challenge(Formula('<P-><Q->P>>'), 9),
   ]),
   ChallengeSet('Switcheroo', [
     Challenge(Formula('<P|~P>'), 5),
@@ -37,11 +39,13 @@ final List<ChallengeSet> challengeSets = [
 ];
 
 class Challenge {
+  final List<DerivationLine> initialLines;
+
   final Formula goal;
 
   final int goalStepCount;
 
-  Challenge(this.goal, this.goalStepCount);
+  Challenge(this.goal, this.goalStepCount, {this.initialLines = const []});
 }
 
 class ChallengeSet {

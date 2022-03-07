@@ -301,6 +301,64 @@ main() {
       expect(step23, Formula('Q'));
     });
   });
+
+  group('isGoalSatisfied', () {
+    test('Empty derivation', () {
+      var derivation = _makeDerivation([]);
+      expect(derivation.isGoalSatisfied(Formula('P')), false);
+      expect(derivation.isGoalSatisfied(Formula('Q')), false);
+      expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
+    });
+
+    test('Success', () {
+      var derivation = _makeDerivation(['P']);
+      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('Q')), false);
+      expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
+    });
+
+    test('Inside fantasy, no premise yet', () {
+      var derivation = _makeDerivation(['P', '[']);
+      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('Q')), false);
+      expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
+    });
+
+    test('Inside fantasy, after premise', () {
+      var derivation = _makeDerivation(['P', '[', 'Q']);
+      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('Q')), false);
+      expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
+    });
+
+    test('Inside fantasy, after nested fantasy', () {
+      var derivation = _makeDerivation(['P', '[', 'Q', '[']);
+      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('Q')), false);
+      expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
+    });
+
+    test('Inside fantasy, after nested fantasy and premise', () {
+      var derivation = _makeDerivation(['P', '[', 'Q', '[']);
+      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('Q')), false);
+      expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
+    });
+
+    test('After pop but no conclusion', () {
+      var derivation = _makeDerivation(['P', '[', 'Q', ']']);
+      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('Q')), false);
+      expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
+    });
+
+    test('After pop and conclusion', () {
+      var derivation = _makeDerivation(['P', '[', 'Q', ']', '<Q->Q>']);
+      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('Q')), false);
+      expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), true);
+    });
+  });
 }
 
 final a = Variable('a');
@@ -325,6 +383,14 @@ void checkValidStep(List<Formula> premises,
   var result = action(proof);
   expect(result, expectedResult);
   expect(proof.isTheorem(result), true);
+}
+
+DerivationState _makeDerivation(List<String> lines) {
+  var derivation = DerivationState();
+  for (var line in lines) {
+    derivation.addLine(DerivationLine(line));
+  }
+  return derivation;
 }
 
 void _prepareStep(DerivationState proof, List<Formula> premises) {

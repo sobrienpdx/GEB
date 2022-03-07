@@ -50,6 +50,10 @@ class DerivationState {
     return _ordinaryProofStep(x, 'Applied rule "$carryOverRule"');
   }
 
+  void clear() {
+    _steps.clear();
+  }
+
   Formula contrapositiveForward(DerivationLineContext context) {
     var formula = context.derivationLine;
     if (formula is! Implies) _invalidProofStep();
@@ -123,6 +127,24 @@ class DerivationState {
       context.substitute(Not(Not(context.derivationLine as Formula))),
       doubleTildeRule);
 
+  bool isGoalSatisfied(Formula goal) {
+    var index = lastNonPopIndex;
+    while (true) {
+      var fantasyStart = _findFantasyStart(index);
+      if (fantasyStart >= 0) {
+        index = fantasyStart - 1;
+      } else {
+        break;
+      }
+    }
+    while (index >= 0) {
+      var step = _steps[index];
+      if (step.line == goal) return true;
+      index = step.previousIndex;
+    }
+    return false;
+  }
+
   bool isTheorem(Formula x, {int? startingIndex}) {
     var index = startingIndex ?? lastNonPopIndex;
     while (index >= 0) {
@@ -176,10 +198,10 @@ class DerivationState {
         switcherooRule);
   }
 
-  String undo() {
-    if (_steps.isEmpty) return 'Nothing to undo!';
+  String undo({required int minLines}) {
+    if (_steps.length <= minLines) return 'Nothing to undo!';
     _steps.removeLast();
-    if (_steps.isEmpty) return '';
+    if (_steps.length <= minLines) return '';
     var lastStep = _steps.last;
     if (lastStep.line is PushFantasy || lastStep.line is PopFantasy) {
       _steps.removeLast();
