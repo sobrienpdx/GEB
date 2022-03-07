@@ -39,11 +39,13 @@ final List<ChallengeSet> challengeSets = [
 ];
 
 class Challenge {
+  final List<DerivationLine> initialLines;
+
   final Formula goal;
 
   final int goalStepCount;
 
-  Challenge(this.goal, this.goalStepCount);
+  Challenge(this.goal, this.goalStepCount, {this.initialLines = const []});
 }
 
 class ChallengeSet {

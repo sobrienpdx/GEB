@@ -198,10 +198,10 @@ class DerivationState {
         switcherooRule);
   }
 
-  String undo() {
-    if (_steps.isEmpty) return 'Nothing to undo!';
+  String undo({required int minLines}) {
+    if (_steps.length <= minLines) return 'Nothing to undo!';
     _steps.removeLast();
-    if (_steps.isEmpty) return '';
+    if (_steps.length <= minLines) return '';
     var lastStep = _steps.last;
     if (lastStep.line is PushFantasy || lastStep.line is PopFantasy) {
       _steps.removeLast();

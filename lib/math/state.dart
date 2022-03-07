@@ -74,6 +74,11 @@ class FullState {
 
   set challenge(Challenge? challenge) {
     _derivation.clear();
+    if (challenge != null) {
+      for (var line in challenge.initialLines) {
+        _derivation.addLine(line);
+      }
+    }
     _challenge = challenge;
   }
 
@@ -114,7 +119,9 @@ class FullState {
 
   void undo() {
     if (_interactiveState is Quiescent) {
-      _interactiveState = Quiescent(message: _derivation.undo());
+      _interactiveState = Quiescent(
+          message:
+              _derivation.undo(minLines: _challenge?.initialLines.length ?? 0));
     } else {
       _interactiveState = Quiescent();
     }
