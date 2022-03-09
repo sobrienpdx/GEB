@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:geb/math/ast.dart';
+import 'package:geb/math/challenges.dart';
 import 'package:geb/math/parse.dart';
 import 'package:geb/math/rule_definitions.dart';
 import 'package:geb/math/rules.dart';
@@ -12,12 +13,38 @@ main() {
   late FullState state;
 
   setUp(() {
-    state = FullState();
+    state = FullState(permissive: false);
   });
 
   void check(TestStep action) {
     action.check(state);
   }
+
+  group('permissive:', () {
+    test('when true, allows new premises any time there is no challenge', () {
+      state = FullState(permissive: true);
+      expect(state.isPremiseExpected, true);
+      state.addDerivationLine(PushFantasy());
+      expect(state.isPremiseExpected, true);
+      state.challenge =
+          Challenge(Formula('<~P->Q>'), 2, initialLines: [Formula('<P|Q>')]);
+      expect(state.isPremiseExpected, false);
+      state.addDerivationLine(PushFantasy());
+      expect(state.isPremiseExpected, true);
+    });
+
+    test('when false, only allows new premises after [', () {
+      state = FullState(permissive: false);
+      expect(state.isPremiseExpected, false);
+      state.addDerivationLine(PushFantasy());
+      expect(state.isPremiseExpected, true);
+      state.challenge =
+          Challenge(Formula('<~P->Q>'), 2, initialLines: [Formula('<P|Q>')]);
+      expect(state.isPremiseExpected, false);
+      state.addDerivationLine(PushFantasy());
+      expect(state.isPremiseExpected, true);
+    });
+  });
 
   group('addDerivationLine:', () {
     test('basic', () {
