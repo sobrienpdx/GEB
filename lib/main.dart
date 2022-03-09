@@ -151,7 +151,7 @@ class _GEBState extends State<GEB> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Flexible(
-              flex: 3,
+              flex: 25,
               child: Column(
                 children: [
                   state.challenge != null
@@ -363,7 +363,7 @@ class _GEBState extends State<GEB> {
               ),
             ),
             Flexible(
-              flex: 1,
+              flex: 3,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -388,8 +388,8 @@ class _GEBState extends State<GEB> {
                 ],
               ),
             ),
-            Align(
-              alignment: Alignment.centerRight,
+            Flexible(
+              flex: 1,
               child: ConfettiWidget(
                 confettiController: _controllerCenterRight,
                 blastDirection: pi*1.1, // radial value - LEFT
@@ -418,14 +418,14 @@ class _GEBState extends State<GEB> {
                 ], // manually specify the colors to be used
               ),
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                  onPressed: () {
-                    _controllerCenterRight.play();
-                  },
-                  child: Text('pump left')),
-            ),
+            // Align(
+            //   alignment: Alignment.centerRight,
+            //   child: TextButton(
+            //       onPressed: () {
+            //         _controllerCenterRight.play();
+            //       },
+            //       child: Text('pump left')),
+            // ),
           ],
         ),
       ),
