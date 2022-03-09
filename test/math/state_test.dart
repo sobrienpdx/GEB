@@ -133,10 +133,11 @@ main() {
 
   group('fantasy:', () {
     test('basic', () {
+      expect(state.isPremiseExpected, false);
       check(rule(pushFantasyRule)
           .addsLines(['['])
           .addsExplanations(['Applied rule "push fantasy"'])
-          .isQuiescent()
+          .isQuiescent(isPremiseExpected: true)
           .showsMessage('Starting a fantasy,  Please enter the premise.'));
       check(addLine('P')
           .addsExplanations(['User supplied premise']).showsMessage(''));
@@ -159,7 +160,7 @@ main() {
       test('last line is not a formula', () {
         check(addLines(['[', 'P', '[']));
         check(rule(popFantasyRule)
-            .isQuiescent()
+            .isQuiescent(isPremiseExpected: true)
             .showsMessage('Cannot pop a fantasy right now.'));
       });
     });
@@ -388,9 +389,36 @@ main() {
       check(undo().isQuiescent().deletesLines(hasLength(2)).showsMessage(''));
     });
 
+    test('after partial push', () {
+      check(addLines(['P', '[']));
+      check(undo().isQuiescent().deletesLines(hasLength(1)).showsMessage(''));
+    });
+
+    test('after double push', () {
+      // This is not really valid, but if it crops up, we want undo to delete
+      // just the last line.
+      check(addLines(['P', '[', '[']));
+      check(undo()
+          .isQuiescent(isPremiseExpected: true)
+          .deletesLines(hasLength(1))
+          .showsMessage(''));
+    });
+
     test('after pop', () {
       check(addLines(['P', '[', 'Q', ']', '<Q->Q>']));
       check(undo().isQuiescent().deletesLines(hasLength(2)).showsMessage(''));
+    });
+
+    test('after partial pop', () {
+      check(addLines(['P', '[', 'Q', ']']));
+      check(undo().isQuiescent().deletesLines(hasLength(1)).showsMessage(''));
+    });
+
+    test('after double pop', () {
+      // This is not really valid, but if it crops up, we want undo to delete
+      // just the last line.
+      check(addLines(['P', '[', 'Q', '[', 'R', ']', ']']));
+      check(undo().isQuiescent().deletesLines(hasLength(1)).showsMessage(''));
     });
   });
 
@@ -450,7 +478,7 @@ main() {
 TestStep addLine(String line) {
   var parsedLine = DerivationLine(line);
   return TestStep((state) => state.addDerivationLine(parsedLine))
-      .addsLines([parsedLine]).isQuiescent();
+      .addsLines([parsedLine]).isQuiescent(isPremiseExpected: anything);
 }
 
 TestStep addLines(List<String> lines) => TestStep((state) {
@@ -581,8 +609,15 @@ class TestStep<R> {
     return this;
   }
 
-  TestStep<R> isQuiescent() =>
-      this.hasSelectionState(selectable: isEmpty, isSelectionNeeded: false);
+  TestStep<R> isPremiseExpected(Object? expectation) {
+    _tests.add(
+        (state, returnValue) => expect(state.isPremiseExpected, expectation));
+    return this;
+  }
+
+  TestStep<R> isQuiescent({Object? isPremiseExpected = false}) => this
+      .hasSelectionState(selectable: isEmpty, isSelectionNeeded: false)
+      .isPremiseExpected(isPremiseExpected);
 
   TestStep<R> mayAddLines() {
     _mayAddLines = true;
