@@ -80,9 +80,10 @@ class _GEBState extends State<GEB> {
     super.initState();
     _controllerCenterRight =
         ConfettiController(duration: const Duration(seconds: 1));
+    state.onGoalSatisfied = () {
+              _controllerCenterRight.play();
+    };
   }
-
-
   @override
   Widget build(BuildContext context) {
     if (_needsScroll) {
@@ -418,14 +419,6 @@ class _GEBState extends State<GEB> {
                 ], // manually specify the colors to be used
               ),
             ),
-            // Align(
-            //   alignment: Alignment.centerRight,
-            //   child: TextButton(
-            //       onPressed: () {
-            //         _controllerCenterRight.play();
-            //       },
-            //       child: Text('pump left')),
-            // ),
           ],
         ),
       ),
