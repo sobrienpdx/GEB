@@ -4,7 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:geb/widgets/base_button.dart';
 import 'package:geb/widgets/custom_text_span.dart';
-import 'package:geb/widgets/game_detail.dart';
+import 'package:geb/widgets/challenge_set_detail_menu.dart';
 import 'package:geb/widgets/game_menu.dart';
 
 import 'math/ast.dart';
@@ -93,9 +93,10 @@ class _GEBState extends State<GEB> {
                           setState(() {
                             showGameDetail = true;
                             showDialog(
+                                barrierColor: Color(0xFAFAFA),
                                 context: context,
                                 builder: (context) {
-                                  return GameDetailDialog(set, (challenge) {
+                                  return ChallengeSetDetailDialog(set, (challenge) {
                                     setState(() {
                                       state.challenge = challenge;
                                       Navigator.pop(context);
@@ -293,8 +294,8 @@ class _GEBState extends State<GEB> {
                           flex: 4,
                           child: TextFormField(
                             controller: _textController,
-                            decoration: const InputDecoration(
-                                hintText: 'Write your formula here'),
+                            decoration: state.isPremiseExpected ? const InputDecoration(
+                                hintText: 'Enter your premise'): null,
                           ),
                         ),
                         Flexible(
@@ -305,7 +306,7 @@ class _GEBState extends State<GEB> {
                               height: 50,
                               width: 100,
                               textSize: 20,
-                              onPressed: () {
+                              onPressed: state.isPremiseExpected ? () {
                                 setState(() {
                                   try {
                                     DerivationLine line =
@@ -319,10 +320,11 @@ class _GEBState extends State<GEB> {
                                   } catch (e) {
                                     validationColor = Colors.pink;
                                     messageToUser =
-                                        "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
+                                        "Your formula is bad. You have failed.️";
                                   }
                                 });
-                              },
+                              } : null,
+                              disabled: state.isPremiseExpected && (_textController.text.length > 0)? false : true,
                               text: "Validate",
                             ),
                           ),

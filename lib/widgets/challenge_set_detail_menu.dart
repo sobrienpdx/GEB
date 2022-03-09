@@ -2,11 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geb/math/challenges.dart';
 
-class GameDetailDialog extends StatefulWidget {
+class ChallengeSetDetailDialog extends StatefulWidget {
   final void Function(Challenge challenge) onChallengeSelection;
   final ChallengeSet set;
 
-  GameDetailDialog(
+  ChallengeSetDetailDialog(
     this.set,
     this.onChallengeSelection,
   );
@@ -15,12 +15,13 @@ class GameDetailDialog extends StatefulWidget {
   _GameDetailDialog createState() => _GameDetailDialog();
 }
 
-class _GameDetailDialog extends State<GameDetailDialog> {
+class _GameDetailDialog extends State<ChallengeSetDetailDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       content: SizedBox(
         height: 500,
+        width: 400,
         child: Column(
           children: [
             Padding(

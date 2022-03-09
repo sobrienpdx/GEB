@@ -8,6 +8,7 @@ class BaseButton extends StatelessWidget {
   final double width;
   final double height;
   final double textSize;
+  final bool disabled;
 
   const BaseButton(
       {Key? key,
@@ -16,7 +17,8 @@ class BaseButton extends StatelessWidget {
       this.icon,
       this.height = 50,
       this.width = 50,
-      this.textSize = 30})
+      this.textSize = 30,
+      this.disabled = false})
       : super(key: key);
 
   @override
@@ -24,6 +26,11 @@ class BaseButton extends StatelessWidget {
     var gradientStart = Color(0xff4583bb);
     var gradientEnd = Color(0xff64B6FF);
     var buttonColor = Colors.white;
+    if (disabled) {
+      gradientEnd = Color(0xffa0a0a0);
+      gradientStart = Color(0xff595959);
+      buttonColor = Color(0xffdddddd);
+    }
 
     return SizedBox(
       width: width,
