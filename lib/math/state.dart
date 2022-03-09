@@ -68,8 +68,15 @@ class FullState {
 
   final bool permissive;
 
+  void Function()? onGoalSatisfied;
+
   FullState({this.permissive = true}) {
     _interactiveState = Quiescent();
+    _derivation.onTheorem = (x) {
+      if (isGoalSatisfied) {
+        onGoalSatisfied?.call();
+      }
+    };
   }
 
   Challenge? get challenge => _challenge;

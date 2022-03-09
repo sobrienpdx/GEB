@@ -58,6 +58,31 @@ main() {
     });
   });
 
+  group('onGoalSatisfied:', () {
+    test('not completed by a premise', () {
+      check(setChallenge(Challenge(Formula('<~P->Q>'), 2,
+          initialLines: [Formula('<P|Q>')])).mayAddLines());
+      check(rule(pushFantasyRule).addsLines(['[']));
+      check(addLine('<~P->Q>'));
+    });
+
+    test('not completed inside a fantasy', () {
+      check(setChallenge(Challenge(Formula('<~P->Q>'), 2,
+          initialLines: [Formula('<P|Q>')])).mayAddLines());
+      check(rule(pushFantasyRule).addsLines(['[']));
+      check(addLine('<P|Q>'));
+      check(rule(switcherooRule));
+      check(select(2, '<P|Q>').addsLines(['<~P->Q>']));
+    });
+
+    test('completed outside a fantasy', () {
+      check(setChallenge(Challenge(Formula('<~P->Q>'), 2,
+          initialLines: [Formula('<P|Q>')])).mayAddLines());
+      check(rule(switcherooRule));
+      check(select(0, '<P|Q>').addsLines(['<~P->Q>']).satisfiesGoal(1));
+    });
+  });
+
   group('addDerivationLine:', () {
     test('basic', () {
       check(addLine('P').addsExplanations(['User supplied premise']));
@@ -557,16 +582,18 @@ class TestStep<R> {
 
   final List<void Function(FullState)> _preChecks = [];
 
-  final List<void Function(FullState, R)> _tests = [];
+  final List<void Function(FullState, int, R)> _tests = [];
 
   bool _mayAddLines = false;
+
+  bool _checkedSatisfiesGoal = false;
 
   TestStep(this._action);
 
   TestStep<R> addsExplanations(Object expectation) {
     late List<String> before;
     _preChecks.add((state) => before = state.explanations.toList());
-    _tests.add((state, returnValue) {
+    _tests.add((state, _, returnValue) {
       var after = state.explanations.toList();
       expect(after, hasLength(greaterThanOrEqualTo(before.length)));
       var added = after.sublist(before.length);
@@ -585,7 +612,7 @@ class TestStep<R> {
     late List<DerivationLine> before;
     _preChecks.add((state) =>
         before = [for (var line in state.derivationLines) line.line]);
-    _tests.add((state, returnValue) {
+    _tests.add((state, _, returnValue) {
       var after = [for (var line in state.derivationLines) line.line];
       expect(after, hasLength(greaterThanOrEqualTo(before.length)));
       expect(after.sublist(0, before.length), before);
@@ -596,15 +623,20 @@ class TestStep<R> {
   }
 
   void check(FullState state) {
+    int satisfiesGoalCount = 0;
+    state.onGoalSatisfied = () => satisfiesGoalCount++;
     if (!_mayAddLines) {
       addsLines(isEmpty); // ignore: unused_result
+    }
+    if (!_checkedSatisfiesGoal) {
+      satisfiesGoal(0);
     }
     for (var preCheck in _preChecks) {
       preCheck(state);
     }
     var returnValue = _action(state);
     for (var test in _tests) {
-      test(state, returnValue);
+      test(state, satisfiesGoalCount, returnValue);
     }
   }
 
@@ -613,7 +645,7 @@ class TestStep<R> {
     late List<DerivationLine> before;
     _preChecks.add((state) =>
         before = [for (var line in state.derivationLines) line.line]);
-    _tests.add((state, returnValue) {
+    _tests.add((state, _, returnValue) {
       var after = [for (var line in state.derivationLines) line.line];
       expect(after, hasLength(lessThanOrEqualTo(before.length)));
       expect(after, before.sublist(0, after.length));
@@ -629,7 +661,7 @@ class TestStep<R> {
       bool isSelectionNeeded = true}) {
     selectable = _translateSelectionExpectation(selectable);
     selected = _translateSelectionExpectation(selected);
-    _tests.add((state, returnValue) {
+    _tests.add((state, _, returnValue) {
       expect(state.isSelectionNeeded, isSelectionNeeded);
       var lines = state.derivationLines;
       var actualSelectable = <int, List<String>>{};
@@ -652,8 +684,8 @@ class TestStep<R> {
   }
 
   TestStep<R> isPremiseExpected(Object? expectation) {
-    _tests.add(
-        (state, returnValue) => expect(state.isPremiseExpected, expectation));
+    _tests.add((state, _, returnValue) =>
+        expect(state.isPremiseExpected, expectation));
     return this;
   }
 
@@ -667,7 +699,15 @@ class TestStep<R> {
   }
 
   TestStep<R> returns(Object? expectation) {
-    _tests.add((state, returnValue) => expect(returnValue, expectation));
+    _tests.add((state, _, returnValue) => expect(returnValue, expectation));
+    return this;
+  }
+
+  TestStep<R> satisfiesGoal(Object? expectation) {
+    _checkedSatisfiesGoal = true;
+    _tests.add((_, satisfiesGoalCount, __) {
+      expect(satisfiesGoalCount, expectation);
+    });
     return this;
   }
 
@@ -678,7 +718,7 @@ class TestStep<R> {
         for (var line in expectation) DerivationLine(line)
       ];
     }
-    _tests.add((state, returnValue) {
+    _tests.add((state, _, returnValue) {
       var lines = [for (var line in state.derivationLines) line.line];
       expect(lines, expectation);
     });
@@ -686,12 +726,12 @@ class TestStep<R> {
   }
 
   TestStep<R> showsMessage(Object? expectation) {
-    _tests.add((state, returnValue) => expect(state.message, expectation));
+    _tests.add((state, _, returnValue) => expect(state.message, expectation));
     return this;
   }
 
   TestStep<R> showsPreview(Object? expectation) {
-    _tests.add((state, returnValue) {
+    _tests.add((state, _, returnValue) {
       expect(state.previewLine, expectation);
     });
     return this;

@@ -8,6 +8,8 @@ import 'rules.dart';
 class DerivationState {
   final List<_DerivationStep> _steps = [];
 
+  void Function(Formula)? onTheorem;
+
   DerivationState();
 
   List<String> get explanations => [for (var step in _steps) step.explanation];
@@ -45,6 +47,9 @@ class DerivationState {
           'Unrecognized kind of derivation line: ${line.runtimeType}');
     }
     _steps.add(_DerivationStep(line, explanation, lastNonPopIndex));
+    if (line is Formula) {
+      onTheorem?.call(line);
+    }
   }
 
   Formula carryOver(Formula x) {
@@ -225,6 +230,7 @@ class DerivationState {
 
   Formula _ordinaryProofStep(Formula theorem, String explanation) {
     _steps.add(_DerivationStep(theorem, explanation, lastNonPopIndex));
+    onTheorem?.call(theorem);
     return theorem;
   }
 
@@ -244,6 +250,7 @@ class DerivationState {
         PopFantasy(), 'Applied rule "$popFantasyRule"', lastNonPopIndex));
     _steps.add(
         _DerivationStep(theorem, 'Resulting new theorem', fantasyStart - 1));
+    onTheorem?.call(theorem);
     return theorem;
   }
 
@@ -252,6 +259,7 @@ class DerivationState {
         PushFantasy(), 'Applied rule "push fantasy"', lastNonPopIndex));
     _steps.add(
         _DerivationStep(premise, 'User supplied premise', lastNonPopIndex));
+    onTheorem?.call(premise);
     return premise;
   }
 
