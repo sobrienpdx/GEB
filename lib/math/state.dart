@@ -80,6 +80,7 @@ class FullState {
       _derivation.setupChallenge(challenge);
     }
     _challenge = challenge;
+    _interactiveState = Quiescent();
   }
 
   List<DerivationLineInfo> get derivationLines => [
