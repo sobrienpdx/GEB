@@ -293,6 +293,10 @@ class _GEBState extends State<GEB> {
                         Flexible(
                           flex: 4,
                           child: TextFormField(
+                            onChanged: (_) {
+                              setState(() {
+                              });
+                            },
                             controller: _textController,
                             decoration: state.isPremiseExpected ? const InputDecoration(
                                 hintText: 'Enter your premise'): null,
