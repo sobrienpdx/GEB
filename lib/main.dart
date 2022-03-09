@@ -10,7 +10,6 @@ import 'package:geb/widgets/challenge_set_detail_menu.dart';
 import 'package:geb/widgets/game_menu.dart';
 import 'package:confetti/confetti.dart';
 
-
 import 'math/ast.dart';
 import 'math/rule_definitions.dart';
 import 'math/rules.dart';
@@ -75,15 +74,17 @@ class _GEBState extends State<GEB> {
     List<int> acceptableColors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15];
     return acceptableColors[i % acceptableColors.length];
   }
+
   @override
   void initState() {
     super.initState();
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 1));
     state.onGoalSatisfied = () {
-              _confettiController.play();
+      _confettiController.play();
     };
   }
+
   @override
   Widget build(BuildContext context) {
     if (_needsScroll) {
@@ -92,31 +93,31 @@ class _GEBState extends State<GEB> {
     }
     _disposeGestureRecognizers();
     return ConfettiWidget(
-        confettiController: _confettiController,
-        blastDirection: pi*.15, // radial value
-        particleDrag: 0.01, // apply drag to the confetti
-        emissionFrequency: 0.09, // how often it should emit
-        numberOfParticles: 30, // number of particles to emit
-        gravity: 0.01, // gravity - or fall speed
-        shouldLoop: false,
-        colors: const [
-          Colors.pink,
-          Colors.red,
-          Colors.deepOrange,
-          Colors.orange,
-          Colors.amber,
-          Colors.yellow,
-          Colors.lime,
-          Colors.lightGreen,
-          Colors.green,
-          Colors.teal,
-          Colors.cyan,
-          Colors.lightBlue,
-          Colors.blue,
-          Colors.indigo,
-          Colors.purple,
-          Colors.deepPurple,
-        ], // manually specify the colors to be used
+      confettiController: _confettiController,
+      blastDirection: pi * .15, // radial value
+      particleDrag: 0.01, // apply drag to the confetti
+      emissionFrequency: 0.09, // how often it should emit
+      numberOfParticles: 30, // number of particles to emit
+      gravity: 0.01, // gravity - or fall speed
+      shouldLoop: false,
+      colors: const [
+        Colors.pink,
+        Colors.red,
+        Colors.deepOrange,
+        Colors.orange,
+        Colors.amber,
+        Colors.yellow,
+        Colors.lime,
+        Colors.lightGreen,
+        Colors.green,
+        Colors.teal,
+        Colors.cyan,
+        Colors.lightBlue,
+        Colors.blue,
+        Colors.indigo,
+        Colors.purple,
+        Colors.deepPurple,
+      ],
       child: Scaffold(
         appBar: AppBar(
           actions: [
@@ -135,7 +136,8 @@ class _GEBState extends State<GEB> {
                                   barrierColor: Color(0xFAFAFA),
                                   context: context,
                                   builder: (context) {
-                                    return ChallengeSetDetailDialog(set, (challenge) {
+                                    return ChallengeSetDetailDialog(set,
+                                        (challenge) {
                                       setState(() {
                                         state.challenge = challenge;
                                         Navigator.pop(context);
@@ -183,27 +185,38 @@ class _GEBState extends State<GEB> {
                   children: [
                     state.challenge != null
                         ? Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                          child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("Your goal is to validate this formula: ", style: TextStyle(fontSize: 30, color: Colors.green, fontWeight: FontWeight.bold),),
-                              Text(state.challenge!.goal.toString(), style: TextStyle(fontSize: 40, color: Colors.green, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        )
+                            padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Your goal is to validate this formula: ",
+                                  style: TextStyle(
+                                      fontSize: 30,
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(state.challenge!.goal.toString(),
+                                    style: TextStyle(
+                                        fontSize: 40,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          )
                         : Container(),
-                    messageToUser != ""  ?
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
-                      child: Text(
-                        messageToUser,
-                        style: TextStyle(
-                            fontSize: 25,
-                            color: validationColor,
-                            fontWeight: FontWeight.w800),
-                      ),
-                    ) : Container(),
+                    messageToUser != ""
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
+                            child: Text(
+                              messageToUser,
+                              style: TextStyle(
+                                  fontSize: 25,
+                                  color: validationColor,
+                                  fontWeight: FontWeight.w800),
+                            ),
+                          )
+                        : Container(),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                       child: Text(
@@ -289,12 +302,12 @@ class _GEBState extends State<GEB> {
                                           TextSpan(
                                               text: "${i + 1}: ",
                                               style: TextStyle(
-                                                  color: Colors
-                                                      .primaries[colorDecider(i)]
-                                                      .withOpacity(
-                                                          state.isSelectionNeeded
-                                                              ? .3
-                                                              : 1),
+                                                  color: Colors.primaries[
+                                                          colorDecider(i)]
+                                                      .withOpacity(state
+                                                              .isSelectionNeeded
+                                                          ? .3
+                                                          : 1),
                                                   fontWeight: FontWeight.bold,
                                                   fontFamily: "NotoSansMath")),
                                           for (var chunk in state
@@ -321,8 +334,8 @@ class _GEBState extends State<GEB> {
                                               text:
                                                   "${i + 1}: ${state.explanations[i]}",
                                               style: TextStyle(
-                                                  color: Colors
-                                                      .primaries[colorDecider(i)],
+                                                  color: Colors.primaries[
+                                                      colorDecider(i)],
                                                   fontWeight: FontWeight.bold,
                                                   fontFamily: "NotoSansMath")),
                                         ],
@@ -344,12 +357,13 @@ class _GEBState extends State<GEB> {
                             flex: 4,
                             child: TextFormField(
                               onChanged: (_) {
-                                setState(() {
-                                });
+                                setState(() {});
                               },
                               controller: _textController,
-                              decoration: state.isPremiseExpected ? const InputDecoration(
-                                  hintText: 'Enter your premise'): null,
+                              decoration: state.isPremiseExpected
+                                  ? const InputDecoration(
+                                      hintText: 'Enter your premise')
+                                  : null,
                             ),
                           ),
                           Flexible(
@@ -360,25 +374,31 @@ class _GEBState extends State<GEB> {
                                 height: 50,
                                 width: 100,
                                 textSize: 20,
-                                onPressed: state.isPremiseExpected ? () {
-                                  setState(() {
-                                    try {
-                                      DerivationLine line =
-                                          DerivationLine(_textController.text);
-                                      messageToUser =
-                                          "Good work! Your feelings and formula are valid!";
-                                      state.addDerivationLine(line);
-                                      validationColor = Colors.cyan;
-                                      _textController.text = "";
-                                      _needsScroll = true;
-                                    } catch (e) {
-                                      validationColor = Colors.pink;
-                                      messageToUser =
-                                          "Your formula is bad. You have failed.️";
-                                    }
-                                  });
-                                } : null,
-                                disabled: state.isPremiseExpected && (_textController.text.length > 0)? false : true,
+                                onPressed: state.isPremiseExpected
+                                    ? () {
+                                        setState(() {
+                                          try {
+                                            DerivationLine line =
+                                                DerivationLine(
+                                                    _textController.text);
+                                            messageToUser =
+                                                "Good work! Your feelings and formula are valid!";
+                                            state.addDerivationLine(line);
+                                            validationColor = Colors.cyan;
+                                            _textController.text = "";
+                                            _needsScroll = true;
+                                          } catch (e) {
+                                            validationColor = Colors.pink;
+                                            messageToUser =
+                                                "Your formula is bad. You have failed.️";
+                                          }
+                                        });
+                                      }
+                                    : null,
+                                disabled: state.isPremiseExpected &&
+                                        (_textController.text.length > 0)
+                                    ? false
+                                    : true,
                                 text: "Validate",
                               ),
                             ),
