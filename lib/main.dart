@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -6,6 +8,8 @@ import 'package:geb/widgets/base_button.dart';
 import 'package:geb/widgets/custom_text_span.dart';
 import 'package:geb/widgets/challenge_set_detail_menu.dart';
 import 'package:geb/widgets/game_menu.dart';
+import 'package:confetti/confetti.dart';
+
 
 import 'math/ast.dart';
 import 'math/rule_definitions.dart';
@@ -37,6 +41,7 @@ class GEB extends StatefulWidget {
 }
 
 class _GEBState extends State<GEB> {
+  late ConfettiController _controllerCenterRight;
   bool showGameDetail = false;
   FullState state = FullState();
   final _textController = TextEditingController();
@@ -70,6 +75,13 @@ class _GEBState extends State<GEB> {
     List<int> acceptableColors = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15];
     return acceptableColors[i % acceptableColors.length];
   }
+  @override
+  void initState() {
+    super.initState();
+    _controllerCenterRight =
+        ConfettiController(duration: const Duration(seconds: 1));
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -376,6 +388,44 @@ class _GEBState extends State<GEB> {
                 ],
               ),
             ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ConfettiWidget(
+                confettiController: _controllerCenterRight,
+                blastDirection: pi*1.1, // radial value - LEFT
+                particleDrag: 0.01, // apply drag to the confetti
+                emissionFrequency: 0.09, // how often it should emit
+                numberOfParticles: 30, // number of particles to emit
+                gravity: 0.02, // gravity - or fall speed
+                shouldLoop: false,
+                colors: const [
+                  Colors.pink,
+                  Colors.red,
+                  Colors.deepOrange,
+                  Colors.orange,
+                  Colors.amber,
+                  Colors.yellow,
+                  Colors.lime,
+                  Colors.lightGreen,
+                  Colors.green,
+                  Colors.teal,
+                  Colors.cyan,
+                  Colors.lightBlue,
+                  Colors.blue,
+                  Colors.indigo,
+                  Colors.purple,
+                  Colors.deepPurple,
+                ], // manually specify the colors to be used
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                  onPressed: () {
+                    _controllerCenterRight.play();
+                  },
+                  child: Text('pump left')),
+            ),
           ],
         ),
       ),
@@ -394,6 +444,7 @@ class _GEBState extends State<GEB> {
   @override
   void dispose() {
     _disposeGestureRecognizers();
+    _controllerCenterRight.dispose();
     super.dispose();
   }
 
