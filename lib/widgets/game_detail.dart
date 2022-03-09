@@ -2,14 +2,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geb/math/challenges.dart';
 
-class GameMenuDialog extends StatefulWidget {
-  final void Function (ChallengeSet set) onSetSelection;
-  GameMenuDialog(this.onSetSelection);
+class GameDetailDialog extends StatefulWidget {
+  final void Function (Challenge challenge) onChallengeSelection;
+  final ChallengeSet set;
+  GameDetailDialog(this.set, this.onChallengeSelection,);
   @override
-  _GameMenuDialog createState() => _GameMenuDialog();
+  _GameDetailDialog createState() => _GameDetailDialog();
 }
 
-class _GameMenuDialog extends State<GameMenuDialog> {
+class _GameDetailDialog extends State<GameDetailDialog> {
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -20,22 +22,22 @@ class _GameMenuDialog extends State<GameMenuDialog> {
             Padding(
               padding: const EdgeInsets.all(18.0),
               child: Text(
-                "Pick a challenge",
+                "${widget.set.name}",
                 style: TextStyle(
-                    color: Colors.green, fontWeight: FontWeight.bold, fontSize: 40),
+                    color: Color(0xFF3B7924), fontWeight: FontWeight.bold, fontSize: 40),
               ),
-            ),
-            for (var set in challengeSets)
+            ),      for (var challenge in widget.set.challenges)
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: OutlinedButton(
                   onPressed: () {
-                    widget.onSetSelection(set);
-                  },
-                  child: Text(set.name),
+                    widget.onChallengeSelection(challenge);
+                   },
+                  child: Text(challenge.goal.toString(), style: TextStyle(color: Color(
+                      0x820D1D07)),),
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all<Color>(Color(0x82D9BEF6)),
+                    MaterialStateProperty.all<Color>(Color(0x8296BA89)),
                   ),
                 ),
               )
@@ -47,7 +49,7 @@ class _GameMenuDialog extends State<GameMenuDialog> {
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text("Close")),
+            child: Text("Back")),
       ],
     );
   }

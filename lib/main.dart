@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:geb/widgets/base_button.dart';
 import 'package:geb/widgets/custom_text_span.dart';
+import 'package:geb/widgets/game_detail.dart';
 import 'package:geb/widgets/game_menu.dart';
 
 import 'math/ast.dart';
@@ -36,6 +37,7 @@ class GEB extends StatefulWidget {
 }
 
 class _GEBState extends State<GEB> {
+  bool showGameDetail = false;
   FullState state = FullState();
   final _textController = TextEditingController();
   String messageToUser = "";
@@ -87,7 +89,24 @@ class _GEBState extends State<GEB> {
                   showDialog(
                       context: context,
                       builder: (context) {
-                        return GameMenuDialog();
+                        return GameMenuDialog((set) {
+                          setState(() {
+                            showGameDetail = true;
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return GameDetailDialog(set, (challenge) {
+                                  setState(() {
+                                    state.challenge = challenge;
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                  });
+                                });
+                              }
+                            );
+                          });
+                        }
+                        );
                       });
                 });
               },
@@ -123,6 +142,7 @@ class _GEBState extends State<GEB> {
               flex: 3,
               child: Column(
                 children: [
+                  state.challenge !=null ? Text(state.challenge!.goal.toString()) : Container(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                     child: Text(
