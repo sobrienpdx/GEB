@@ -1,5 +1,4 @@
 import 'package:geb/math/ast.dart';
-import 'package:geb/math/context.dart';
 import 'package:geb/math/proof.dart';
 
 class ProofSketchFrame {
@@ -30,7 +29,7 @@ class Prover {
         if (_frame.availableTheorems.contains(previousGoal)) {
           _frame.usedTheorems.add(previousGoal);
           _frame.steps.add((derivationState) {
-            derivationState.switcheroo(DerivationLineContext(previousGoal));
+            derivationState.switcheroo(previousGoal);
           });
           _frame.availableTheorems.add(goal);
           return;

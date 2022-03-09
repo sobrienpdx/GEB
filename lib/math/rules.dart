@@ -1,4 +1,3 @@
-import 'package:geb/math/context.dart';
 import 'package:geb/math/rule_definitions.dart';
 import 'package:geb/math/symbols.dart';
 
@@ -35,9 +34,9 @@ class ContrapositiveRule extends FullLineStepRule {
   void apply(DerivationState derivation, List<Formula> formulas) {
     var x = formulas.single as Implies;
     if (x.leftOperand is Not && x.rightOperand is Not) {
-      derivation.contrapositiveReverse(DerivationLineContext(x));
+      derivation.contrapositiveReverse(x);
     } else {
-      derivation.contrapositiveForward(DerivationLineContext(x));
+      derivation.contrapositiveForward(x);
     }
   }
 
@@ -57,7 +56,7 @@ class DeMorgansRule extends FullLineStepRule {
 
   @override
   void apply(DerivationState derivation, List<Formula> formulas) {
-    derivation.deMorgan(DerivationLineContext(formulas.single));
+    derivation.deMorgan(formulas.single);
   }
 
   @override
@@ -289,7 +288,7 @@ class SwitcherooRule extends FullLineStepRule {
 
   @override
   void apply(DerivationState derivation, List<Formula> formulas) {
-    derivation.switcheroo(DerivationLineContext(formulas.single));
+    derivation.switcheroo(formulas.single);
   }
 
   @override
