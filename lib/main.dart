@@ -93,20 +93,18 @@ class _GEBState extends State<GEB> {
                           setState(() {
                             showGameDetail = true;
                             showDialog(
-                              context: context,
-                              builder: (context) {
-                                return GameDetailDialog(set, (challenge) {
-                                  setState(() {
-                                    state.challenge = challenge;
-                                    Navigator.pop(context);
-                                    Navigator.pop(context);
+                                context: context,
+                                builder: (context) {
+                                  return GameDetailDialog(set, (challenge) {
+                                    setState(() {
+                                      state.challenge = challenge;
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                    });
                                   });
                                 });
-                              }
-                            );
                           });
-                        }
-                        );
+                        });
                       });
                 });
               },
@@ -142,7 +140,9 @@ class _GEBState extends State<GEB> {
               flex: 3,
               child: Column(
                 children: [
-                  state.challenge !=null ? Text(state.challenge!.goal.toString()) : Container(),
+                  state.challenge != null
+                      ? Text(state.challenge!.goal.toString())
+                      : Container(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                     child: Text(

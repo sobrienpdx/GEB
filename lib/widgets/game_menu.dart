@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:geb/math/challenges.dart';
 
 class GameMenuDialog extends StatefulWidget {
-  final void Function (ChallengeSet set) onSetSelection;
+  final void Function(ChallengeSet set) onSetSelection;
+
   GameMenuDialog(this.onSetSelection);
+
   @override
   _GameMenuDialog createState() => _GameMenuDialog();
 }
@@ -22,7 +24,9 @@ class _GameMenuDialog extends State<GameMenuDialog> {
               child: Text(
                 "Pick a challenge",
                 style: TextStyle(
-                    color: Colors.green, fontWeight: FontWeight.bold, fontSize: 40),
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 40),
               ),
             ),
             for (var set in challengeSets)
