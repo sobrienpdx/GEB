@@ -75,9 +75,7 @@ class FullState {
   set challenge(Challenge? challenge) {
     _derivation.clear();
     if (challenge != null) {
-      for (var line in challenge.initialLines) {
-        _derivation.addLine(line);
-      }
+      _derivation.setupChallenge(challenge);
     }
     _challenge = challenge;
   }

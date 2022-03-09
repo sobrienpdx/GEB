@@ -1,3 +1,5 @@
+import 'package:geb/math/challenges.dart';
+
 import 'ast.dart';
 import 'context.dart';
 import 'rule_definitions.dart';
@@ -184,6 +186,13 @@ class DerivationState {
   Formula separate(Formula x, Side side) => x is And
       ? _rule([x], x.getOperand(side), separationRule)
       : _invalidProofStep();
+
+  void setupChallenge(Challenge challenge) {
+    clear();
+    for (var line in challenge.initialLines) {
+      addLine(line);
+    }
+  }
 
   Formula switcheroo(DerivationLineContext context) {
     var formula = context.derivationLine;
