@@ -294,8 +294,8 @@ class _GEBState extends State<GEB> {
                           flex: 4,
                           child: TextFormField(
                             controller: _textController,
-                            decoration: const InputDecoration(
-                                hintText: 'Write your formula here'),
+                            decoration: state.isPremiseExpected ? const InputDecoration(
+                                hintText: 'Enter your premise'): null,
                           ),
                         ),
                         Flexible(
@@ -306,7 +306,7 @@ class _GEBState extends State<GEB> {
                               height: 50,
                               width: 100,
                               textSize: 20,
-                              onPressed: () {
+                              onPressed: state.isPremiseExpected ? () {
                                 setState(() {
                                   try {
                                     DerivationLine line =
@@ -320,10 +320,11 @@ class _GEBState extends State<GEB> {
                                   } catch (e) {
                                     validationColor = Colors.pink;
                                     messageToUser =
-                                        "☹️ ☹️ ☹️ Your formula is bad. You should feel bad. ☹️ ☹️ ☹️ ️";
+                                        "Your formula is bad. You have failed.️";
                                   }
                                 });
-                              },
+                              } : null,
+                              disabled: state.isPremiseExpected && (_textController.text.length > 0)? false : true,
                               text: "Validate",
                             ),
                           ),
