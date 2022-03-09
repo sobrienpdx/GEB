@@ -101,6 +101,7 @@ class _GEBState extends State<GEB> {
                                       state.challenge = challenge;
                                       Navigator.pop(context);
                                       Navigator.pop(context);
+                                      messageToUser = "";
                                     });
                                   });
                                 });
@@ -142,8 +143,18 @@ class _GEBState extends State<GEB> {
               child: Column(
                 children: [
                   state.challenge != null
-                      ? Text(state.challenge!.goal.toString())
+                      ? Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Your goal is to validate this formula: ", style: TextStyle(fontSize: 30, color: Colors.green, fontWeight: FontWeight.bold),),
+                            Text(state.challenge!.goal.toString(), style: TextStyle(fontSize: 40, color: Colors.green, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      )
                       : Container(),
+                  messageToUser != ""  ?
                   Padding(
                     padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                     child: Text(
@@ -153,7 +164,7 @@ class _GEBState extends State<GEB> {
                           color: validationColor,
                           fontWeight: FontWeight.w800),
                     ),
-                  ),
+                  ) : Container(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(25, 8, 8, 8),
                     child: Text(
@@ -293,6 +304,10 @@ class _GEBState extends State<GEB> {
                         Flexible(
                           flex: 4,
                           child: TextFormField(
+                            onChanged: (_) {
+                              setState(() {
+                              });
+                            },
                             controller: _textController,
                             decoration: state.isPremiseExpected ? const InputDecoration(
                                 hintText: 'Enter your premise'): null,
@@ -350,7 +365,7 @@ class _GEBState extends State<GEB> {
                         textSize: 17,
                         onPressed: () {
                           setState(() {
-                            validationColor = Colors.green;
+                            validationColor = Colors.cyan;
                             messageToUser = rule.description;
                             state.activateRule(rule);
                             _needsScroll = true;
