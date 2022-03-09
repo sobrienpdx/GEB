@@ -59,31 +59,25 @@ class DerivationState {
     _steps.clear();
   }
 
-  Formula contrapositiveForward(DerivationLineContext context) {
-    var formula = context.derivationLine;
+  Formula contrapositiveForward(Formula formula) {
     if (formula is! Implies) _invalidProofStep();
     return _rule(
-        [context.top as Formula],
-        context.substitute(
-            Implies(Not(formula.rightOperand), Not(formula.leftOperand))),
+        [formula],
+        Implies(Not(formula.rightOperand), Not(formula.leftOperand)),
         contrapositiveRule);
   }
 
-  Formula contrapositiveReverse(DerivationLineContext context) {
-    var formula = context.derivationLine;
+  Formula contrapositiveReverse(Formula formula) {
     if (formula is! Implies) _invalidProofStep();
     var leftOperand = formula.leftOperand;
     if (leftOperand is! Not) _invalidProofStep();
     var rightOperand = formula.rightOperand;
     if (rightOperand is! Not) _invalidProofStep();
-    return _rule(
-        [context.top as Formula],
-        context.substitute(Implies(rightOperand.operand, leftOperand.operand)),
+    return _rule([formula], Implies(rightOperand.operand, leftOperand.operand),
         contrapositiveRule);
   }
 
-  Formula deMorgan(DerivationLineContext context) {
-    var formula = context.derivationLine;
+  Formula deMorgan(Formula formula) {
     Formula replacement;
     if (formula is And) {
       var leftOperand = formula.leftOperand;
@@ -98,8 +92,7 @@ class DerivationState {
     } else {
       _invalidProofStep();
     }
-    return _rule([context.top as Formula], context.substitute(replacement),
-        deMorgansRule);
+    return _rule([formula], replacement, deMorgansRule);
   }
 
   Formula detach(Formula x) => x is Implies
@@ -194,8 +187,7 @@ class DerivationState {
     }
   }
 
-  Formula switcheroo(DerivationLineContext context) {
-    var formula = context.derivationLine;
+  Formula switcheroo(Formula formula) {
     Formula replacement;
     if (formula is Or) {
       replacement = Implies(Not(formula.leftOperand), formula.rightOperand);
@@ -206,8 +198,7 @@ class DerivationState {
     } else {
       _invalidProofStep();
     }
-    return _rule([context.top as Formula], context.substitute(replacement),
-        switcherooRule);
+    return _rule([formula], replacement, switcherooRule);
   }
 
   String undo({required int minLines}) {
