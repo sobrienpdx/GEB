@@ -66,7 +66,9 @@ class FullState {
 
   Challenge? _challenge;
 
-  FullState() {
+  final bool permissive;
+
+  FullState({this.permissive = true}) {
     _interactiveState = Quiescent();
   }
 
@@ -78,6 +80,7 @@ class FullState {
       _derivation.setupChallenge(challenge);
     }
     _challenge = challenge;
+    _interactiveState = Quiescent();
   }
 
   List<DerivationLineInfo> get derivationLines => [
@@ -92,7 +95,8 @@ class FullState {
     return challenge != null && _derivation.isGoalSatisfied(challenge.goal);
   }
 
-  bool get isPremiseExpected => _derivation.isPremiseExpected;
+  bool get isPremiseExpected =>
+      (permissive && _challenge == null) || _derivation.isPremiseExpected;
 
   bool get isSelectionNeeded => _interactiveState.isSelectionNeeded;
 

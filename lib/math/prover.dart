@@ -2,10 +2,24 @@ import 'package:geb/math/ast.dart';
 import 'package:geb/math/context.dart';
 import 'package:geb/math/proof.dart';
 
-class Prover {
-  final DerivationState _derivationState;
+class ProofSketchFrame {
+  final Set<Formula> availableTheorems = {};
+  final Set<Formula> usedTheorems = {};
+  final List<void Function(DerivationState)> steps = [];
+}
 
-  Prover(this._derivationState);
+class Prover {
+  ProofSketchFrame _frame = ProofSketchFrame();
+
+  Prover(Iterable<Formula> initialLines) {
+    _frame.availableTheorems.addAll(initialLines);
+  }
+
+  void execute(DerivationState derivationState) {
+    for (var step in _frame.steps) {
+      step(derivationState);
+    }
+  }
 
   void prove(Formula goal) {
     if (goal is Implies) {
@@ -13,8 +27,12 @@ class Prover {
       var rightOperand = goal.rightOperand;
       if (leftOperand is Not) {
         var previousGoal = Or(leftOperand.operand, rightOperand);
-        if (_derivationState.isTheorem(previousGoal)) {
-          _derivationState.switcheroo(DerivationLineContext(previousGoal));
+        if (_frame.availableTheorems.contains(previousGoal)) {
+          _frame.usedTheorems.add(previousGoal);
+          _frame.steps.add((derivationState) {
+            derivationState.switcheroo(DerivationLineContext(previousGoal));
+          });
+          _frame.availableTheorems.add(goal);
           return;
         }
       }

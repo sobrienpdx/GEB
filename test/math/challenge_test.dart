@@ -25,9 +25,11 @@ main() {
 }
 
 void checkProof(Challenge challenge) {
+  var prover = Prover(challenge.initialLines);
+  prover.prove(challenge.goal);
   var derivationState = DerivationState();
   derivationState.setupChallenge(challenge);
-  Prover(derivationState).prove(challenge.goal);
+  prover.execute(derivationState);
   expect(derivationState.isGoalSatisfied(challenge.goal), true);
   expect(derivationState.lines.length, challenge.goalStepCount);
 }

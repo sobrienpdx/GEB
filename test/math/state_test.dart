@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:geb/math/ast.dart';
+import 'package:geb/math/challenges.dart';
 import 'package:geb/math/parse.dart';
 import 'package:geb/math/rule_definitions.dart';
 import 'package:geb/math/rules.dart';
@@ -12,12 +13,50 @@ main() {
   late FullState state;
 
   setUp(() {
-    state = FullState();
+    state = FullState(permissive: false);
   });
 
   void check(TestStep action) {
     action.check(state);
   }
+
+  group('permissive:', () {
+    test('when true, allows new premises any time there is no challenge', () {
+      state = FullState(permissive: true);
+      expect(state.isPremiseExpected, true);
+      state.addDerivationLine(PushFantasy());
+      expect(state.isPremiseExpected, true);
+      state.challenge =
+          Challenge(Formula('<~P->Q>'), 2, initialLines: [Formula('<P|Q>')]);
+      expect(state.isPremiseExpected, false);
+      state.addDerivationLine(PushFantasy());
+      expect(state.isPremiseExpected, true);
+    });
+
+    test('when false, only allows new premises after [', () {
+      state = FullState(permissive: false);
+      expect(state.isPremiseExpected, false);
+      state.addDerivationLine(PushFantasy());
+      expect(state.isPremiseExpected, true);
+      state.challenge =
+          Challenge(Formula('<~P->Q>'), 2, initialLines: [Formula('<P|Q>')]);
+      expect(state.isPremiseExpected, false);
+      state.addDerivationLine(PushFantasy());
+      expect(state.isPremiseExpected, true);
+    });
+  });
+
+  group('set challenge:', () {
+    test('restores quiescent state', () {
+      check(addLine('P'));
+      check(rule(doubleTildeRule).hasSelectionState(selectable: {
+        0: star
+      }).showsMessage('Select a region for double tilde'));
+      check(setChallenge(Challenge(Formula('<~P->Q>'), 2,
+              initialLines: [Formula('<P|Q>')]))
+          .setsLinesTo(['<P|Q>']).isQuiescent());
+    });
+  });
 
   group('addDerivationLine:', () {
     test('basic', () {
@@ -508,6 +547,9 @@ TestStep<void> select(int lineIndex, String target, {int? index}) =>
       candidateChunks[index ?? 0].select();
     });
 
+TestStep<void> setChallenge(Challenge challenge) =>
+    TestStep((state) => state.challenge = challenge);
+
 TestStep<void> undo() => TestStep((state) => state.undo());
 
 class TestStep<R> {
@@ -626,6 +668,20 @@ class TestStep<R> {
 
   TestStep<R> returns(Object? expectation) {
     _tests.add((state, returnValue) => expect(returnValue, expectation));
+    return this;
+  }
+
+  TestStep<R> setsLinesTo(Object expectation) {
+    _mayAddLines = true;
+    if (expectation is List<String>) {
+      expectation = <DerivationLine>[
+        for (var line in expectation) DerivationLine(line)
+      ];
+    }
+    _tests.add((state, returnValue) {
+      var lines = [for (var line in state.derivationLines) line.line];
+      expect(lines, expectation);
+    });
     return this;
   }
 
