@@ -54,7 +54,7 @@ final List<ChallengeSet> challengeSets = [
 ];
 
 class Challenge {
-  final List<DerivationLine> initialLines;
+  final List<Formula> initialLines;
 
   final Formula goal;
 
