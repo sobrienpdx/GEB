@@ -17,6 +17,7 @@ class _GameMenuDialog extends State<GameMenuDialog> {
     return AlertDialog(
       content: SizedBox(
         height: 500,
+        width: 400,
         child: Column(
           children: [
             Padding(
@@ -24,7 +25,7 @@ class _GameMenuDialog extends State<GameMenuDialog> {
               child: Text(
                 "Pick a challenge",
                 style: TextStyle(
-                    color: Colors.green,
+                    color: Color(0xFF76310D),
                     fontWeight: FontWeight.bold,
                     fontSize: 40),
               ),
@@ -36,10 +37,11 @@ class _GameMenuDialog extends State<GameMenuDialog> {
                   onPressed: () {
                     widget.onSetSelection(set);
                   },
-                  child: Text(set.name),
+                  child: Text(set.name, style: TextStyle(color: Color(
+                      0xFF3B1807)),),
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all<Color>(Color(0x82D9BEF6)),
+                        MaterialStateProperty.all<Color>(Color(0x82CE6E3A)),
                   ),
                 ),
               )

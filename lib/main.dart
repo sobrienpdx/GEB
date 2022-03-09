@@ -4,7 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:geb/widgets/base_button.dart';
 import 'package:geb/widgets/custom_text_span.dart';
-import 'package:geb/widgets/game_detail.dart';
+import 'package:geb/widgets/challenge_set_detail_menu.dart';
 import 'package:geb/widgets/game_menu.dart';
 
 import 'math/ast.dart';
@@ -93,9 +93,10 @@ class _GEBState extends State<GEB> {
                           setState(() {
                             showGameDetail = true;
                             showDialog(
+                                barrierColor: Color(0xFAFAFA),
                                 context: context,
                                 builder: (context) {
-                                  return GameDetailDialog(set, (challenge) {
+                                  return ChallengeSetDetailDialog(set, (challenge) {
                                     setState(() {
                                       state.challenge = challenge;
                                       Navigator.pop(context);
