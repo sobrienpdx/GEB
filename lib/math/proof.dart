@@ -12,6 +12,9 @@ class DerivationState {
 
   bool get isFantasyInProgress => _findFantasyStart(lastNonPopIndex) >= 0;
 
+  bool get isPremiseExpected =>
+      _steps.isNotEmpty && _steps.last.line is PushFantasy;
+
   int get lastNonPopIndex {
     var index = _steps.length - 1;
     if (index >= 0) {

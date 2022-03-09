@@ -94,6 +94,8 @@ class FullState {
     return challenge != null && _derivation.isGoalSatisfied(challenge.goal);
   }
 
+  bool get isPremiseExpected => _derivation.isPremiseExpected;
+
   bool get isSelectionNeeded => _interactiveState.isSelectionNeeded;
 
   String get message => _interactiveState.message;
