@@ -24,37 +24,38 @@ main() {
 }
 
 void checkProof(Challenge challenge) {
-  var theorems = <Theorem>[];
-  Assumption? assumptions;
-  for (var line in challenge.initialLines) {
-    var newTheorem = assume(assumptions, line);
-    assumptions = newTheorem.assumptions!;
-    for (int i = 0; i < theorems.length; i++) {
-      theorems[i] = carryOver(assumptions, theorems[i])!;
-    }
-    theorems.add(newTheorem);
+  var proverState = ProverState();
+  List<Theorem> givens = [for (var line in challenge.initialLines) given(line)];
+  for (var theorem in givens) {
+    proverState.addTheorem(theorem);
   }
-  var goal = challenge.goal;
-  Theorem? result;
-  for (var theorem in theorems) {
-    result = rewrite(theorem, goal);
-    if (result != null) break;
-  }
+  var strategy = challenge.strategy.thenRewrite();
+  strategy.run(proverState, challenge.goal);
+  var result = proverState.getTheorem(challenge.goal);
   if (result == null) throw 'TODO(paul)';
-  var lines = <String>[
-    for (var theorem in theorems) '${theorem.formula}\tgiven'
-  ];
-  var seenTheorems = {...theorems};
+  var lines = <String>[for (var theorem in givens) theorem.toProofLine()];
+  var seenTheorems = {...givens};
   _toProofLines(result, lines, seenTheorems);
+  expect(lines, hasLength(challenge.goalStepCount));
   print(lines.join('\n'));
 }
 
 void _toProofLines(
     Theorem theorem, List<String> lines, Set<Theorem> seenTheorems) {
   if (!seenTheorems.add(theorem)) return;
-  if (theorem.explanation == 'pop fantasy') throw 'TODO(paul)';
   for (var prerequisite in theorem.prerequisites) {
     _toProofLines(prerequisite, lines, seenTheorems);
   }
-  lines.add('${theorem.formula}\t${theorem.explanation}');
+  if (theorem is PopFantasyTheorem) {
+    lines.add('[');
+    var premise = theorem.premise.asTheorem;
+    lines.add(premise.toProofLine());
+    _toProofLines(theorem.conclusion, lines, {premise});
+    lines.add(']');
+  }
+  lines.add(theorem.toProofLine());
+}
+
+extension _ on Theorem {
+  String toProofLine() => '$formula\t$explanation';
 }

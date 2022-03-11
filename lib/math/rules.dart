@@ -27,7 +27,7 @@ class CarryOverRule extends Rule {
 
 class ContrapositiveRule extends FullLineStepRule {
   const ContrapositiveRule()
-      : super._('contrapositive', '<x⊃y and <~y⊃~x> are interchangeable.',
+      : super._('contrapositive', '<x⊃y> and <~y⊃~x> are interchangeable.',
             count: 1);
 
   @override
