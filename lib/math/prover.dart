@@ -1,43 +1,48 @@
-import 'package:geb/math/ast.dart';
-import 'package:geb/math/proof.dart';
+import 'ast.dart';
+import 'kernel.dart';
 
-class ProofSketchFrame {
-  final Set<Formula> availableTheorems = {};
-  final Set<Formula> usedTheorems = {};
-  final List<void Function(DerivationState)> steps = [];
+Theorem? rewrite(Theorem x, Formula goal) {
+  {
+    var result = trivialRewrite(x, goal);
+    if (result != null) return result;
+  }
+  if (x.formula is Or) {
+    x = switcheroo(x, reversed: false)!;
+  }
+  Theorem Function(Theorem) continuation;
+  if (goal is Or) {
+    goal = switcheroo(assume(null, goal), reversed: false)!.formula;
+    continuation = (theorem) => switcheroo(theorem, reversed: true)!;
+  } else {
+    continuation = (theorem) => theorem;
+  }
+  {
+    var result = trivialRewrite(x, goal);
+    if (result != null) return continuation(result);
+  }
+  var xFormula = x.formula;
+  if (xFormula is Implies && goal is Implies) {
+    var p1Goal = xFormula.leftOperand;
+    var q1Goal = xFormula.rightOperand;
+    var p2Goal = goal.leftOperand;
+    var q2Goal = goal.rightOperand;
+    var p2 = assume(x.assumptions, p2Goal);
+    var p1 = rewrite(p2, p1Goal);
+    if (p1 == null) return null;
+    var q1 = detachment(p1, x);
+    if (q1 == null) return null;
+    assert(q1.formula == q1Goal);
+    var q2 = rewrite(q1, q2Goal);
+    if (q2 == null) return null;
+    var result = popFantasy(q2);
+    if (result == null) return null;
+    return continuation(result);
+  }
+  return null;
 }
 
-class Prover {
-  ProofSketchFrame _frame = ProofSketchFrame();
-
-  Prover(Iterable<Formula> initialLines) {
-    _frame.availableTheorems.addAll(initialLines);
-  }
-
-  void execute(DerivationState derivationState) {
-    for (var step in _frame.steps) {
-      step(derivationState);
-    }
-  }
-
-  void prove(Formula goal) {
-    if (goal is Implies) {
-      var leftOperand = goal.leftOperand;
-      var rightOperand = goal.rightOperand;
-      if (leftOperand is Not) {
-        var previousGoal = Or(leftOperand.operand, rightOperand);
-        if (_frame.availableTheorems.contains(previousGoal)) {
-          _frame.usedTheorems.add(previousGoal);
-          _frame.steps.add((derivationState) {
-            derivationState.switcheroo(previousGoal);
-          });
-          _frame.availableTheorems.add(goal);
-          return;
-        }
-      }
-    }
-    throw ProverFailed();
-  }
+Theorem? trivialRewrite(Theorem x, Formula goal) {
+  if (x.formula == goal) return x;
+  // TODO(paul): trivial rewrites with double tilde
+  return null;
 }
-
-class ProverFailed {}
