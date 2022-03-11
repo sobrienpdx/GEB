@@ -47,6 +47,23 @@ Theorem? _trivialRewrite(Theorem x, Formula goal) {
   return null;
 }
 
+abstract class ContinuationStrategy extends Strategy {
+  const ContinuationStrategy();
+
+  Theorem? continueFrom(ProverState state, Theorem theorem, Formula goal);
+
+  @override
+  void run(ProverState state, Formula goal) {
+    for (int i = 0; i < state._theorems.length; i++) {
+      var result = continueFrom(state, state._theorems[i], goal);
+      if (result != null) {
+        state.addTheorem(result);
+        if (result.formula == goal) return;
+      }
+    }
+  }
+}
+
 class Fantasy extends Strategy {
   final Strategy strategy;
 
@@ -124,25 +141,17 @@ class SubGoal extends Strategy {
   }
 }
 
-class _RewriteStrategy extends Strategy {
+class _RewriteStrategy extends ContinuationStrategy {
   const _RewriteStrategy();
 
   @override
-  void run(ProverState state, Formula goal) {
-    for (int i = 0; i < state._theorems.length; i++) {
-      var result = _rewrite(state._theorems[i], goal);
-      if (result != null) {
-        state.addTheorem(result);
-        if (result.formula == goal) return;
-      }
-    }
-    return fail('rewrite', 'no rule to rewrite to $goal');
-  }
+  Theorem? continueFrom(ProverState state, Theorem theorem, Formula goal) =>
+      _rewrite(theorem, goal);
 }
 
 class _SequenceStrategy extends Strategy {
   final Strategy first;
-  final Strategy second;
+  final ContinuationStrategy second;
 
   const _SequenceStrategy(this.first, this.second);
 
