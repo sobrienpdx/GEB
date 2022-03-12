@@ -28,33 +28,21 @@ Theorem? contrapositive(Theorem x) {
       'contrapositive');
 }
 
-Theorem? deMorgans(Theorem x, {required bool reversed}) {
+Theorem? deMorgan(Theorem x) {
   var xFormula = x.formula;
-  Formula formula;
-  if (reversed) {
-    if (xFormula is! Not) {
-      return mismatch('reverse De Morgan', '~<x∨y>', xFormula);
-    }
-    var operand = xFormula.operand;
-    if (operand is! Or) {
-      return mismatch('reverse De Morgan', '~<x∨y>', xFormula);
-    }
-    formula = And(Not(operand.leftOperand), Not(operand.rightOperand));
-  } else {
-    if (xFormula is! And) {
-      return mismatch('De Morgan', '<~x∧~y>', xFormula);
-    }
-    var leftOperand = xFormula.leftOperand;
-    if (leftOperand is! Not) {
-      return mismatch('De Morgan', '<~x∧~y>', xFormula);
-    }
-    var rightOperand = xFormula.rightOperand;
-    if (rightOperand is! Not) {
-      return mismatch('De Morgan', '<~x∧~y>', xFormula);
-    }
-    formula = Not(Or(leftOperand.operand, rightOperand.operand));
+  if (xFormula is! And) {
+    return mismatch('De Morgan', '<~x∧~y>', xFormula);
   }
-  return Theorem._(x.assumptions, formula, [x], 'De Morgan');
+  var leftOperand = xFormula.leftOperand;
+  if (leftOperand is! Not) {
+    return mismatch('De Morgan', '<~x∧~y>', xFormula);
+  }
+  var rightOperand = xFormula.rightOperand;
+  if (rightOperand is! Not) {
+    return mismatch('De Morgan', '<~x∧~y>', xFormula);
+  }
+  return Theorem._(x.assumptions,
+      Not(Or(leftOperand.operand, rightOperand.operand)), [x], 'De Morgan');
 }
 
 Theorem? detachment(Theorem x, Theorem xImpliesY) {
@@ -116,6 +104,22 @@ Theorem? reverseContrapositive(Theorem x) {
       Implies(rightOperand.operand, leftOperand.operand),
       [x],
       'contrapositive');
+}
+
+Theorem? reverseDeMorgan(Theorem x) {
+  var xFormula = x.formula;
+  if (xFormula is! Not) {
+    return mismatch('reverse De Morgan', '~<x∨y>', xFormula);
+  }
+  var operand = xFormula.operand;
+  if (operand is! Or) {
+    return mismatch('reverse De Morgan', '~<x∨y>', xFormula);
+  }
+  return Theorem._(
+      x.assumptions,
+      And(Not(operand.leftOperand), Not(operand.rightOperand)),
+      [x],
+      'De Morgan');
 }
 
 Theorem? reverseSwitcheroo(Theorem x) {
@@ -235,7 +239,7 @@ class Theorem {
       assumptionsList.add(assumptions.formula);
       assumptions = assumptions.outerAssumptions;
     }
-    if (assumptionsList != null) {
+    if (assumptionsList.isNotEmpty) {
       buffer.write('${assumptionsList.reversed.join(', ')} ');
     }
     buffer.write('|- ');

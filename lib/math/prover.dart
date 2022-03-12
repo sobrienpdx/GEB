@@ -3,7 +3,11 @@ import 'kernel.dart';
 
 const ContinuationStrategy detach = const Detach();
 
+const Strategy join = const Join();
+
 const ContinuationStrategy rewrite = const ApplyEverywhere(trivialRewrite);
+
+const ContinuationStrategy separate = const Separate();
 
 const ContinuationStrategy trivialRewrite = const TrivialRewrite();
 
@@ -53,6 +57,29 @@ class ApplyEverywhere extends ContinuationStrategy {
       if (q2 == null) return null;
       assert(q2.formula == q2Formula);
       var result = popFantasy(q2)!;
+      return continuation(result);
+    } else if (formula is And && goal is And) {
+      // Given <P1&Q1>, form <P2&Q2> as follows:
+      //   P1       separation
+      //   P2       recursion
+      //   Q1       separation
+      //   Q2       recursion
+      //   <P2&Q2>  joining
+      var p1Formula = formula.leftOperand;
+      var q1Formula = formula.rightOperand;
+      var p2Formula = goal.leftOperand;
+      var q2Formula = goal.rightOperand;
+      var p1 = separation(theorem, Side.left)!;
+      assert(p1.formula == p1Formula);
+      var p2 = _continueFrom(state, p1, p2Formula);
+      if (p2 == null) return null;
+      assert(p2.formula == p2Formula);
+      var q1 = separation(theorem, Side.right)!;
+      assert(q1.formula == q1Formula);
+      var q2 = _continueFrom(state, q1, q2Formula);
+      if (q2 == null) return null;
+      assert(q2.formula == q2Formula);
+      var result = joining(p2, q2)!;
       return continuation(result);
     }
     return fail('rewrite', 'no rule to rewrite $formula to $goal');
@@ -116,6 +143,13 @@ class Fantasy extends Strategy {
   BoundStrategy to(Formula goal) => _BoundFantasy(strategy, goal);
 }
 
+class Join extends Strategy {
+  const Join();
+
+  @override
+  BoundStrategy to(Formula goal) => _BoundJoin(goal);
+}
+
 class NullStrategy extends Strategy {
   const NullStrategy();
 
@@ -159,6 +193,19 @@ class ProverState {
   Theorem? getTheorem(Formula formula) => _formulaToTheorem[formula];
 }
 
+class Separate extends ContinuationStrategy {
+  const Separate();
+
+  @override
+  Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
+    var result = separation(theorem, Side.left);
+    if (result != null && result.formula == goal) return result;
+    result = separation(theorem, Side.right);
+    if (result != null && result.formula == goal) return result;
+    return null;
+  }
+}
+
 abstract class Strategy {
   const Strategy();
 
@@ -174,7 +221,9 @@ class TrivialRewrite extends ContinuationStrategy {
       switcheroo,
       reverseSwitcheroo,
       contrapositive,
-      reverseContrapositive
+      reverseContrapositive,
+      deMorgan,
+      reverseDeMorgan,
     ];
     for (var rule in rules) {
       var result = rule(theorem);
@@ -202,6 +251,25 @@ class _BoundFantasy extends BoundStrategy {
     if (conclusion != null) {
       state.addTheorem(popFantasy(conclusion)!);
     }
+  }
+}
+
+class _BoundJoin extends BoundStrategy {
+  final Formula goal;
+
+  _BoundJoin(this.goal);
+
+  @override
+  void run(ProverState state) {
+    var goal = this.goal;
+    if (goal is! And) return null;
+    var x = state.getTheorem(goal.leftOperand);
+    if (x == null) return null;
+    var y = state.getTheorem(goal.rightOperand);
+    if (y == null) return null;
+    var theorem = joining(x, y);
+    if (theorem == null) return null;
+    state.addTheorem(theorem);
   }
 }
 
