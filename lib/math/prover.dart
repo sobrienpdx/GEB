@@ -17,6 +17,9 @@ class ApplyEverywhere extends ContinuationStrategy {
   const ApplyEverywhere(this.strategy);
 
   @override
+  String get name => 'ApplyEverywhere(${strategy.name})';
+
+  @override
   Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
     if (theorem.formula == goal) return theorem;
     var result = strategy._continueFrom(state, theorem, goal);
@@ -93,27 +96,35 @@ class BoundContinuationStrategy extends BoundStrategy {
   BoundContinuationStrategy._(this.strategy, this.goal);
 
   @override
-  void run(ProverState state) {
+  String get name => '${strategy.name}.to($goal)';
+
+  @override
+  Theorem? run(ProverState state) {
     for (int i = 0; i < state._theorems.length; i++) {
       var result = strategy._continueFrom(state, state._theorems[i], goal);
       if (result != null) {
         state.addTheorem(result);
-        if (result.formula == goal) return;
+        if (result.formula == goal) return result;
       }
     }
+    return fail('strategy ${strategy.name}', 'Could not prove $goal');
   }
 }
 
 abstract class BoundStrategy {
   const BoundStrategy();
 
-  void run(ProverState state);
+  String get name;
+
+  Theorem? run(ProverState state);
 
   Strategy then(Strategy strategy) => _SequenceStrategy(this, strategy);
 }
 
 abstract class ContinuationStrategy extends Strategy {
   const ContinuationStrategy();
+
+  String get name;
 
   BoundContinuationStrategy to(Formula goal) =>
       BoundContinuationStrategy._(this, goal);
@@ -123,6 +134,9 @@ abstract class ContinuationStrategy extends Strategy {
 
 class Detach extends ContinuationStrategy {
   const Detach();
+
+  @override
+  String get name => 'detach';
 
   @override
   Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
@@ -140,11 +154,17 @@ class Fantasy extends Strategy {
   const Fantasy({this.strategy = const NullStrategy()});
 
   @override
+  String get name => 'Fantasy(${strategy.name})';
+
+  @override
   BoundStrategy to(Formula goal) => _BoundFantasy(strategy, goal);
 }
 
 class Join extends Strategy {
   const Join();
+
+  @override
+  String get name => 'join';
 
   @override
   BoundStrategy to(Formula goal) => _BoundJoin(goal);
@@ -154,7 +174,10 @@ class NullStrategy extends Strategy {
   const NullStrategy();
 
   @override
-  BoundStrategy to(Formula goal) => const _BoundNullStrategy();
+  String get name => 'null';
+
+  @override
+  BoundStrategy to(Formula goal) => _BoundNullStrategy(goal);
 }
 
 class ProverState {
@@ -197,6 +220,9 @@ class Separate extends ContinuationStrategy {
   const Separate();
 
   @override
+  String get name => 'separate';
+
+  @override
   Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
     var result = separation(theorem, Side.left);
     if (result != null && result.formula == goal) return result;
@@ -209,11 +235,16 @@ class Separate extends ContinuationStrategy {
 abstract class Strategy {
   const Strategy();
 
+  String get name;
+
   BoundStrategy to(Formula goal);
 }
 
 class TrivialRewrite extends ContinuationStrategy {
   const TrivialRewrite();
+
+  @override
+  String get name => 'trivialRewrite';
 
   @override
   Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
@@ -241,15 +272,25 @@ class _BoundFantasy extends BoundStrategy {
   _BoundFantasy(this.strategy, this.goal);
 
   @override
-  void run(ProverState state) {
+  String get name => '${strategy.name}.to($goal)';
+
+  @override
+  Theorem? run(ProverState state) {
     var goal = this.goal;
-    if (goal is! Implies) return;
+    if (goal is! Implies) {
+      return fail(
+          'strategy ${strategy.name}', 'goal $goal is not an implication');
+    }
     var premise = assume(state.assumptions, goal.leftOperand);
     var nestedState = ProverState.nest(state, premise);
-    strategy.to(goal.rightOperand).run(nestedState);
-    var conclusion = nestedState.getTheorem(goal.rightOperand);
-    if (conclusion != null) {
-      state.addTheorem(popFantasy(conclusion)!);
+    var theorem = strategy.to(goal.rightOperand).run(nestedState);
+    if (theorem != null) {
+      assert(theorem.formula == goal.rightOperand);
+      var conclusion = popFantasy(theorem)!;
+      state.addTheorem(conclusion);
+      return conclusion;
+    } else {
+      return fail('strategy ${strategy.name}', latestFailureMessage ?? '???');
     }
   }
 }
@@ -260,24 +301,47 @@ class _BoundJoin extends BoundStrategy {
   _BoundJoin(this.goal);
 
   @override
-  void run(ProverState state) {
+  String get name => 'join.to($goal)';
+
+  @override
+  Theorem? run(ProverState state) {
     var goal = this.goal;
-    if (goal is! And) return null;
+    if (goal is! And) {
+      return fail('strategy join', 'goal $goal must be a conjunction');
+    }
     var x = state.getTheorem(goal.leftOperand);
-    if (x == null) return null;
+    if (x == null) {
+      return fail(
+          'strategy join', 'subgoal ${goal.leftOperand} not proved yet');
+    }
     var y = state.getTheorem(goal.rightOperand);
-    if (y == null) return null;
-    var theorem = joining(x, y);
-    if (theorem == null) return null;
+    if (y == null) {
+      return fail(
+          'strategy join', 'subgoal ${goal.rightOperand} not proved yet');
+    }
+    var theorem = joining(x, y)!;
     state.addTheorem(theorem);
+    return theorem;
   }
 }
 
 class _BoundNullStrategy extends BoundStrategy {
-  const _BoundNullStrategy();
+  final Formula goal;
+
+  _BoundNullStrategy(this.goal);
 
   @override
-  void run(ProverState state) {}
+  String get name => 'null.to($goal)';
+
+  @override
+  Theorem? run(ProverState state) {
+    var theorem = state.getTheorem(goal);
+    if (theorem != null) {
+      return theorem;
+    } else {
+      return fail('null strategy', 'goal $goal not yet proved');
+    }
+  }
 }
 
 class _BoundSequenceStrategy extends BoundStrategy {
@@ -287,9 +351,13 @@ class _BoundSequenceStrategy extends BoundStrategy {
   _BoundSequenceStrategy(this.first, this.second);
 
   @override
-  void run(ProverState state) {
-    first.run(state);
-    second.run(state);
+  String get name => '$first >> $second';
+
+  @override
+  Theorem? run(ProverState state) {
+    var p = first.run(state);
+    if (p == null) return null;
+    return second.run(state);
   }
 }
 
@@ -298,6 +366,9 @@ class _SequenceStrategy extends Strategy {
   final Strategy second;
 
   _SequenceStrategy(this.first, this.second);
+
+  @override
+  String get name => '${first.name}.then(${second.name})';
 
   @override
   BoundStrategy to(Formula goal) =>

@@ -92,12 +92,12 @@ final List<ChallengeSet> challengeSets = [
         initialLines: [Formula('<P|Q>'), Formula('<~R->~P>')],
         strategy: ApplyEverywhere(detach),
         requiredRules: {'detachment', 'fantasy', 'carry over', 'switcheroo'}),
-    Challenge(Formula("<<P'->Q>->R>"), 17,
-        initialLines: [Formula('<<P->Q>->R>'), Formula("<P->P'>")],
-        strategy: ApplyEverywhere(detach),
-        requiredRules: {'detachment', 'fantasy', 'carry over'}),
     Challenge(Formula("<P-><Q->R'>>"), 17,
         initialLines: [Formula('<P-><Q->R>>'), Formula("<R->R'>")],
+        strategy: ApplyEverywhere(detach),
+        requiredRules: {'detachment', 'fantasy', 'carry over'}),
+    Challenge(Formula("<<P'->Q>->R>"), 17,
+        initialLines: [Formula('<<P->Q>->R>'), Formula("<P->P'>")],
         strategy: ApplyEverywhere(detach),
         requiredRules: {'detachment', 'fantasy', 'carry over'}),
   ]),
@@ -204,6 +204,10 @@ final List<ChallengeSet> challengeSets = [
             .to(Formula('Q'))
             .then(join),
         requiredRules: {'joining', 'separation', 'detachment'}),
+    Challenge(Formula('R'), 5,
+        initialLines: [Formula('P'), Formula('Q'), Formula('<<P&Q>->R>')],
+        strategy: join.to(Formula('<P&Q>')).then(detach),
+        requiredRules: {'joining', 'detachment'}),
     Challenge(Formula("<<~P->~Q>&<R|R'>>"), 6, initialLines: [
       Formula("<<Q->P>&<~R->R'>>")
     ], requiredRules: {
@@ -213,11 +217,6 @@ final List<ChallengeSet> challengeSets = [
       'contrapositive'
     }),
     Challenge(Formula('<<P-><Q&R>>-><P->Q>>'), 11,
-        strategy: Fantasy(
-            strategy:
-                Fantasy(strategy: detach.to(Formula('<Q&R>')).then(separate))),
-        requiredRules: {'detachment', 'separation', 'fantasy', 'carry over'}),
-    Challenge(Formula('<<P-><Q&R>>-><P->R>>'), 11,
         strategy: Fantasy(
             strategy:
                 Fantasy(strategy: detach.to(Formula('<Q&R>')).then(separate))),
@@ -241,20 +240,53 @@ final List<ChallengeSet> challengeSets = [
           'fantasy',
           'carry over'
         }),
+    Challenge(Formula('<P-><Q&R>>'), 12,
+        initialLines: [Formula('<<P->Q>&<P->R>>')],
+        strategy: separate
+            .to(Formula('<P->Q>'))
+            .then(separate)
+            .to(Formula('<P->R>'))
+            .then(Fantasy(
+                strategy: detach
+                    .to(Formula('Q'))
+                    .then(detach)
+                    .to(Formula('R'))
+                    .then(join))),
+        requiredRules: {
+          'fantasy',
+          'carry over',
+          'separation',
+          'joining',
+          'detachment'
+        }),
+    Challenge(Formula('<<P->Q>&<P->R>>'), 16,
+        initialLines: [Formula('<P-><Q&R>>')],
+        strategy: Fantasy(strategy: detach.to(Formula('<Q&R>')).then(separate))
+            .to(Formula('<P->Q>'))
+            .then(Fantasy(strategy: detach.to(Formula('<Q&R>')).then(separate)))
+            .to(Formula('<P->R>'))
+            .then(join),
+        requiredRules: {
+          'fantasy',
+          'carry over',
+          'separation',
+          'joining',
+          'detachment'
+        }),
   ]),
   ChallengeSet('De Morgan', [
     Challenge(Formula('~<P|Q>'), 5, initialLines: [
-      Formula('<~P|~Q>'),
-      Formula('<P&~Q>'),
+      Formula('~<~P|~Q>'),
+      Formula('<~~P&~Q>'),
       Formula('<~P&~Q>'),
-      Formula('<P->~Q>')
+      Formula('~<P|~Q>')
     ], requiredRules: {
       'De Morgan'
     }),
     Challenge(Formula('<~P&~Q>'), 5, initialLines: [
-      Formula('<P|Q>'),
-      Formula('~<P&Q>'),
-      Formula('<~P->Q>'),
+      Formula('~<~P|~Q>'),
+      Formula('<~P&~~Q>'),
+      Formula('<~~P&Q>'),
       Formula('~<P|Q>')
     ], requiredRules: {
       'De Morgan'
@@ -268,16 +300,6 @@ final List<ChallengeSet> challengeSets = [
         ],
         strategy: join.to(Formula('<~P&~Q>')).then(trivialRewrite),
         requiredRules: {'De Morgan', 'joining'}),
-    Challenge(Formula('R'), 5,
-        initialLines: [Formula('P'), Formula('Q'), Formula('<<P&Q>->R>')],
-        strategy: join.to(Formula('<P&Q>')).then(detach),
-        requiredRules: {'joining', 'detachment'}),
-  ]),
-  ChallengeSet('Joining', [
-    Challenge(Formula('<<<P->Q>&<P->R>>-><P-><Q&R>>>'), 14,
-        verified: false, requiredRules: {}),
-    Challenge(Formula('<<P-><Q&R>>-><<P->Q>&<P->R>>>'), 19,
-        verified: false, requiredRules: {}),
   ]),
   ChallengeSet('Double Tilde', [
     Challenge(Formula('~<P&~P>'), 15, verified: false, requiredRules: {}),
