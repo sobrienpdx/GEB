@@ -3,18 +3,30 @@ import 'prover.dart';
 
 final List<ChallengeSet> challengeSets = [
   ChallengeSet('Switcheroo', [
-    Challenge(Formula('<~P->Q>'), 2,
-        initialLines: [Formula('<P|Q>')], requiredRules: {'switcheroo'}),
-    Challenge(Formula('<~a=b->a=c>'), 2,
-        initialLines: [Formula('<a=b|a=c>')], requiredRules: {'switcheroo'}),
-    Challenge(Formula('<~P->~P>'), 2,
-        initialLines: [Formula('<P|~P>')], requiredRules: {'switcheroo'}),
-    Challenge(Formula('<P|Q>'), 2,
-        initialLines: [Formula('<~P->Q>')], requiredRules: {'switcheroo'}),
-    Challenge(Formula('<a=b|a=c>'), 2,
-        initialLines: [Formula('<~a=b->a=c>')], requiredRules: {'switcheroo'}),
-    Challenge(Formula('<P|~P>'), 2,
-        initialLines: [Formula('<~P->~P>')], requiredRules: {'switcheroo'}),
+    Challenge(Formula('<~P->Q>'), 4,
+        initialLines: [Formula('<P&Q>'), Formula('<P|Q>'), Formula('<P->Q>')],
+        requiredRules: {'switcheroo'}),
+    Challenge(Formula('<~a=b->a=c>'), 3,
+        initialLines: [Formula('<a=b|a=c>'), Formula('~<a=b|a=c>')],
+        requiredRules: {'switcheroo'}),
+    Challenge(Formula('<~P->~P>'), 4,
+        initialLines: [Formula('<~P|P>'), Formula('<P|P>'), Formula('<P|~P>')],
+        requiredRules: {'switcheroo'}),
+    Challenge(Formula('<P|Q>'), 4, initialLines: [
+      Formula('<~P->Q>'),
+      Formula('<P->Q>'),
+      Formula('<P->~Q>')
+    ], requiredRules: {
+      'switcheroo'
+    }),
+    Challenge(Formula('<P|~P>'), 5, initialLines: [
+      Formula('<P->P>'),
+      Formula('<P->~P>'),
+      Formula('<~P->P>'),
+      Formula('<~P->~P>')
+    ], requiredRules: {
+      'switcheroo'
+    }),
   ]),
   ChallengeSet('Fantasy, carry over', [
     Challenge(Formula('<P->P>'), 4,
