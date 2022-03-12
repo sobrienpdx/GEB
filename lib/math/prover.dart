@@ -1,6 +1,8 @@
 import 'ast.dart';
 import 'kernel.dart';
 
+const ContinuationStrategy detach = const Detach();
+
 const ContinuationStrategy rewrite = const ApplyEverywhere(trivialRewrite);
 
 const ContinuationStrategy trivialRewrite = const TrivialRewrite();
@@ -12,6 +14,7 @@ class ApplyEverywhere extends ContinuationStrategy {
 
   @override
   Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
+    if (theorem.formula == goal) return theorem;
     var result = strategy._continueFrom(state, theorem, goal);
     if (result != null) {
       assert(result.formula == goal);
@@ -20,6 +23,7 @@ class ApplyEverywhere extends ContinuationStrategy {
     Theorem Function(Theorem) continuation;
     if (theorem.formula is Or && goal is Or) {
       theorem = switcheroo(theorem)!;
+      goal = switcheroo(assume(null, goal))!.formula;
       continuation = (theorem) => reverseSwitcheroo(theorem)!;
     } else {
       continuation = (theorem) => theorem;
@@ -39,12 +43,13 @@ class ApplyEverywhere extends ContinuationStrategy {
       var p2Formula = goal.leftOperand;
       var q2Formula = goal.rightOperand;
       var p2 = assume(theorem.assumptions, p2Formula);
-      var p1 = _continueFrom(state, p2, p1Formula);
+      var nestedState = ProverState.nest(state, p2);
+      var p1 = _continueFrom(nestedState, p2, p1Formula);
       if (p1 == null) return null;
       assert(p1.formula == p1Formula);
-      var q1 = detachment(p1, theorem)!;
+      var q1 = detachment(p1, carryOver(p2.assumptions!, theorem)!)!;
       assert(q1.formula == q1Formula);
-      var q2 = _continueFrom(state, q1, q2Formula);
+      var q2 = _continueFrom(nestedState, q1, q2Formula);
       if (q2 == null) return null;
       assert(q2.formula == q2Formula);
       var result = popFantasy(q2)!;
@@ -87,6 +92,19 @@ abstract class ContinuationStrategy extends Strategy {
       BoundContinuationStrategy._(this, goal);
 
   Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal);
+}
+
+class Detach extends ContinuationStrategy {
+  const Detach();
+
+  @override
+  Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
+    for (var implication in state._theorems) {
+      var result = detachment(theorem, implication);
+      if (result != null && result.formula == goal) return result;
+    }
+    return null;
+  }
 }
 
 class Fantasy extends Strategy {

@@ -4,7 +4,7 @@ String? latestFailureMessage;
 
 Theorem assume(Assumption? outerAssumptions, Formula formula) {
   var assumption = Assumption(outerAssumptions, formula);
-  var theorem = Theorem._(assumption, formula, [], 'assume');
+  var theorem = Theorem._(assumption, formula, [], 'premise');
   assumption.asTheorem = theorem;
   return theorem;
 }
@@ -177,7 +177,7 @@ class PopFantasyTheorem extends Theorem {
             premise.outerAssumptions,
             formula,
             _computePrerequisites(premise.outerAssumptions, conclusion),
-            'pop fantasy');
+            'conclusion');
 
   static List<Theorem> _computePrerequisites(
       Assumption? outerAssumptions, Theorem conclusion) {
@@ -214,5 +214,22 @@ class Theorem {
 
   Iterable<Theorem> get prerequisites sync* {
     yield* _prerequisites;
+  }
+
+  @override
+  String toString() {
+    var buffer = StringBuffer();
+    List<Formula> assumptionsList = [];
+    var assumptions = this.assumptions;
+    while (assumptions != null) {
+      assumptionsList.add(assumptions.formula);
+      assumptions = assumptions.outerAssumptions;
+    }
+    if (assumptionsList != null) {
+      buffer.write('${assumptionsList.reversed.join(', ')} ');
+    }
+    buffer.write('|- ');
+    buffer.write(formula);
+    return buffer.toString();
   }
 }

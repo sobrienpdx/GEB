@@ -11,11 +11,11 @@ main() {
           if (challenge.verified) {
             test('$challenge', () {
               checkProof(challenge);
-            });
+            }, solo: challenge.solo); // ignore: deprecated_member_use
           } else {
             test('$challenge (expected to fail)', () {
               expect(() => checkProof(challenge), throwsA(anything));
-            });
+            }, solo: challenge.solo); // ignore: deprecated_member_use
           }
         }
       });
@@ -35,8 +35,8 @@ void checkProof(Challenge challenge) {
   var lines = <String>[for (var theorem in givens) theorem.toProofLine()];
   var seenTheorems = {...givens};
   _toProofLines(result, lines, seenTheorems);
-  expect(lines, hasLength(challenge.goalStepCount));
   print(lines.join('\n'));
+  expect(lines, hasLength(challenge.goalStepCount));
 }
 
 void _toProofLines(
@@ -46,11 +46,11 @@ void _toProofLines(
     _toProofLines(prerequisite, lines, seenTheorems);
   }
   if (theorem is PopFantasyTheorem) {
-    lines.add('[');
+    lines.add('[\tpush fantasy');
     var premise = theorem.premise.asTheorem;
     lines.add(premise.toProofLine());
     _toProofLines(theorem.conclusion, lines, {premise});
-    lines.add(']');
+    lines.add(']\tpop fantasy');
   }
   lines.add(theorem.toProofLine());
 }

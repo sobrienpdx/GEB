@@ -27,6 +27,25 @@ final List<ChallengeSet> challengeSets = [
     Challenge(Formula('<P|~P>'), 5,
         strategy: Fantasy().to(Formula('<~P->~P>')).then(rewrite)),
   ]),
+  ChallengeSet('Detachment', [
+    Challenge(Formula('Q'), 3,
+        initialLines: [Formula('P'), Formula('<P->Q>')], strategy: detach),
+    Challenge(Formula('<R->Q>'), 10,
+        initialLines: [Formula('<P->Q>'), Formula('<R->P>')],
+        strategy: ApplyEverywhere(detach)),
+    Challenge(Formula('<P->R>'), 10,
+        initialLines: [Formula('<P->Q>'), Formula('<Q->R>')],
+        strategy: ApplyEverywhere(detach)),
+    Challenge(Formula('<P|R>'), 12,
+        initialLines: [Formula('<P|Q>'), Formula('<Q->R>')],
+        strategy: ApplyEverywhere(detach)),
+    Challenge(Formula("<<P'->Q>->R>"), 17,
+        initialLines: [Formula('<<P->Q>->R>'), Formula("<P->P'>")],
+        strategy: ApplyEverywhere(detach)),
+    Challenge(Formula("<P-><Q->R'>>"), 17,
+        initialLines: [Formula('<P-><Q->R>>'), Formula("<R->R'>")],
+        strategy: ApplyEverywhere(detach)),
+  ]),
   ChallengeSet('Contrapositive, De Morgan', [
     Challenge(Formula('<<P|Q>->~<~P&~Q>>'), 6, verified: false),
     Challenge(Formula('<~<~P&~Q>-><P|Q>>'), 6, verified: false),
@@ -67,10 +86,13 @@ class Challenge {
 
   final Strategy strategy;
 
+  final bool solo;
+
   Challenge(this.goal, this.goalStepCount,
       {this.initialLines = const [],
       this.verified = true,
-      this.strategy = rewrite});
+      this.strategy = rewrite,
+      @deprecated this.solo = false});
 
   String toString() {
     var s = goalStepCount == 1 ? '' : 's';
