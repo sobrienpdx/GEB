@@ -26,8 +26,8 @@ main() {
       expect(state.isPremiseExpected, true);
       state.addDerivationLine(PushFantasy());
       expect(state.isPremiseExpected, true);
-      state.challenge =
-          Challenge(Formula('<~P->Q>'), 2, initialLines: [Formula('<P|Q>')]);
+      state.challenge = Challenge(Formula('<~P->Q>'), 2,
+          initialLines: [Formula('<P|Q>')], requiredRules: {'switcheroo'});
       expect(state.isPremiseExpected, false);
       state.addDerivationLine(PushFantasy());
       expect(state.isPremiseExpected, true);
@@ -38,8 +38,8 @@ main() {
       expect(state.isPremiseExpected, false);
       state.addDerivationLine(PushFantasy());
       expect(state.isPremiseExpected, true);
-      state.challenge =
-          Challenge(Formula('<~P->Q>'), 2, initialLines: [Formula('<P|Q>')]);
+      state.challenge = Challenge(Formula('<~P->Q>'), 2,
+          initialLines: [Formula('<P|Q>')], requiredRules: {'switcheroo'});
       expect(state.isPremiseExpected, false);
       state.addDerivationLine(PushFantasy());
       expect(state.isPremiseExpected, true);
@@ -53,22 +53,24 @@ main() {
         0: star
       }).showsMessage('Select a region for double tilde'));
       check(setChallenge(Challenge(Formula('<~P->Q>'), 2,
-              initialLines: [Formula('<P|Q>')]))
-          .setsLinesTo(['<P|Q>']).isQuiescent());
+          initialLines: [Formula('<P|Q>')],
+          requiredRules: {'switcheroo'})).setsLinesTo(['<P|Q>']).isQuiescent());
     });
   });
 
   group('onGoalSatisfied:', () {
     test('not completed by a premise', () {
       check(setChallenge(Challenge(Formula('<~P->Q>'), 2,
-          initialLines: [Formula('<P|Q>')])).mayAddLines());
+          initialLines: [Formula('<P|Q>')],
+          requiredRules: {'switcheroo'})).mayAddLines());
       check(rule(pushFantasyRule).addsLines(['[']));
       check(addLine('<~P->Q>'));
     });
 
     test('not completed inside a fantasy', () {
       check(setChallenge(Challenge(Formula('<~P->Q>'), 2,
-          initialLines: [Formula('<P|Q>')])).mayAddLines());
+          initialLines: [Formula('<P|Q>')],
+          requiredRules: {'switcheroo'})).mayAddLines());
       check(rule(pushFantasyRule).addsLines(['[']));
       check(addLine('<P|Q>'));
       check(rule(switcherooRule));
@@ -77,7 +79,8 @@ main() {
 
     test('completed outside a fantasy', () {
       check(setChallenge(Challenge(Formula('<~P->Q>'), 2,
-          initialLines: [Formula('<P|Q>')])).mayAddLines());
+          initialLines: [Formula('<P|Q>')],
+          requiredRules: {'switcheroo'})).mayAddLines());
       check(rule(switcherooRule));
       check(select(0, '<P|Q>').addsLines(['<~P->Q>']).satisfiesGoal(1));
     });

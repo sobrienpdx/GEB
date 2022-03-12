@@ -34,25 +34,31 @@ void checkProof(Challenge challenge) {
   if (result == null) throw 'TODO(paul)';
   var lines = <String>[for (var theorem in givens) theorem.toProofLine()];
   var seenTheorems = {...givens};
-  _toProofLines(result, lines, seenTheorems);
+  Set<String> requiredRules = {};
+  _toProofLines(result, lines, seenTheorems, requiredRules);
   print(lines.join('\n'));
   expect(lines, hasLength(challenge.goalStepCount));
+  expect(requiredRules, challenge.requiredRules);
 }
 
-void _toProofLines(
-    Theorem theorem, List<String> lines, Set<Theorem> seenTheorems) {
+void _toProofLines(Theorem theorem, List<String> lines,
+    Set<Theorem> seenTheorems, Set<String> requiredRules) {
   if (!seenTheorems.add(theorem)) return;
   for (var prerequisite in theorem.prerequisites) {
-    _toProofLines(prerequisite, lines, seenTheorems);
+    _toProofLines(prerequisite, lines, seenTheorems, requiredRules);
   }
   if (theorem is PopFantasyTheorem) {
     lines.add('[\tpush fantasy');
     var premise = theorem.premise.asTheorem;
     lines.add(premise.toProofLine());
-    _toProofLines(theorem.conclusion, lines, {premise});
+    _toProofLines(theorem.conclusion, lines, {premise}, requiredRules);
     lines.add(']\tpop fantasy');
+    lines.add(theorem.toProofLine());
+    requiredRules.add('fantasy');
+  } else {
+    lines.add(theorem.toProofLine());
+    requiredRules.add(theorem.explanation);
   }
-  lines.add(theorem.toProofLine());
 }
 
 extension _ on Theorem {

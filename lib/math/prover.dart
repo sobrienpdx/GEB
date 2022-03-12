@@ -130,10 +130,15 @@ class ProverState {
 
   final Assumption? assumptions;
 
-  ProverState() : assumptions = null;
+  final Set<String> requiredInsight;
+
+  ProverState()
+      : assumptions = null,
+        requiredInsight = {};
 
   ProverState.nest(ProverState outerState, Theorem premise)
-      : assumptions = premise.assumptions {
+      : assumptions = premise.assumptions,
+        requiredInsight = outerState.requiredInsight {
     addTheorem(premise);
     for (var theorem in outerState._theorems) {
       addTheorem(carryOver(premise.assumptions!, theorem)!);
