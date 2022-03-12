@@ -108,6 +108,19 @@ Theorem? popFantasy(Theorem conclusion) {
       Implies(conclusionAssumptions.formula, conclusion.formula), conclusion);
 }
 
+Theorem? reverseSwitcheroo(Theorem x) {
+  var xFormula = x.formula;
+  if (xFormula is! Implies) {
+    return mismatch('reverse switcheroo', '<~x⊃y>', xFormula);
+  }
+  var leftOperand = xFormula.leftOperand;
+  if (leftOperand is! Not) {
+    return mismatch('reverse switcheroo', '<~x⊃y>', xFormula);
+  }
+  return Theorem._(x.assumptions,
+      Or(leftOperand.operand, xFormula.rightOperand), [x], 'switcheroo');
+}
+
 Theorem? separation(Theorem x, Side side) {
   var xFormula = x.formula;
   if (xFormula is! And) {
@@ -125,26 +138,16 @@ Theorem? separation(Theorem x, Side side) {
   return Theorem._(x.assumptions, formula, [x], 'separation');
 }
 
-Theorem? switcheroo(Theorem x, {required bool reversed}) {
+Theorem? switcheroo(Theorem x) {
   var xFormula = x.formula;
-  Formula formula;
-  if (reversed) {
-    if (xFormula is! Implies) {
-      return mismatch('reverse switcheroo', '<~x⊃y>', xFormula);
-    }
-    var leftOperand = xFormula.leftOperand;
-    if (leftOperand is! Not) {
-      return mismatch('reverse switcheroo', '<~x⊃y>', xFormula);
-    }
-    var rightOperand = xFormula.rightOperand;
-    formula = Or(leftOperand.operand, rightOperand);
-  } else {
-    if (xFormula is! Or) {
-      return mismatch('switcheroo', '<x∨y>', xFormula);
-    }
-    formula = Implies(Not(xFormula.leftOperand), xFormula.rightOperand);
+  if (xFormula is! Or) {
+    return mismatch('switcheroo', '<x∨y>', xFormula);
   }
-  return Theorem._(x.assumptions, formula, [x], 'switcheroo');
+  return Theorem._(
+      x.assumptions,
+      Implies(Not(xFormula.leftOperand), xFormula.rightOperand),
+      [x],
+      'switcheroo');
 }
 
 class Assumption {

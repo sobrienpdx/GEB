@@ -1,61 +1,69 @@
 import 'ast.dart';
 import 'kernel.dart';
 
-Theorem? _rewrite(Theorem x, Formula goal) {
-  {
-    var result = _trivialRewrite(x, goal);
-    if (result != null) return result;
-  }
-  if (x.formula is Or) {
-    x = switcheroo(x, reversed: false)!;
-  }
-  Theorem Function(Theorem) continuation;
-  if (goal is Or) {
-    goal = switcheroo(assume(null, goal), reversed: false)!.formula;
-    continuation = (theorem) => switcheroo(theorem, reversed: true)!;
-  } else {
-    continuation = (theorem) => theorem;
-  }
-  {
-    var result = _trivialRewrite(x, goal);
-    if (result != null) return continuation(result);
-  }
-  var xFormula = x.formula;
-  if (xFormula is Implies && goal is Implies) {
-    var p1Goal = xFormula.leftOperand;
-    var q1Goal = xFormula.rightOperand;
-    var p2Goal = goal.leftOperand;
-    var q2Goal = goal.rightOperand;
-    var p2 = assume(x.assumptions, p2Goal);
-    var p1 = _rewrite(p2, p1Goal);
-    if (p1 == null) return null;
-    var q1 = detachment(p1, x);
-    if (q1 == null) return null;
-    assert(q1.formula == q1Goal);
-    var q2 = _rewrite(q1, q2Goal);
-    if (q2 == null) return null;
-    var result = popFantasy(q2);
-    if (result == null) return null;
-    return continuation(result);
-  }
-  return fail('rewrite', 'no rule to rewrite $xFormula to $goal');
-}
+const ContinuationStrategy rewrite = const ApplyEverywhere(trivialRewrite);
 
-Theorem? _trivialRewrite(Theorem x, Formula goal) {
-  if (x.formula == goal) return x;
-  // TODO(paul): trivial rewrites with double tilde
-  return null;
-}
+const ContinuationStrategy trivialRewrite = const TrivialRewrite();
 
-abstract class ContinuationStrategy extends Strategy {
-  const ContinuationStrategy();
+class ApplyEverywhere extends ContinuationStrategy {
+  final ContinuationStrategy strategy;
 
-  Theorem? continueFrom(ProverState state, Theorem theorem, Formula goal);
+  const ApplyEverywhere(this.strategy);
 
   @override
-  void run(ProverState state, Formula goal) {
+  Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
+    var result = strategy._continueFrom(state, theorem, goal);
+    if (result != null) {
+      assert(result.formula == goal);
+      return result;
+    }
+    Theorem Function(Theorem) continuation;
+    if (theorem.formula is Or && goal is Or) {
+      theorem = switcheroo(theorem)!;
+      continuation = (theorem) => reverseSwitcheroo(theorem)!;
+    } else {
+      continuation = (theorem) => theorem;
+    }
+    var formula = theorem.formula;
+    if (formula is Implies && goal is Implies) {
+      // Given <P1->Q1>, form <P2->Q2> as follows:
+      //   [         push fantasy
+      //     P2      premise
+      //     P1      recursion
+      //     Q1      detachment
+      //     Q2      recursion
+      //   ]         pop fantasy
+      //   <P2->Q2>  conclusion
+      var p1Formula = formula.leftOperand;
+      var q1Formula = formula.rightOperand;
+      var p2Formula = goal.leftOperand;
+      var q2Formula = goal.rightOperand;
+      var p2 = assume(theorem.assumptions, p2Formula);
+      var p1 = _continueFrom(state, p2, p1Formula);
+      if (p1 == null) return null;
+      assert(p1.formula == p1Formula);
+      var q1 = detachment(p1, theorem)!;
+      assert(q1.formula == q1Formula);
+      var q2 = _continueFrom(state, q1, q2Formula);
+      if (q2 == null) return null;
+      assert(q2.formula == q2Formula);
+      var result = popFantasy(q2)!;
+      return continuation(result);
+    }
+    return fail('rewrite', 'no rule to rewrite $formula to $goal');
+  }
+}
+
+class BoundContinuationStrategy extends BoundStrategy {
+  final ContinuationStrategy strategy;
+  final Formula goal;
+
+  BoundContinuationStrategy._(this.strategy, this.goal);
+
+  @override
+  void run(ProverState state) {
     for (int i = 0; i < state._theorems.length; i++) {
-      var result = continueFrom(state, state._theorems[i], goal);
+      var result = strategy._continueFrom(state, state._theorems[i], goal);
       if (result != null) {
         state.addTheorem(result);
         if (result.formula == goal) return;
@@ -64,29 +72,37 @@ abstract class ContinuationStrategy extends Strategy {
   }
 }
 
+abstract class BoundStrategy {
+  const BoundStrategy();
+
+  void run(ProverState state);
+
+  Strategy then(Strategy strategy) => _SequenceStrategy(this, strategy);
+}
+
+abstract class ContinuationStrategy extends Strategy {
+  const ContinuationStrategy();
+
+  BoundContinuationStrategy to(Formula goal) =>
+      BoundContinuationStrategy._(this, goal);
+
+  Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal);
+}
+
 class Fantasy extends Strategy {
   final Strategy strategy;
 
   const Fantasy({this.strategy = const NullStrategy()});
 
   @override
-  void run(ProverState state, Formula goal) {
-    if (goal is! Implies) return;
-    var premise = assume(state.assumptions, goal.leftOperand);
-    var nestedState = ProverState.nest(state, premise);
-    strategy.thenRewrite().run(nestedState, goal.rightOperand);
-    var conclusion = nestedState.getTheorem(goal.rightOperand);
-    if (conclusion != null) {
-      state.addTheorem(popFantasy(conclusion)!);
-    }
-  }
+  BoundStrategy to(Formula goal) => _BoundFantasy(strategy, goal);
 }
 
 class NullStrategy extends Strategy {
   const NullStrategy();
 
   @override
-  void run(ProverState state, Formula goal) {}
+  BoundStrategy to(Formula goal) => const _BoundNullStrategy();
 }
 
 class ProverState {
@@ -123,40 +139,71 @@ class ProverState {
 abstract class Strategy {
   const Strategy();
 
-  void run(ProverState state, Formula goal);
-
-  Strategy thenRewrite() => _SequenceStrategy(this, const _RewriteStrategy());
+  BoundStrategy to(Formula goal);
 }
 
-class SubGoal extends Strategy {
-  final Formula subGoal;
-
-  final Strategy strategy;
-
-  SubGoal(this.subGoal, {this.strategy = const NullStrategy()});
+class TrivialRewrite extends ContinuationStrategy {
+  const TrivialRewrite();
 
   @override
-  void run(ProverState state, Formula goal) {
-    strategy.thenRewrite().run(state, subGoal);
+  Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
+    const rules = [switcheroo, reverseSwitcheroo];
+    for (var rule in rules) {
+      var result = rule(theorem);
+      if (result != null && result.formula == goal) return result;
+    }
+    return null;
   }
 }
 
-class _RewriteStrategy extends ContinuationStrategy {
-  const _RewriteStrategy();
+class _BoundFantasy extends BoundStrategy {
+  final Strategy strategy;
+
+  final Formula goal;
+
+  _BoundFantasy(this.strategy, this.goal);
 
   @override
-  Theorem? continueFrom(ProverState state, Theorem theorem, Formula goal) =>
-      _rewrite(theorem, goal);
+  void run(ProverState state) {
+    var goal = this.goal;
+    if (goal is! Implies) return;
+    var premise = assume(state.assumptions, goal.leftOperand);
+    var nestedState = ProverState.nest(state, premise);
+    strategy.to(goal.rightOperand).run(nestedState);
+    var conclusion = nestedState.getTheorem(goal.rightOperand);
+    if (conclusion != null) {
+      state.addTheorem(popFantasy(conclusion)!);
+    }
+  }
+}
+
+class _BoundNullStrategy extends BoundStrategy {
+  const _BoundNullStrategy();
+
+  @override
+  void run(ProverState state) {}
+}
+
+class _BoundSequenceStrategy extends BoundStrategy {
+  final BoundStrategy first;
+  final BoundStrategy second;
+
+  _BoundSequenceStrategy(this.first, this.second);
+
+  @override
+  void run(ProverState state) {
+    first.run(state);
+    second.run(state);
+  }
 }
 
 class _SequenceStrategy extends Strategy {
-  final Strategy first;
-  final ContinuationStrategy second;
+  final BoundStrategy first;
+  final Strategy second;
 
-  const _SequenceStrategy(this.first, this.second);
+  _SequenceStrategy(this.first, this.second);
 
-  void run(ProverState state, Formula goal) {
-    first.run(state, goal);
-    second.run(state, goal);
-  }
+  @override
+  BoundStrategy to(Formula goal) =>
+      _BoundSequenceStrategy(first, second.to(goal));
 }

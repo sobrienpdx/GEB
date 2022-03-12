@@ -29,8 +29,7 @@ void checkProof(Challenge challenge) {
   for (var theorem in givens) {
     proverState.addTheorem(theorem);
   }
-  var strategy = challenge.strategy.thenRewrite();
-  strategy.run(proverState, challenge.goal);
+  challenge.strategy.to(challenge.goal).run(proverState);
   var result = proverState.getTheorem(challenge.goal);
   if (result == null) throw 'TODO(paul)';
   var lines = <String>[for (var theorem in givens) theorem.toProofLine()];

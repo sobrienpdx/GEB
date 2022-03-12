@@ -25,7 +25,7 @@ final List<ChallengeSet> challengeSets = [
         strategy: Fantasy(strategy: Fantasy(strategy: Fantasy()))),
     Challenge(Formula('<~Q->~Q>'), 4, strategy: Fantasy()),
     Challenge(Formula('<P|~P>'), 5,
-        strategy: SubGoal(Formula('<~P->~P>'), strategy: Fantasy())),
+        strategy: Fantasy().to(Formula('<~P->~P>')).then(rewrite)),
   ]),
   ChallengeSet('Contrapositive, De Morgan', [
     Challenge(Formula('<<P|Q>->~<~P&~Q>>'), 6, verified: false),
@@ -70,7 +70,7 @@ class Challenge {
   Challenge(this.goal, this.goalStepCount,
       {this.initialLines = const [],
       this.verified = true,
-      this.strategy = const NullStrategy()});
+      this.strategy = rewrite});
 
   String toString() {
     var s = goalStepCount == 1 ? '' : 's';
