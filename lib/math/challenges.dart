@@ -212,6 +212,16 @@ final List<ChallengeSet> challengeSets = [
       'switcheroo',
       'contrapositive'
     }),
+    Challenge(Formula('<<P-><Q&R>>-><P->Q>>'), 11,
+        strategy: Fantasy(
+            strategy:
+                Fantasy(strategy: detach.to(Formula('<Q&R>')).then(separate))),
+        requiredRules: {'detachment', 'separation', 'fantasy', 'carry over'}),
+    Challenge(Formula('<<P-><Q&R>>-><P->R>>'), 11,
+        strategy: Fantasy(
+            strategy:
+                Fantasy(strategy: detach.to(Formula('<Q&R>')).then(separate))),
+        requiredRules: {'detachment', 'separation', 'fantasy', 'carry over'}),
     Challenge(Formula('<P->R>'), 13,
         initialLines: [Formula("<P-><Q&Q'>>"), Formula("<<Q'&Q>->R>")],
         strategy: Fantasy(
@@ -262,18 +272,6 @@ final List<ChallengeSet> challengeSets = [
         initialLines: [Formula('P'), Formula('Q'), Formula('<<P&Q>->R>')],
         strategy: join.to(Formula('<P&Q>')).then(detach),
         requiredRules: {'joining', 'detachment'}),
-  ]),
-  ChallengeSet('Contrapositive, De Morgan', [
-    Challenge(Formula('<<P|Q>->~<~P&~Q>>'), 6,
-        verified: false, requiredRules: {}),
-    Challenge(Formula('<~<~P&~Q>-><P|Q>>'), 6,
-        verified: false, requiredRules: {}),
-  ]),
-  ChallengeSet('Detachment, separation', [
-    Challenge(Formula('<<P-><Q&R>>-><P->Q>>'), 11,
-        verified: false, requiredRules: {}),
-    Challenge(Formula('<<P-><Q&R>>-><P->R>>'), 11,
-        verified: false, requiredRules: {}),
   ]),
   ChallengeSet('Joining', [
     Challenge(Formula('<<<P->Q>&<P->R>>-><P-><Q&R>>>'), 14,
