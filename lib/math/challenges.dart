@@ -80,6 +80,10 @@ final List<ChallengeSet> challengeSets = [
         initialLines: [Formula('<P|Q>'), Formula('<Q->R>')],
         strategy: ApplyEverywhere(detach),
         requiredRules: {'detachment', 'fantasy', 'carry over', 'switcheroo'}),
+    Challenge(Formula('<R|Q>'), 12,
+        initialLines: [Formula('<P|Q>'), Formula('<~R->~P>')],
+        strategy: ApplyEverywhere(detach),
+        requiredRules: {'detachment', 'fantasy', 'carry over', 'switcheroo'}),
     Challenge(Formula("<<P'->Q>->R>"), 17,
         initialLines: [Formula('<<P->Q>->R>'), Formula("<P->P'>")],
         strategy: ApplyEverywhere(detach),
@@ -88,6 +92,82 @@ final List<ChallengeSet> challengeSets = [
         initialLines: [Formula('<P-><Q->R>>'), Formula("<R->R'>")],
         strategy: ApplyEverywhere(detach),
         requiredRules: {'detachment', 'fantasy', 'carry over'}),
+  ]),
+  ChallengeSet('Contrapositive', [
+    Challenge(Formula('<~Q->~P>'), 6,
+        initialLines: [
+          Formula('<Q->P>'),
+          Formula('<P->Q>'),
+          Formula('<P->~Q>'),
+          Formula('<~P->Q>'),
+          Formula('<~P->~Q>')
+        ],
+        strategy: trivialRewrite,
+        requiredRules: {'contrapositive'}),
+    Challenge(Formula('<~~Q->~P>'), 5,
+        initialLines: [
+          Formula('<P->Q>'),
+          Formula('<P->~Q>'),
+          Formula('<~P->Q>'),
+          Formula('<~P->~Q>')
+        ],
+        strategy: trivialRewrite,
+        requiredRules: {'contrapositive'}),
+    Challenge(Formula('<Q->P>'), 5,
+        initialLines: [
+          Formula('<P->Q>'),
+          Formula('<P->~Q>'),
+          Formula('<~P->Q>'),
+          Formula('<~P->~Q>')
+        ],
+        strategy: trivialRewrite,
+        requiredRules: {'contrapositive'}),
+    Challenge(Formula('<~Q->~~P>'), 5,
+        initialLines: [
+          Formula('<P->Q>'),
+          Formula('<P->~Q>'),
+          Formula('<~P->Q>'),
+          Formula('<~P->~Q>')
+        ],
+        strategy: trivialRewrite,
+        requiredRules: {'contrapositive'}),
+    Challenge(Formula('~P'), 5,
+        initialLines: [Formula('~R'), Formula('<R->P>'), Formula('<P->R>')],
+        strategy: trivialRewrite.to(Formula('<~R->~P>')).then(detach),
+        requiredRules: {'detachment', 'contrapositive'}),
+    Challenge(Formula('~R'), 7,
+        initialLines: [Formula('<Q->P>'), Formula('<R->Q>'), Formula('~P')],
+        strategy: trivialRewrite
+            .to(Formula('<~P->~Q>'))
+            .then(trivialRewrite)
+            .to(Formula('<~Q->~R>'))
+            .then(detach)
+            .to(Formula('~Q'))
+            .then(detach),
+        requiredRules: {'detachment', 'contrapositive'}),
+    Challenge(Formula('<P|R>'), 13,
+        initialLines: [Formula('<P|Q>'), Formula('<~R->~Q>')],
+        strategy:
+            trivialRewrite.to(Formula('<Q->R>')).then(ApplyEverywhere(detach)),
+        requiredRules: {
+          'detachment',
+          'fantasy',
+          'carry over',
+          'switcheroo',
+          'contrapositive'
+        }),
+    Challenge(Formula('<R|Q>'), 13,
+        initialLines: [Formula('<P|Q>'), Formula('<P->R>')],
+        strategy: trivialRewrite
+            .to(Formula('<~R->~P>'))
+            .then(ApplyEverywhere(detach)),
+        requiredRules: {
+          'detachment',
+          'fantasy',
+          'carry over',
+          'switcheroo',
+          'contrapositive'
+        }),
   ]),
   ChallengeSet('Contrapositive, De Morgan', [
     Challenge(Formula('<<P|Q>->~<~P&~Q>>'), 6,

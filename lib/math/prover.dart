@@ -170,7 +170,12 @@ class TrivialRewrite extends ContinuationStrategy {
 
   @override
   Theorem? _continueFrom(ProverState state, Theorem theorem, Formula goal) {
-    const rules = [switcheroo, reverseSwitcheroo];
+    const rules = [
+      switcheroo,
+      reverseSwitcheroo,
+      contrapositive,
+      reverseContrapositive
+    ];
     for (var rule in rules) {
       var result = rule(theorem);
       if (result != null && result.formula == goal) return result;

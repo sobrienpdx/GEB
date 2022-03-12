@@ -16,26 +16,16 @@ Theorem? carryOver(Assumption assumptions, Theorem theorem) {
   return CarryOverTheorem._(assumptions, theorem);
 }
 
-Theorem? contrapositive(Theorem x, {required bool reversed}) {
+Theorem? contrapositive(Theorem x) {
   var xFormula = x.formula;
   if (xFormula is! Implies) {
     return mismatch('contrapositive', '<x⊃y>', xFormula);
   }
-  var leftOperand = xFormula.leftOperand;
-  var rightOperand = xFormula.rightOperand;
-  Formula formula;
-  if (reversed) {
-    if (leftOperand is! Not) {
-      return mismatch('reverse contrapositive', '<~x⊃~y>', xFormula);
-    }
-    if (rightOperand is! Not) {
-      return mismatch('reverse contrapositive', '<~x⊃~y>', xFormula);
-    }
-    formula = Implies(rightOperand.operand, leftOperand.operand);
-  } else {
-    formula = Implies(Not(rightOperand), Not(leftOperand));
-  }
-  return Theorem._(x.assumptions, formula, [x], 'contrapositive');
+  return Theorem._(
+      x.assumptions,
+      Implies(Not(xFormula.rightOperand), Not(xFormula.leftOperand)),
+      [x],
+      'contrapositive');
 }
 
 Theorem? deMorgans(Theorem x, {required bool reversed}) {
@@ -106,6 +96,26 @@ Theorem? popFantasy(Theorem conclusion) {
   }
   return PopFantasyTheorem._(conclusionAssumptions,
       Implies(conclusionAssumptions.formula, conclusion.formula), conclusion);
+}
+
+Theorem? reverseContrapositive(Theorem x) {
+  var xFormula = x.formula;
+  if (xFormula is! Implies) {
+    return mismatch('contrapositive', '<x⊃y>', xFormula);
+  }
+  var leftOperand = xFormula.leftOperand;
+  var rightOperand = xFormula.rightOperand;
+  if (leftOperand is! Not) {
+    return mismatch('reverse contrapositive', '<~x⊃~y>', xFormula);
+  }
+  if (rightOperand is! Not) {
+    return mismatch('reverse contrapositive', '<~x⊃~y>', xFormula);
+  }
+  return Theorem._(
+      x.assumptions,
+      Implies(rightOperand.operand, leftOperand.operand),
+      [x],
+      'contrapositive');
 }
 
 Theorem? reverseSwitcheroo(Theorem x) {
