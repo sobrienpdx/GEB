@@ -29,9 +29,9 @@ void checkProof(Challenge challenge) {
   for (var theorem in givens) {
     proverState.addTheorem(theorem);
   }
-  challenge.strategy.to(challenge.goal).run(proverState);
-  var result = proverState.getTheorem(challenge.goal);
-  if (result == null) throw 'TODO(paul)';
+  latestFailureMessage = null;
+  var result = challenge.strategy.to(challenge.goal).run(proverState);
+  if (result == null) throw 'TODO(paul): ${latestFailureMessage ?? '???'}';
   var lines = <String>[for (var theorem in givens) theorem.toProofLine()];
   var seenTheorems = {...givens};
   Set<String> requiredRules = {};
