@@ -256,42 +256,42 @@ main() {
 
     test('Inside fantasy, no premise yet', () {
       var derivation = _makeDerivation(['P', '[']);
-      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('P')), false);
       expect(derivation.isGoalSatisfied(Formula('Q')), false);
       expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
     });
 
     test('Inside fantasy, after premise', () {
       var derivation = _makeDerivation(['P', '[', 'Q']);
-      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('P')), false);
       expect(derivation.isGoalSatisfied(Formula('Q')), false);
       expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
     });
 
     test('Inside fantasy, after nested fantasy', () {
       var derivation = _makeDerivation(['P', '[', 'Q', '[']);
-      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('P')), false);
       expect(derivation.isGoalSatisfied(Formula('Q')), false);
       expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
     });
 
     test('Inside fantasy, after nested fantasy and premise', () {
       var derivation = _makeDerivation(['P', '[', 'Q', '[']);
-      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('P')), false);
       expect(derivation.isGoalSatisfied(Formula('Q')), false);
       expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
     });
 
     test('After pop but no conclusion', () {
       var derivation = _makeDerivation(['P', '[', 'Q', ']']);
-      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('P')), false);
       expect(derivation.isGoalSatisfied(Formula('Q')), false);
       expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), false);
     });
 
     test('After pop and conclusion', () {
       var derivation = _makeDerivation(['P', '[', 'Q', ']', '<Q->Q>']);
-      expect(derivation.isGoalSatisfied(Formula('P')), true);
+      expect(derivation.isGoalSatisfied(Formula('P')), false);
       expect(derivation.isGoalSatisfied(Formula('Q')), false);
       expect(derivation.isGoalSatisfied(Formula('<Q->Q>')), true);
     });

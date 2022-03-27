@@ -15,7 +15,9 @@ class DerivationLineInfo {
 
   final int _index;
 
-  DerivationLineInfo._(this._state, this._index);
+  final int indentation;
+
+  DerivationLineInfo._(this._state, this._index, this.indentation);
 
   List<InteractiveText> get decorated =>
       _state._interactiveState.decorateLine(_state, line, _index);
@@ -83,17 +85,30 @@ class FullState {
 
   set challenge(Challenge? challenge) {
     _derivation.clear();
+    // Set _challenge before adding given lines to the derivation, so that the
+    // given lines won't falsely trigger `onGoalSatisfied`.
+    _challenge = challenge;
     if (challenge != null) {
       _derivation.setupChallenge(challenge);
     }
-    _challenge = challenge;
     _interactiveState = Quiescent();
   }
 
-  List<DerivationLineInfo> get derivationLines => [
-        for (int i = 0; i < _derivation.lines.length; i++)
-          DerivationLineInfo._(this, i)
-      ];
+  List<DerivationLineInfo> get derivationLines {
+    List<DerivationLineInfo> result = [];
+    int indentation = 0;
+    for (int i = 0; i < _derivation.lines.length; i++) {
+      var line = _derivation.lines[i];
+      if (line is PopFantasy && i > 0) {
+        indentation--;
+      }
+      result.add(DerivationLineInfo._(this, i, indentation));
+      if (line is PushFantasy) {
+        indentation++;
+      }
+    }
+    return result;
+  }
 
   List<String> get explanations => _derivation.explanations;
 
@@ -112,6 +127,21 @@ class FullState {
   String? get previewLine => _interactiveState.previewLine(_derivation.lines);
 
   void activateRule(Rule rule) {
+    var interactiveState = _interactiveState;
+    if (interactiveState is RuleInProgressState &&
+        interactiveState.rule == rule) {
+      _interactiveState = Quiescent(message: 'Cancelled $rule');
+      return;
+    }
+    if (_derivation.lines.isNotEmpty && _derivation.lines.last is PushFantasy) {
+      if (rule is! PopFantasyRule) {
+        _derivation.undo(minLines: _challenge?.initialLines.length ?? 0);
+        if (rule is PushFantasyRule) {
+          _interactiveState = Quiescent(message: 'Cancelled $rule');
+          return;
+        }
+      }
+    }
     try {
       _interactiveState = rule.activate(this, _derivation);
     } on UnimplementedError catch (e) {
@@ -180,6 +210,10 @@ class Quiescent extends InteractiveState {
   }
 }
 
+abstract class RuleInProgressState implements InteractiveState {
+  Rule get rule;
+}
+
 class SelectableText extends InteractiveText {
   final bool Function() _isSelectable;
 
@@ -203,7 +237,9 @@ class SelectableText extends InteractiveText {
   bool get isSelected => _isSelected();
 
   void select() {
-    _select();
+    if (isSelectable) {
+      _select();
+    }
   }
 
   static bool _alwaysFalse() => false;
@@ -211,7 +247,8 @@ class SelectableText extends InteractiveText {
   static bool _alwaysTrue() => true;
 }
 
-class SelectLines extends InteractiveState {
+class SelectLines extends InteractiveState with RuleInProgressState {
+  @override
   final FullLineStepRule rule;
 
   final bool Function(int, List<int>) isSelectable;
@@ -254,18 +291,19 @@ class SelectLines extends InteractiveState {
       .preview([for (var index in selectedLines) derivation[index] as Formula]);
 }
 
-class SelectRegion extends InteractiveState {
-  final Rule _rule;
+class SelectRegion extends InteractiveState implements RuleInProgressState {
+  @override
+  final Rule rule;
 
   final List<List<InteractiveText>> _interactiveLines;
 
-  SelectRegion(this._rule, this._interactiveLines) : super._();
+  SelectRegion(this.rule, this._interactiveLines) : super._();
 
   @override
   bool get isSelectionNeeded => true;
 
   @override
-  String get message => 'Select a region for $_rule';
+  String get message => 'Select a region for $rule';
 
   @override
   List<InteractiveText> decorateLine(
