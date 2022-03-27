@@ -14,6 +14,11 @@ main() {
       expect(Formula("P'").toString(), 'P′');
       expect(Formula('P′′').toString(), 'P′′');
       expect(Formula("P''").toString(), 'P′′');
+      expect(Formula('p').toString(), 'P');
+      expect(Formula('p′').toString(), 'P′');
+      expect(Formula('q').toString(), 'Q');
+      expect(Formula('r').toString(), 'R');
+      expect(Formula('P`').toString(), 'P′');
       expect(Formula('P').containsFreeVariable(a), false);
       expectEqual(Formula('P'), Formula('P'), true);
       expectEqual(Formula('P'), Formula('Q'), false);
@@ -124,6 +129,12 @@ main() {
       expect(Term('d′′′').toString(), 'd′′′');
       expect(Term('e′′′′').toString(), 'e′′′′');
       expect(Term('b').toString(), 'b');
+      expect(Term('A').toString(), 'a');
+      expect(Term('B').toString(), 'b');
+      expect(Term('C').toString(), 'c');
+      expect(Term('D').toString(), 'd');
+      expect(Term('E').toString(), 'e');
+      expect(Term('A′').toString(), 'a′');
       expectEqual(Term('a'), Term('a'), true);
       expectEqual(Term('a'), Term('b'), false);
       expectEqual(Term('a'), Term("a'"), false);
