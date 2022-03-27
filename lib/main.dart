@@ -94,11 +94,11 @@ class _GEBState extends State<GEB> {
     _disposeGestureRecognizers();
     return ConfettiWidget(
       confettiController: _confettiController,
-      blastDirection: pi * .15, // radial value
+      blastDirection: pi * .05, // radial value
       particleDrag: 0.01, // apply drag to the confetti
       emissionFrequency: 0.09, // how often it should emit
       numberOfParticles: 30, // number of particles to emit
-      gravity: 0.01, // gravity - or fall speed
+      gravity: 0.2, // gravity - or fall speed
       shouldLoop: false,
       colors: const [
         Colors.pink,
