@@ -30,21 +30,28 @@ class _GameMenuDialog extends State<GameMenuDialog> {
                     fontSize: 40),
               ),
             ),
-            for (var set in challengeSets)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: OutlinedButton(
-                  onPressed: () {
-                    widget.onSetSelection(set);
-                  },
-                  child: Text(set.name, style: TextStyle(color: Color(
-                      0xFF3B1807)),),
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Color(0x82CE6E3A)),
+            Expanded(
+                child: ListView(children: [
+              for (var set in challengeSets)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        widget.onSetSelection(set);
+                      },
+                      child: Text(
+                        set.name,
+                        style: TextStyle(color: Color(0xFF3B1807)),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Color(0x82CE6E3A)),
+                      ),
+                    ),
                   ),
-                ),
-              )
+                )
+            ])),
           ],
         ),
       ),
