@@ -143,6 +143,7 @@ class _GEBState extends State<GEB> {
                                         Navigator.pop(context);
                                         Navigator.pop(context);
                                         messageToUser = "";
+                                        _textController.text = "";
                                       });
                                     });
                                   });
@@ -190,7 +191,7 @@ class _GEBState extends State<GEB> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  "Your goal is to validate this formula: ",
+                                  "Your goal is to prove this formula: ",
                                   style: TextStyle(
                                       fontSize: 30,
                                       color: Colors.green,
@@ -432,6 +433,7 @@ class _GEBState extends State<GEB> {
                           textSize: 17,
                           onPressed: () {
                             setState(() {
+                              _textController.text = "";
                               validationColor = Colors.cyan;
                               messageToUser = rule.description;
                               state.activateRule(rule);
