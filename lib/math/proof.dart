@@ -177,7 +177,7 @@ class DerivationState {
   void setupChallenge(Challenge challenge) {
     clear();
     for (var line in challenge.initialLines) {
-      addLine(line);
+      addLine(line, explanation: 'Given');
     }
   }
 
