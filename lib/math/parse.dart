@@ -118,6 +118,9 @@ class _Parser implements Parser {
       case 'P':
       case 'Q':
       case 'R':
+      case 'p':
+      case 'q':
+      case 'r':
         return parsePropositionalAtom();
       case '~':
         next();
@@ -152,7 +155,7 @@ class _Parser implements Parser {
   }
 
   PropositionalAtom parsePropositionalAtom() =>
-      PropositionalAtom(_gatherName());
+      PropositionalAtom(_gatherName(uppercase: true));
 
   Formula parseQuantifier(Formula Function(Variable, Formula) combiner) {
     next();
@@ -181,6 +184,11 @@ class _Parser implements Parser {
       case 'c':
       case 'd':
       case 'e':
+      case 'A':
+      case 'B':
+      case 'C':
+      case 'D':
+      case 'E':
         term = parseVariable();
         break;
       case '(':
@@ -192,7 +200,7 @@ class _Parser implements Parser {
     return _applySuccessors(successorCount, term);
   }
 
-  Variable parseVariable() => Variable(_gatherName());
+  Variable parseVariable() => Variable(_gatherName(uppercase: false));
 
   String? peek({int skip = 0}) =>
       pos + skip >= input.length ? null : input[pos + skip];
@@ -204,8 +212,9 @@ class _Parser implements Parser {
     return term;
   }
 
-  String _gatherName() {
-    var name = StringBuffer(next());
+  String _gatherName({required bool uppercase}) {
+    var name =
+        StringBuffer(uppercase ? next().toUpperCase() : next().toLowerCase());
     while (true) {
       var char = peek();
       if (char == prime || char == "'") {
