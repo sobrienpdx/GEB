@@ -15,7 +15,9 @@ class DerivationLineInfo {
 
   final int _index;
 
-  DerivationLineInfo._(this._state, this._index);
+  final int indentation;
+
+  DerivationLineInfo._(this._state, this._index, this.indentation);
 
   List<InteractiveText> get decorated =>
       _state._interactiveState.decorateLine(_state, line, _index);
@@ -90,10 +92,21 @@ class FullState {
     _interactiveState = Quiescent();
   }
 
-  List<DerivationLineInfo> get derivationLines => [
-        for (int i = 0; i < _derivation.lines.length; i++)
-          DerivationLineInfo._(this, i)
-      ];
+  List<DerivationLineInfo> get derivationLines {
+    List<DerivationLineInfo> result = [];
+    int indentation = 0;
+    for (int i = 0; i < _derivation.lines.length; i++) {
+      var line = _derivation.lines[i];
+      if (line is PopFantasy && i > 0) {
+        i--;
+      }
+      result.add(DerivationLineInfo._(this, i, indentation));
+      if (line is PushFantasy) {
+        i++;
+      }
+    }
+    return result;
+  }
 
   List<String> get explanations => _derivation.explanations;
 
