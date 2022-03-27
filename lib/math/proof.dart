@@ -131,21 +131,10 @@ class DerivationState {
       doubleTildeRule);
 
   bool isGoalSatisfied(Formula goal) {
-    var index = lastNonPopIndex;
-    while (true) {
-      var fantasyStart = _findFantasyStart(index);
-      if (fantasyStart >= 0) {
-        index = fantasyStart - 1;
-      } else {
-        break;
-      }
-    }
-    while (index >= 0) {
-      var step = _steps[index];
-      if (step.line == goal) return true;
-      index = step.previousIndex;
-    }
-    return false;
+    if (isFantasyInProgress) return false;
+    var index = _steps.length - 1;
+    if (index < 0) return false;
+    return _steps[index].line == goal;
   }
 
   bool isTheorem(Formula x, {int? startingIndex}) {
@@ -188,7 +177,7 @@ class DerivationState {
   void setupChallenge(Challenge challenge) {
     clear();
     for (var line in challenge.initialLines) {
-      addLine(line);
+      addLine(line, explanation: 'Given');
     }
   }
 

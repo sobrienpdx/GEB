@@ -94,11 +94,11 @@ class _GEBState extends State<GEB> {
     _disposeGestureRecognizers();
     return ConfettiWidget(
       confettiController: _confettiController,
-      blastDirection: pi * .15, // radial value
+      blastDirection: pi * .05, // radial value
       particleDrag: 0.01, // apply drag to the confetti
       emissionFrequency: 0.09, // how often it should emit
       numberOfParticles: 30, // number of particles to emit
-      gravity: 0.01, // gravity - or fall speed
+      gravity: 0.2, // gravity - or fall speed
       shouldLoop: false,
       colors: const [
         Colors.pink,
@@ -143,6 +143,7 @@ class _GEBState extends State<GEB> {
                                         Navigator.pop(context);
                                         Navigator.pop(context);
                                         messageToUser = "";
+                                        _textController.text = "";
                                       });
                                     });
                                   });
@@ -190,7 +191,7 @@ class _GEBState extends State<GEB> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  "Your goal is to validate this formula: ",
+                                  "Your goal is to prove this formula: ",
                                   style: TextStyle(
                                       fontSize: 30,
                                       color: Colors.green,
@@ -234,21 +235,28 @@ class _GEBState extends State<GEB> {
                             padding: const EdgeInsets.all(8.0),
                             child: BaseButton(
                               onPressed: () {
-                                var start = _textController.selection.start;
-                                var end = _textController.selection.end;
-                                setState(() {
-                                  if (_textController.selection.start == -1) {
-                                    start = _textController.text.length;
-                                    end = _textController.text.length;
-                                  }
-                                  _textController.text =
-                                      _textController.text.substring(0, start) +
-                                          sc +
-                                          _textController.text.substring(end);
-                                  _textController.selection =
-                                      TextSelection.fromPosition(
-                                          TextPosition(offset: start + 1));
-                                });
+                                if (state.isPremiseExpected) {
+                                  var start = _textController.selection.start;
+                                  var end = _textController.selection.end;
+                                  setState(() {
+                                    if (_textController.selection.start == -1) {
+                                      start = _textController.text.length;
+                                      end = _textController.text.length;
+                                    }
+                                    _textController.text =
+                                        _textController.text.substring(0, start) +
+                                            sc +
+                                            _textController.text.substring(end);
+                                    _textController.selection =
+                                        TextSelection.fromPosition(
+                                            TextPosition(offset: start + 1));
+                                  });
+                                } else {
+                                  setState(() {
+                                    validationColor = Colors.amber;
+                                    messageToUser = "Cannot enter premise at this time. Select a rule first";
+                                  });
+                                }
                               },
                               text: sc,
                             ),
@@ -292,29 +300,33 @@ class _GEBState extends State<GEB> {
                             Flexible(
                               flex: 2,
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   for (int i = 0;
                                       i < state.derivationLines.length;
                                       i++)
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                              text: "${i + 1}: ",
-                                              style: TextStyle(
-                                                  color: Colors.primaries[
-                                                          colorDecider(i)]
-                                                      .withOpacity(state
-                                                              .isSelectionNeeded
-                                                          ? .3
-                                                          : 1),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontFamily: "NotoSansMath")),
-                                          for (var chunk in state
-                                              .derivationLines[i].decorated)
-                                            convertInteractiveTextToTextSpan(
-                                                chunk, i),
-                                        ],
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(state.derivationLines[i].indentation * 30, 0, 0, 0),
+                                      child: RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                                text: "${i + 1}: ",
+                                                style: TextStyle(
+                                                    color: Colors.primaries[
+                                                            colorDecider(i)]
+                                                        .withOpacity(state
+                                                                .isSelectionNeeded
+                                                            ? .3
+                                                            : 1),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: "NotoSansMath")),
+                                            for (var chunk in state
+                                                .derivationLines[i].decorated)
+                                              convertInteractiveTextToTextSpan(
+                                                  chunk, i),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                 ],
@@ -323,6 +335,7 @@ class _GEBState extends State<GEB> {
                             Flexible(
                               flex: 1,
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   for (int i = 0;
                                       i < state.explanations.length;
@@ -356,9 +369,13 @@ class _GEBState extends State<GEB> {
                           Flexible(
                             flex: 4,
                             child: TextFormField(
+                              onFieldSubmitted: (_) {
+                                validateUserInput();
+                              },
                               onChanged: (_) {
                                 setState(() {});
                               },
+                              enabled: state.isPremiseExpected,
                               controller: _textController,
                               decoration: state.isPremiseExpected
                                   ? const InputDecoration(
@@ -374,31 +391,12 @@ class _GEBState extends State<GEB> {
                                 height: 50,
                                 width: 100,
                                 textSize: 20,
-                                onPressed: state.isPremiseExpected
+                                onPressed: state.isPremiseExpected &&
+                                        (_textController.text.length > 0)
                                     ? () {
-                                        setState(() {
-                                          try {
-                                            DerivationLine line =
-                                                DerivationLine(
-                                                    _textController.text);
-                                            messageToUser =
-                                                "Good work! Your feelings and formula are valid!";
-                                            state.addDerivationLine(line);
-                                            validationColor = Colors.cyan;
-                                            _textController.text = "";
-                                            _needsScroll = true;
-                                          } catch (e) {
-                                            validationColor = Colors.pink;
-                                            messageToUser =
-                                                "Your formula is bad. You have failed.️";
-                                          }
-                                        });
+                                        validateUserInput();
                                       }
                                     : null,
-                                disabled: state.isPremiseExpected &&
-                                        (_textController.text.length > 0)
-                                    ? false
-                                    : true,
                                 text: "Validate",
                               ),
                             ),
@@ -424,6 +422,7 @@ class _GEBState extends State<GEB> {
                           textSize: 17,
                           onPressed: () {
                             setState(() {
+                              _textController.text = "";
                               validationColor = Colors.cyan;
                               messageToUser = rule.description;
                               state.activateRule(rule);
@@ -435,41 +434,31 @@ class _GEBState extends State<GEB> {
                   ],
                 ),
               ),
-              // Flexible(
-              //   flex: 1,
-              //   // child: ConfettiWidget(
-              //   //   confettiController: _controllerCenterRight,
-              //   //   blastDirection: pi*1.1, // radial value - LEFT
-              //   //   particleDrag: 0.01, // apply drag to the confetti
-              //   //   emissionFrequency: 0.09, // how often it should emit
-              //   //   numberOfParticles: 30, // number of particles to emit
-              //   //   gravity: 0.02, // gravity - or fall speed
-              //   //   shouldLoop: false,
-              //   //   colors: const [
-              //   //     Colors.pink,
-              //   //     Colors.red,
-              //   //     Colors.deepOrange,
-              //   //     Colors.orange,
-              //   //     Colors.amber,
-              //   //     Colors.yellow,
-              //   //     Colors.lime,
-              //   //     Colors.lightGreen,
-              //   //     Colors.green,
-              //   //     Colors.teal,
-              //   //     Colors.cyan,
-              //   //     Colors.lightBlue,
-              //   //     Colors.blue,
-              //   //     Colors.indigo,
-              //   //     Colors.purple,
-              //   //     Colors.deepPurple,
-              //   //   ], // manually specify the colors to be used
-              //   // ),
-              // ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void validateUserInput() {
+      setState(() {
+      try {
+        DerivationLine line =
+            DerivationLine(
+                _textController.text);
+        messageToUser =
+            "Good work! Your feelings and formula are valid!";
+        state.addDerivationLine(line);
+        validationColor = Colors.cyan;
+        _textController.text = "";
+        _needsScroll = true;
+      } catch (e) {
+        validationColor = Colors.pink;
+        messageToUser =
+            "Your formula is bad. You have failed.️";
+      }
+    });
   }
 
   final List<TapGestureRecognizer> _gestureRecognizers = [];
