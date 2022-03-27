@@ -191,7 +191,7 @@ class _GEBState extends State<GEB> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  "Your goal is to validate this formula: ",
+                                  "Your goal is to prove this formula: ",
                                   style: TextStyle(
                                       fontSize: 30,
                                       color: Colors.green,
