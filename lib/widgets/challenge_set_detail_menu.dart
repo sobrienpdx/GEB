@@ -35,27 +35,30 @@ class _GameDetailDialog extends State<ChallengeSetDetailDialog> {
               ),
             ),
             Expanded(
-                child: ListView(children: [
+                child: Scrollbar(
+                  isAlwaysShown: true,
+                  child: ListView(children: [
               for (var challenge in widget.set.challenges)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        widget.onChallengeSelection(challenge);
-                      },
-                      child: Text(
-                        challenge.goal.toString(),
-                        style: TextStyle(color: Color(0x820D1D07)),
-                      ),
-                      style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Color(0x8296BA89)),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          widget.onChallengeSelection(challenge);
+                        },
+                        child: Text(
+                          challenge.goal.toString(),
+                          style: TextStyle(color: Color(0x820D1D07)),
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(Color(0x8296BA89)),
+                        ),
                       ),
                     ),
-                  ),
-                )
-            ]))
+                  )
+            ]),
+                ))
           ],
         ),
       ),
