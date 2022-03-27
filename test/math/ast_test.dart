@@ -18,6 +18,7 @@ main() {
       expect(Formula('p′').toString(), 'P′');
       expect(Formula('q').toString(), 'Q');
       expect(Formula('r').toString(), 'R');
+      expect(Formula('P`').toString(), 'P′');
       expect(Formula('P').containsFreeVariable(a), false);
       expectEqual(Formula('P'), Formula('P'), true);
       expectEqual(Formula('P'), Formula('Q'), false);

@@ -217,7 +217,7 @@ class _Parser implements Parser {
         StringBuffer(uppercase ? next().toUpperCase() : next().toLowerCase());
     while (true) {
       var char = peek();
-      if (char == prime || char == "'") {
+      if (char == prime || char == "'" || char == '`') {
         name.write(prime);
         next();
       } else {
