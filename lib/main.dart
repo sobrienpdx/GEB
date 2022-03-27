@@ -369,6 +369,9 @@ class _GEBState extends State<GEB> {
                           Flexible(
                             flex: 4,
                             child: TextFormField(
+                              onFieldSubmitted: (_) {
+                                validateUserInput();
+                              },
                               onChanged: (_) {
                                 setState(() {});
                               },
@@ -390,23 +393,7 @@ class _GEBState extends State<GEB> {
                                 textSize: 20,
                                 onPressed: state.isPremiseExpected
                                     ? () {
-                                        setState(() {
-                                          try {
-                                            DerivationLine line =
-                                                DerivationLine(
-                                                    _textController.text);
-                                            messageToUser =
-                                                "Good work! Your feelings and formula are valid!";
-                                            state.addDerivationLine(line);
-                                            validationColor = Colors.cyan;
-                                            _textController.text = "";
-                                            _needsScroll = true;
-                                          } catch (e) {
-                                            validationColor = Colors.pink;
-                                            messageToUser =
-                                                "Your formula is bad. You have failed.️";
-                                          }
-                                        });
+                                        validateUserInput();
                                       }
                                     : null,
                                 disabled: state.isPremiseExpected &&
@@ -455,6 +442,26 @@ class _GEBState extends State<GEB> {
         ),
       ),
     );
+  }
+
+  void validateUserInput() {
+      setState(() {
+      try {
+        DerivationLine line =
+            DerivationLine(
+                _textController.text);
+        messageToUser =
+            "Good work! Your feelings and formula are valid!";
+        state.addDerivationLine(line);
+        validationColor = Colors.cyan;
+        _textController.text = "";
+        _needsScroll = true;
+      } catch (e) {
+        validationColor = Colors.pink;
+        messageToUser =
+            "Your formula is bad. You have failed.️";
+      }
+    });
   }
 
   final List<TapGestureRecognizer> _gestureRecognizers = [];
