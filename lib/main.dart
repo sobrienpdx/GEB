@@ -300,29 +300,33 @@ class _GEBState extends State<GEB> {
                             Flexible(
                               flex: 2,
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   for (int i = 0;
                                       i < state.derivationLines.length;
                                       i++)
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                              text: "${i + 1}: ",
-                                              style: TextStyle(
-                                                  color: Colors.primaries[
-                                                          colorDecider(i)]
-                                                      .withOpacity(state
-                                                              .isSelectionNeeded
-                                                          ? .3
-                                                          : 1),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontFamily: "NotoSansMath")),
-                                          for (var chunk in state
-                                              .derivationLines[i].decorated)
-                                            convertInteractiveTextToTextSpan(
-                                                chunk, i),
-                                        ],
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(state.derivationLines[i].indentation * 30, 0, 0, 0),
+                                      child: RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                                text: "${i + 1}: ",
+                                                style: TextStyle(
+                                                    color: Colors.primaries[
+                                                            colorDecider(i)]
+                                                        .withOpacity(state
+                                                                .isSelectionNeeded
+                                                            ? .3
+                                                            : 1),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: "NotoSansMath")),
+                                            for (var chunk in state
+                                                .derivationLines[i].decorated)
+                                              convertInteractiveTextToTextSpan(
+                                                  chunk, i),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                 ],
@@ -331,6 +335,7 @@ class _GEBState extends State<GEB> {
                             Flexible(
                               flex: 1,
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   for (int i = 0;
                                       i < state.explanations.length;
