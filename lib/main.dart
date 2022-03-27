@@ -143,6 +143,7 @@ class _GEBState extends State<GEB> {
                                         Navigator.pop(context);
                                         Navigator.pop(context);
                                         messageToUser = "";
+                                        _textController.text = "";
                                       });
                                     });
                                   });
@@ -432,6 +433,7 @@ class _GEBState extends State<GEB> {
                           textSize: 17,
                           onPressed: () {
                             setState(() {
+                              _textController.text = "";
                               validationColor = Colors.cyan;
                               messageToUser = rule.description;
                               state.activateRule(rule);
