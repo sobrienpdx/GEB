@@ -300,29 +300,33 @@ class _GEBState extends State<GEB> {
                             Flexible(
                               flex: 2,
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   for (int i = 0;
                                       i < state.derivationLines.length;
                                       i++)
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                              text: "${i + 1}: ",
-                                              style: TextStyle(
-                                                  color: Colors.primaries[
-                                                          colorDecider(i)]
-                                                      .withOpacity(state
-                                                              .isSelectionNeeded
-                                                          ? .3
-                                                          : 1),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontFamily: "NotoSansMath")),
-                                          for (var chunk in state
-                                              .derivationLines[i].decorated)
-                                            convertInteractiveTextToTextSpan(
-                                                chunk, i),
-                                        ],
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(state.derivationLines[i].indentation * 30, 0, 0, 0),
+                                      child: RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                                text: "${i + 1}: ",
+                                                style: TextStyle(
+                                                    color: Colors.primaries[
+                                                            colorDecider(i)]
+                                                        .withOpacity(state
+                                                                .isSelectionNeeded
+                                                            ? .3
+                                                            : 1),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: "NotoSansMath")),
+                                            for (var chunk in state
+                                                .derivationLines[i].decorated)
+                                              convertInteractiveTextToTextSpan(
+                                                  chunk, i),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                 ],
@@ -331,6 +335,7 @@ class _GEBState extends State<GEB> {
                             Flexible(
                               flex: 1,
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   for (int i = 0;
                                       i < state.explanations.length;
@@ -364,6 +369,9 @@ class _GEBState extends State<GEB> {
                           Flexible(
                             flex: 4,
                             child: TextFormField(
+                              onFieldSubmitted: (_) {
+                                validateUserInput();
+                              },
                               onChanged: (_) {
                                 setState(() {});
                               },
@@ -386,23 +394,7 @@ class _GEBState extends State<GEB> {
                                 onPressed: state.isPremiseExpected &&
                                         (_textController.text.length > 0)
                                     ? () {
-                                        setState(() {
-                                          try {
-                                            DerivationLine line =
-                                                DerivationLine(
-                                                    _textController.text);
-                                            messageToUser =
-                                                "Good work! Your feelings and formula are valid!";
-                                            state.addDerivationLine(line);
-                                            validationColor = Colors.cyan;
-                                            _textController.text = "";
-                                            _needsScroll = true;
-                                          } catch (e) {
-                                            validationColor = Colors.pink;
-                                            messageToUser =
-                                                "Your formula is bad. You have failed.️";
-                                          }
-                                        });
+                                        validateUserInput();
                                       }
                                     : null,
                                 text: "Validate",
@@ -447,6 +439,26 @@ class _GEBState extends State<GEB> {
         ),
       ),
     );
+  }
+
+  void validateUserInput() {
+      setState(() {
+      try {
+        DerivationLine line =
+            DerivationLine(
+                _textController.text);
+        messageToUser =
+            "Good work! Your feelings and formula are valid!";
+        state.addDerivationLine(line);
+        validationColor = Colors.cyan;
+        _textController.text = "";
+        _needsScroll = true;
+      } catch (e) {
+        validationColor = Colors.pink;
+        messageToUser =
+            "Your formula is bad. You have failed.️";
+      }
+    });
   }
 
   final List<TapGestureRecognizer> _gestureRecognizers = [];
