@@ -203,7 +203,9 @@ class SelectableText extends InteractiveText {
   bool get isSelected => _isSelected();
 
   void select() {
-    _select();
+    if (isSelectable) {
+      _select();
+    }
   }
 
   static bool _alwaysFalse() => false;
