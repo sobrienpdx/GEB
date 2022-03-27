@@ -435,36 +435,6 @@ class _GEBState extends State<GEB> {
                   ],
                 ),
               ),
-              // Flexible(
-              //   flex: 1,
-              //   // child: ConfettiWidget(
-              //   //   confettiController: _controllerCenterRight,
-              //   //   blastDirection: pi*1.1, // radial value - LEFT
-              //   //   particleDrag: 0.01, // apply drag to the confetti
-              //   //   emissionFrequency: 0.09, // how often it should emit
-              //   //   numberOfParticles: 30, // number of particles to emit
-              //   //   gravity: 0.02, // gravity - or fall speed
-              //   //   shouldLoop: false,
-              //   //   colors: const [
-              //   //     Colors.pink,
-              //   //     Colors.red,
-              //   //     Colors.deepOrange,
-              //   //     Colors.orange,
-              //   //     Colors.amber,
-              //   //     Colors.yellow,
-              //   //     Colors.lime,
-              //   //     Colors.lightGreen,
-              //   //     Colors.green,
-              //   //     Colors.teal,
-              //   //     Colors.cyan,
-              //   //     Colors.lightBlue,
-              //   //     Colors.blue,
-              //   //     Colors.indigo,
-              //   //     Colors.purple,
-              //   //     Colors.deepPurple,
-              //   //   ], // manually specify the colors to be used
-              //   // ),
-              // ),
             ],
           ),
         ),
