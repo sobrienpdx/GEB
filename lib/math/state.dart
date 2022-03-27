@@ -112,6 +112,11 @@ class FullState {
   String? get previewLine => _interactiveState.previewLine(_derivation.lines);
 
   void activateRule(Rule rule) {
+    if (_derivation.lines.isNotEmpty &&
+        _derivation.lines.last is PushFantasy &&
+        rule is! PopFantasyRule) {
+      _derivation.undo(minLines: _challenge?.initialLines.length ?? 0);
+    }
     try {
       _interactiveState = rule.activate(this, _derivation);
     } on UnimplementedError catch (e) {
@@ -203,7 +208,9 @@ class SelectableText extends InteractiveText {
   bool get isSelected => _isSelected();
 
   void select() {
-    _select();
+    if (isSelectable) {
+      _select();
+    }
   }
 
   static bool _alwaysFalse() => false;
