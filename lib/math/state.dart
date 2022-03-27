@@ -85,10 +85,12 @@ class FullState {
 
   set challenge(Challenge? challenge) {
     _derivation.clear();
+    // Set _challenge before adding given lines to the derivation, so that the
+    // given lines won't falsely trigger `onGoalSatisfied`.
+    _challenge = challenge;
     if (challenge != null) {
       _derivation.setupChallenge(challenge);
     }
-    _challenge = challenge;
     _interactiveState = Quiescent();
   }
 
