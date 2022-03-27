@@ -127,6 +127,13 @@ main() {
       check(addLines(['P', '[', 'Q', '[', 'R', ']', 'P']));
       check(rule(joiningRule).hasSelectionState(selectable: {2: 'Q', 6: 'P'}));
     });
+
+    test('Activate rule again to cancel', () {
+      check(addLine('P'));
+      check(rule(joiningRule).hasSelectionState(selectable: {0: 'P'}));
+      check(
+          rule(joiningRule).isQuiescent().showsMessage(contains('Cancelled')));
+    });
   });
 
   group('double tilde: ', () {
@@ -162,6 +169,14 @@ main() {
       check(addLines(['P', '[', 'Q', '[', 'R', ']', 'P']));
       check(rule(doubleTildeRule)
           .hasSelectionState(selectable: {2: star, 6: star}));
+    });
+
+    test('Activate rule again to cancel', () {
+      check(addLine('P'));
+      check(rule(doubleTildeRule).hasSelectionState(selectable: {0: star}));
+      check(rule(doubleTildeRule)
+          .isQuiescent()
+          .showsMessage(contains('Cancelled')));
     });
   });
 
@@ -233,7 +248,6 @@ main() {
     });
 
     test('abort push when expecting premise', () {
-      expect(state.isPremiseExpected, false);
       check(rule(pushFantasyRule)
           .addsLines(['['])
           .addsExplanations(['Applied rule "push fantasy"'])
@@ -241,7 +255,20 @@ main() {
           .showsMessage('Starting a fantasy,  Please enter the premise.'));
       check(rule(joiningRule)
           .deletesLines(hasLength(1))
-          .showsMessage('Select 2 lines for joining'));
+          .showsMessage('Select 2 lines for joining')
+          .isPremiseExpected(false));
+    });
+
+    test('Activate rule again to cancel', () {
+      check(rule(pushFantasyRule)
+          .addsLines(['['])
+          .addsExplanations(['Applied rule "push fantasy"'])
+          .isQuiescent(isPremiseExpected: true)
+          .showsMessage('Starting a fantasy,  Please enter the premise.'));
+      check(rule(pushFantasyRule)
+          .deletesLines(hasLength(1))
+          .isQuiescent()
+          .showsMessage(contains('Cancelled')));
     });
   });
 

@@ -112,10 +112,20 @@ class FullState {
   String? get previewLine => _interactiveState.previewLine(_derivation.lines);
 
   void activateRule(Rule rule) {
-    if (_derivation.lines.isNotEmpty &&
-        _derivation.lines.last is PushFantasy &&
-        rule is! PopFantasyRule) {
-      _derivation.undo(minLines: _challenge?.initialLines.length ?? 0);
+    var interactiveState = _interactiveState;
+    if (interactiveState is RuleInProgressState &&
+        interactiveState.rule == rule) {
+      _interactiveState = Quiescent(message: 'Cancelled $rule');
+      return;
+    }
+    if (_derivation.lines.isNotEmpty && _derivation.lines.last is PushFantasy) {
+      if (rule is! PopFantasyRule) {
+        _derivation.undo(minLines: _challenge?.initialLines.length ?? 0);
+        if (rule is PushFantasyRule) {
+          _interactiveState = Quiescent(message: 'Cancelled $rule');
+          return;
+        }
+      }
     }
     try {
       _interactiveState = rule.activate(this, _derivation);
@@ -185,6 +195,10 @@ class Quiescent extends InteractiveState {
   }
 }
 
+abstract class RuleInProgressState implements InteractiveState {
+  Rule get rule;
+}
+
 class SelectableText extends InteractiveText {
   final bool Function() _isSelectable;
 
@@ -218,7 +232,8 @@ class SelectableText extends InteractiveText {
   static bool _alwaysTrue() => true;
 }
 
-class SelectLines extends InteractiveState {
+class SelectLines extends InteractiveState with RuleInProgressState {
+  @override
   final FullLineStepRule rule;
 
   final bool Function(int, List<int>) isSelectable;
@@ -261,18 +276,19 @@ class SelectLines extends InteractiveState {
       .preview([for (var index in selectedLines) derivation[index] as Formula]);
 }
 
-class SelectRegion extends InteractiveState {
-  final Rule _rule;
+class SelectRegion extends InteractiveState implements RuleInProgressState {
+  @override
+  final Rule rule;
 
   final List<List<InteractiveText>> _interactiveLines;
 
-  SelectRegion(this._rule, this._interactiveLines) : super._();
+  SelectRegion(this.rule, this._interactiveLines) : super._();
 
   @override
   bool get isSelectionNeeded => true;
 
   @override
-  String get message => 'Select a region for $_rule';
+  String get message => 'Select a region for $rule';
 
   @override
   List<InteractiveText> decorateLine(
