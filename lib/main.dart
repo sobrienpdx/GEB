@@ -391,15 +391,12 @@ class _GEBState extends State<GEB> {
                                 height: 50,
                                 width: 100,
                                 textSize: 20,
-                                onPressed: state.isPremiseExpected
+                                onPressed: state.isPremiseExpected &&
+                                        (_textController.text.length > 0)
                                     ? () {
                                         validateUserInput();
                                       }
                                     : null,
-                                disabled: state.isPremiseExpected &&
-                                        (_textController.text.length > 0)
-                                    ? false
-                                    : true,
                                 text: "Validate",
                               ),
                             ),
