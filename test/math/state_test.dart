@@ -231,6 +231,18 @@ main() {
             .showsMessage('Cannot pop a fantasy right now.'));
       });
     });
+
+    test('abort push when expecting premise', () {
+      expect(state.isPremiseExpected, false);
+      check(rule(pushFantasyRule)
+          .addsLines(['['])
+          .addsExplanations(['Applied rule "push fantasy"'])
+          .isQuiescent(isPremiseExpected: true)
+          .showsMessage('Starting a fantasy,  Please enter the premise.'));
+      check(rule(joiningRule)
+          .deletesLines(hasLength(1))
+          .showsMessage('Select 2 lines for joining'));
+    });
   });
 
   group('carry-over:', () {
