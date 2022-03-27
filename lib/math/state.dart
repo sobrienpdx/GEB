@@ -98,11 +98,11 @@ class FullState {
     for (int i = 0; i < _derivation.lines.length; i++) {
       var line = _derivation.lines[i];
       if (line is PopFantasy && i > 0) {
-        i--;
+        indentation--;
       }
       result.add(DerivationLineInfo._(this, i, indentation));
       if (line is PushFantasy) {
-        i++;
+        indentation++;
       }
     }
     return result;
