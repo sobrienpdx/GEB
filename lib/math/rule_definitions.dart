@@ -1,16 +1,16 @@
 import 'package:geb/math/rules.dart';
 
 const List<Rule> ruleDefinitions = [
-  joiningRule,
-  separationRule,
-  doubleTildeRule,
+  switcherooRule,
   pushFantasyRule,
   popFantasyRule,
   carryOverRule,
   detachmentRule,
   contrapositiveRule,
+  joiningRule,
+  separationRule,
   deMorgansRule,
-  switcherooRule
+  doubleTildeRule,
 ];
 
 const Rule joiningRule = JoiningRule();
