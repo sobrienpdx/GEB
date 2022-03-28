@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geb/math/challenges.dart';
 
 class GameMenuDialog extends StatefulWidget {
-  final void Function(ChallengeSet set) onSetSelection;
+  final void Function(ChallengeSet? set) onSetSelection;
 
   GameMenuDialog(this.onSetSelection);
 
@@ -59,11 +59,21 @@ class _GameMenuDialog extends State<GameMenuDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        Row(children: [        TextButton(
             onPressed: () {
+              setState(() {
+                widget.onSetSelection(null);
+              });
               Navigator.pop(context);
             },
-            child: Text("Close")),
+            child: Text("Exit game mode")),
+          Spacer(),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Close")),],),
+
       ],
     );
   }

@@ -130,24 +130,30 @@ class _GEBState extends State<GEB> {
                         context: context,
                         builder: (context) {
                           return GameMenuDialog((set) {
-                            setState(() {
-                              showGameDetail = true;
-                              showDialog(
-                                  barrierColor: Color(0xFAFAFA),
-                                  context: context,
-                                  builder: (context) {
-                                    return ChallengeSetDetailDialog(set,
-                                        (challenge) {
-                                      setState(() {
-                                        state.challenge = challenge;
-                                        Navigator.pop(context);
-                                        Navigator.pop(context);
-                                        messageToUser = "";
-                                        _textController.text = "";
-                                      });
+                            if (set == null) {
+                              setState(() {
+                                state.challenge = null;
+                              });
+                            } else {
+                              setState(() {
+                                showGameDetail = true;
+                                showDialog(
+                                    barrierColor: Color(0xFAFAFA),
+                                    context: context,
+                                    builder: (context) {
+                                      return ChallengeSetDetailDialog(set,
+                                              (challenge) {
+                                            setState(() {
+                                              state.challenge = challenge;
+                                              Navigator.pop(context);
+                                              Navigator.pop(context);
+                                              messageToUser = "";
+                                              _textController.text = "";
+                                            });
+                                          });
                                     });
-                                  });
-                            });
+                              });
+                            }
                           });
                         });
                   });
